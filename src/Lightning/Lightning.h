@@ -1,33 +1,16 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <tuple>
 using namespace std;
 
 #ifndef LIGHTNING_H
 #define LIGHTNING_H
 
-class Field{
-private:
-    int len;
-    int wid;
-    float grid[40][40];
-
-public:
-    Field();
-    ~Field();
-
-    void setLen(int);
-    void setWid(int);
-    int getLen(void);
-    int getWid(void);
-
-    void randomize(void);
-    void show(void);
-};
-
 class Point{
 private:
     bool isLight;
+    float potential;
     int prevX;
     int prevY;
 
@@ -36,16 +19,20 @@ public:
     ~Point();
 
     void setIsLight(bool);
+    void setPotential(float);
     void setPrevX(int);
     void setPrevY(int);
     bool getIsLight(void);
+    float getPotential(void);
     int getPrevX(void);
     int getPrevY(void);
 };
 
 class Lightning{
 private:
-    Point lightGrid[40][40];
+    int len;
+    int wid;
+    Point grid[40][40];
     float leeway;
     float branch;
 
@@ -57,6 +44,11 @@ public:
     void setBranch(float);
     float getLeeway(void);
     float getBranch(void);
+
+    void randomize(void);
+    void show(void);
+
+    void traverse(int, int);
 };
 
 #include "Lightning.cpp"

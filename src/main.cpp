@@ -9,10 +9,12 @@ void display ();
 
 int main()
 {
-    Field lol;
-    lol.randomize();
-    lol.show();
+    Lightning rasho;
+    rasho.randomize();
+    rasho.show();
+    rasho.traverse(1, 0);
 
+    /*
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -52,6 +54,7 @@ int main()
     }
 
     glfwTerminate();
+    */
     return 0;
 }
 
