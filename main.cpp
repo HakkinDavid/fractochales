@@ -3,7 +3,9 @@
 
 int main()
 {
-    Field lol(40, 40);
-    
+    Field lol;
+    lol.randomize();
+    lol.show();
+
     return 0;
 }
