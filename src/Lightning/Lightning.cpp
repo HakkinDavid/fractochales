@@ -7,7 +7,7 @@ Field::Field(void){
     this->wid = 40;
 }
 Field::~Field(void){
-    cout << "Porno" << endl;
+    cout << "Te voy a castear." << endl;
 }
 
 void Field::setLen(int len){ this->len = len; }
@@ -18,8 +18,8 @@ int Field::getWid(void){ return wid; }
 void Field::randomize(void){
     srand(time(NULL));
     float randy = 0;
-    for(int i=0; i<wid; i++){
-        for(int j=0; j<len; j++){
+    for (int i=0; i<wid; i++) {
+        for (int j=0; j<len; j++) {
             randy = (rand()%101)/(float)100;
             grid[i][j] = randy;
         }
