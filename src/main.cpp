@@ -1,4 +1,5 @@
 #include <iostream>
+#include <conio.h>
 #include "Lightning/Lightning.h"
 #include "../include/glad/glad.h"
 #include "../include/GLFW/glfw3.h"
@@ -56,6 +57,8 @@ int main()
 
     glfwTerminate();
     */
+    cout << "Presiona cualquier tecla para salir." << endl;
+    _getch();
     return 0;
 }
 
