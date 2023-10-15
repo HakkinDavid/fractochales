@@ -11,9 +11,10 @@ int main()
 {
     Lightning rasho;
     rasho.randomize();
+    rasho.traverse(0, 0);
     rasho.show();
-    rasho.traverse(1, 0);
 
+    
     /*
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

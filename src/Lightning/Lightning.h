@@ -1,3 +1,8 @@
+// Header de librería Lightning (Clases Point y Lightning)
+// Autor: Mauricio Alcántar Dueñas
+// Fecha: 14 de octubre de 2023
+// Versión 1.0
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -32,7 +37,7 @@ class Lightning{
 private:
     int len;
     int wid;
-    Point grid[40][40];
+    Point grid[30][60]; //this should be [wid][len]
     float leeway;
     float branch;
 
