@@ -5,15 +5,11 @@
             "label": "C/C++: gcc.exe build active file",
             "command": "g++",
             "args": [
+                "-fdiagnostics-color=always",
                 "-g",
-                "-std=c++20",
-                "-I${workspaceFolder}/include",
-                "-L${workspaceFolder}/lib",
-                "${workspaceFolder}/src/\\*.cpp",
-                "${workspaceFolder}/src/glad.c",
-                "-lglfw3dll",
+                "${file}",
                 "-o",
-                "${workspaceFolder}/rayos.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
