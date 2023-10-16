@@ -29,8 +29,8 @@ int Point::getPrevY(void){ return prevY; }
 Lightning::Lightning(){ //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
     this->len = 60; //change the grid size in the header
     this->wid = 30; //if you mess with len and wid
-    this->leeway = 0.23;
-    this->branch = 0.15;
+    this->leeway = 0.28;
+    this->branch = 0.12;
 }
 Lightning::~Lightning(){
 }
@@ -45,7 +45,7 @@ void Lightning::randomize(void){
     float randy = 0;
     for (int i=0; i<wid; i++) {
         for (int j=0; j<len; j++) {
-            randy = (rand()%101)/(float)100;
+            randy = (rand()%(101-(10*i/wid)))/(float)100;
             grid[i][j].setPotential(randy);
         }
     }
@@ -65,37 +65,40 @@ void Lightning::traverse(int x, int y){
     while(x >= 0 && x < wid && y >= 0 && y < len){
         int difX = x - grid[x][y].getPrevX();
         int difY = y - grid[x][y].getPrevY();
-        tuple<int,int> neighbors[5];
-        float neighborVal[5] = {0};
-        int key = 0, min = 5, min2 = 5;
+        tuple<int,int> neighbors[3];
+        float neighborVal[3] = {0};
+        int key = 0, min = 3, min2 = 3;
 
         grid[x][y].setIsLight(true);
 
         // Find the accessible neighbors
-        if(difY == 0){
-            if(y+1 < len){ neighbors[key++] = make_tuple(x, y+1); }
-            if(y-1 >= 0){ neighbors[key++] = make_tuple(x, y-1); }
+        if(x == 0 && y == 0){
+            neighbors[key++] = make_tuple(0, 1); 
+            neighbors[key++] = make_tuple(1, 0); 
+            neighbors[key++] = make_tuple(1, 1); 
         }
-        else if(y+difY >= 0 && y+difY < len){
-            neighbors[key++] = make_tuple(x, y+difY);
-            if(x+1 < wid){ neighbors[key++] = make_tuple(x+1, y+difY); }
-            if(x-1 >= 0){ neighbors[key++] = make_tuple(x-1, y+difY); }
-        }
-        if(difX == 0){
-            if(x+1 < wid){ neighbors[key++] = make_tuple(x+1, y); }
-            if(x-1 >= 0){ neighbors[key++] = make_tuple(x-1, y); }
-        }
-        else if(x+difX >= 0 && x+difX < wid){
-            neighbors[key++] = make_tuple(x+difX, y);
-            if(x != 0 && y != 0 && y-difY >= 0 && y-difY < len){
-                neighbors[key++] = make_tuple(x+difX, y-difY);
-            }
-            else{
-                if(y+1 < len){ neighbors[key++] = make_tuple(x+difX, y+1); }
-                if(y-1 >= 0){ neighbors[key++] = make_tuple(x+difX, y-1); }
+        if(difY != 0){
+            if(y+difY >= 0 && y+difY < len){ 
+                neighbors[key++] = make_tuple(x, y+difY); 
+                if(difX == 0){ 
+                    if(x+1 < wid){ neighbors[key++] = make_tuple(x+1, y+difY); }
+                    if(x-1 >= 0){ neighbors[key++] = make_tuple(x-1, y+difY); }
+                }
+                else if(x+difX >= 0 && x+difX < wid){
+                    neighbors[key++] = make_tuple(x+difX, y+difY); 
+                }
             }
         }
-        if(x == 0 && y == 0){ neighbors[key++] = make_tuple(1, 1); }
+        if(difX != 0){
+            if(x+difX >= 0 && x+difX < wid){ 
+                neighbors[key++] = make_tuple(x+difX, y); 
+                if(difY == 0){ 
+                    if(y+1 < len){ neighbors[key++] = make_tuple(x+difX, y+1); }
+                    if(y-1 >= 0){ neighbors[key++] = make_tuple(x+difX, y-1); }
+                }
+            }
+        }
+
 
         // Find the path of least resistance
         for(int i=0; i<key; i++){
@@ -106,23 +109,23 @@ void Lightning::traverse(int x, int y){
                 neighborVal[i] = grid[x][y].getPotential() + leeway;
                 neighborVal[i] -= grid[get<0>(neighbors[i])][get<1>(neighbors[i])].getPotential();
                 if(neighborVal[i] > 0){
-                    if(min == 5 || neighborVal[i] > neighborVal[min]){ min = i; }
+                    if(min == 3 || neighborVal[i] > neighborVal[min]){ min = i; }
                 }
             }
         }
-        if(min == 5){ return; } // End of branch
+        if(min == 3){ return; } // End of branch
 
         // Check for branching opportunities
-        for(int i=0; i<5; i++){
+        for(int i=0; i<3; i++){
             if(i != min && neighborVal[i] >= neighborVal[min]-branch){
-                if(min2 == 5 || neighborVal[i] > neighborVal[min2]){ min2 = i; }
+                if(min2 == 3 || neighborVal[i] > neighborVal[min2]){ min2 = i; }
             }
         }
 
         // Next Step
         grid[get<0>(neighbors[min])][get<1>(neighbors[min])].setPrevX(x);
         grid[get<0>(neighbors[min])][get<1>(neighbors[min])].setPrevY(y);
-        if(min2 == 5){                  // No branching
+        if(min2 == 3){                  // No branching
             x = get<0>(neighbors[min]);
             y = get<1>(neighbors[min]);
         }

@@ -8,9 +8,8 @@ int main()
     rasho.randomize();
     rasho.traverse(0, 0);
     rasho.show();
-
     
-    cout << "Presiona cualquier tecla para salir." << endl;
-    _getch();
+    //cout << "Presiona cualquier tecla para salir." << endl;
+    //_getch();
     return 0;
 }
