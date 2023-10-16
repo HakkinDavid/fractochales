@@ -29,8 +29,8 @@ int Point::getPrevY(void){ return prevY; }
 Lightning::Lightning(){ //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
     this->len = 60; //change the grid size in the header
     this->wid = 30; //if you mess with len and wid
-    this->leeway = 0.18;
-    this->branch = 0.2;
+    this->leeway = 0.23;
+    this->branch = 0.15;
 }
 Lightning::~Lightning(){
 }
@@ -106,7 +106,7 @@ void Lightning::traverse(int x, int y){
                 neighborVal[i] = grid[x][y].getPotential() + leeway;
                 neighborVal[i] -= grid[get<0>(neighbors[i])][get<1>(neighbors[i])].getPotential();
                 if(neighborVal[i] > 0){
-                    if(min == 5 || neighborVal[i] < neighborVal[min]){ min = i; }
+                    if(min == 5 || neighborVal[i] > neighborVal[min]){ min = i; }
                 }
             }
         }
@@ -114,10 +114,8 @@ void Lightning::traverse(int x, int y){
 
         // Check for branching opportunities
         for(int i=0; i<5; i++){
-            if(i != min && neighborVal[i] > 0){
-                if(neighborVal[i] <= neighborVal[min]+branch && neighborVal[i] >= neighborVal[min]-branch){
-                    if(min2 == 5 || neighborVal[i] < neighborVal[min2]){ min2 = i; }
-                }
+            if(i != min && neighborVal[i] >= neighborVal[min]-branch){
+                if(min2 == 5 || neighborVal[i] > neighborVal[min2]){ min2 = i; }
             }
         }
 
