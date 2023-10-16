@@ -2,14 +2,10 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc.exe build active file",
-            "command": "g++",
+            "label": "SFML Build",
+            "command": "powershell",
             "args": [
-                "-fdiagnostics-color=always",
-                "-g",
-                "${workspaceFolder}/main.cpp",
-                "-o",
-                "${workspaceFolder}/rayos.exe"
+                "-Command \" g++ -c includes/Lightning/Lightning.cpp main.cpp -Iincludes/SFML -Iincludes/Lightning -DSFML_STATIC ; g++ Lightning.o main.o -o main -L\"${workspaceFolder}\\lib\" -lsfml-graphics-s -lsfml-window-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -mwindows \""
             ],
             "options": {
                 "cwd": "${fileDirname}"
