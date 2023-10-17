@@ -43,7 +43,7 @@ private:
     float branch;
 
 public:
-    Lightning(int len = 60, int wid = 30, float leeway = 0.23, float branch = 0.15);
+    Lightning(int len = 60, int wid = 30, float leeway = 0.28, float branch = 0.12);
     ~Lightning();
 
     void setLeeway(float);
