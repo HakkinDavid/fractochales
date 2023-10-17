@@ -3,3 +3,5 @@
 makefile
 .dll
 lib/
+.vscode/tasks.json
+.vscode/c_cpp_properties.json
