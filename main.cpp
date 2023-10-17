@@ -15,8 +15,8 @@ vector<sf::Vertex> generateLighting () {
     rasho.traverse(0, 0);
     vector<sf::Vertex> thunder;
 
-    for (int i = 0; i < rasho.getWid(); i++) {
-        for (int j = 0; j < rasho.getLen(); j++) {
+    for (int i = 0; i < rasho.getHei(); i++) {
+        for (int j = 0; j < rasho.getWid(); j++) {
             if (rasho.getGrid()[i][j].getIsLight()) {
                 thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*100, i*100));
                 if (thunder.size() % 2 == 0) {

@@ -36,21 +36,21 @@ public:
 
 class Lightning{
 private:
-    int len;
+    int hei;
     int wid;
     vector<vector<Point>> grid;
     float leeway;
     float branch;
 
 public:
-    Lightning(int len = 60, int wid = 30, float leeway = 0.28, float branch = 0.12);
+    Lightning(int hei = 60, int wid = 30, float leeway = 0.28, float branch = 0.12);
     ~Lightning();
 
     void setLeeway(float);
     void setBranch(float);
     float getLeeway(void);
     float getBranch(void);
-    int getLen(void);
+    int getHei(void);
     int getWid(void);
     vector<vector<Point>>& getGrid(void);
 

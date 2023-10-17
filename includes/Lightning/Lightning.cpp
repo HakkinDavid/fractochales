@@ -26,17 +26,17 @@ int Point::getPrevX(void){ return prevX; }
 int Point::getPrevY(void){ return prevY; }
 
 // LIGHTNING CLASS
-Lightning::Lightning(int len, int wid, float leeway, float branch) {
+Lightning::Lightning(int hei, int wid, float leeway, float branch) {
 
     //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
-    this->len = len;
+    this->hei = hei;
 
     //change the grid size in the header
     this->wid = wid;
 
-    this->grid.resize(this->wid);
+    this->grid.resize(this->hei);
     for (int i = 0; i < grid.size(); i++) {
-        this->grid[i].resize(this->len);
+        this->grid[i].resize(this->wid);
     }
     
     //if you mess with len and wid
@@ -55,8 +55,8 @@ float Lightning::getBranch(void){ return branch; }
 void Lightning::randomize(void){
     srand(time(NULL));
     float randy = 0;
-    for (int i=0; i<wid; i++) {
-        for (int j=0; j<len; j++) {
+    for (int i=0; i<hei; i++) {
+        for (int j=0; j<wid; j++) {
             randy = (rand()%(101-(10*i/wid)))/(float)100;
             grid[i][j].setPotential(randy);
         }
@@ -64,8 +64,8 @@ void Lightning::randomize(void){
 }
 
 void Lightning::show(void){             //only for testing purposes
-    for(int i=0; i<wid; i++){           //wont be used in practice
-        for(int j=0; j<len; j++){
+    for(int i=0; i<hei; i++){           //wont be used in practice
+        for(int j=0; j<wid; j++){
             if(grid[i][j].getIsLight()){ cout << "x "; }
             else{ cout << "  "; }
         }
@@ -74,7 +74,7 @@ void Lightning::show(void){             //only for testing purposes
 }
 
 void Lightning::traverse(int x, int y){
-    while(x >= 0 && x < wid && y >= 0 && y < len){
+    while(x >= 0 && x < hei && y >= 0 && y < wid){
         int difX = x - grid[x][y].getPrevX();
         int difY = y - grid[x][y].getPrevY();
         tuple<int,int> neighbors[3];
@@ -90,22 +90,22 @@ void Lightning::traverse(int x, int y){
             neighbors[key++] = make_tuple(1, 1); 
         }
         if(difY != 0){
-            if(y+difY >= 0 && y+difY < len){ 
+            if(y+difY >= 0 && y+difY < wid){ 
                 neighbors[key++] = make_tuple(x, y+difY); 
                 if(difX == 0){ 
-                    if(x+1 < wid){ neighbors[key++] = make_tuple(x+1, y+difY); }
+                    if(x+1 < hei){ neighbors[key++] = make_tuple(x+1, y+difY); }
                     if(x-1 >= 0){ neighbors[key++] = make_tuple(x-1, y+difY); }
                 }
-                else if(x+difX >= 0 && x+difX < wid){
+                else if(x+difX >= 0 && x+difX < hei){
                     neighbors[key++] = make_tuple(x+difX, y+difY); 
                 }
             }
         }
         if(difX != 0){
-            if(x+difX >= 0 && x+difX < wid){ 
+            if(x+difX >= 0 && x+difX < hei){ 
                 neighbors[key++] = make_tuple(x+difX, y); 
                 if(difY == 0){ 
-                    if(y+1 < len){ neighbors[key++] = make_tuple(x+difX, y+1); }
+                    if(y+1 < wid){ neighbors[key++] = make_tuple(x+difX, y+1); }
                     if(y-1 >= 0){ neighbors[key++] = make_tuple(x+difX, y-1); }
                 }
             }
@@ -157,8 +157,8 @@ vector<vector<Point>>& Lightning::getGrid(void) {
     return grid;
 }
 
-int Lightning::getLen(void) {
-    return len;
+int Lightning::getHei(void) {
+    return hei;
 }
 int Lightning::getWid(void) {
     return wid;
