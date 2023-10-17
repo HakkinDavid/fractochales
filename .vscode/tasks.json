@@ -5,7 +5,7 @@
             "label": "SFML Build",
             "command": "powershell",
             "args": [
-                "-Command \" g++ -c includes/Lightning/Lightning.cpp main.cpp -Iincludes/SFML -Iincludes/Lightning -DSFML_STATIC ; g++ Lightning.o main.o -o main icon.res -L\"${workspaceFolder}\\lib\" -lsfml-graphics-s -lsfml-window-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -mwindows \""
+                "-Command \" g++ -c includes/Lightning/Lightning.cpp main.cpp -I\"${workspaceFolder}\\includes\" -Iincludes/SFML -Iincludes/Lightning -DSFML_STATIC ; g++ Lightning.o main.o -o main icon.res -L\"${workspaceFolder}\\lib\" -lsfml-graphics-s -lsfml-window-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -mwindows \""
             ],
             "options": {
                 "cwd": "${fileDirname}"
