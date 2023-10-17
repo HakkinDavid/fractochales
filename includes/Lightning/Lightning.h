@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <tuple>
+#include <vector>
 using namespace std;
 
 #ifndef LIGHTNING_H
@@ -37,18 +38,21 @@ class Lightning{
 private:
     int len;
     int wid;
-    Point grid[30][60]; //this should be [wid][len]
+    vector<vector<Point>> grid;
     float leeway;
     float branch;
 
 public:
-    Lightning();
+    Lightning(int len = 60, int wid = 30, float leeway = 0.23, float branch = 0.15);
     ~Lightning();
 
     void setLeeway(float);
     void setBranch(float);
     float getLeeway(void);
     float getBranch(void);
+    int getLen(void);
+    int getWid(void);
+    vector<vector<Point>>& getGrid(void);
 
     void randomize(void);
     void show(void);

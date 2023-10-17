@@ -26,12 +26,24 @@ int Point::getPrevX(void){ return prevX; }
 int Point::getPrevY(void){ return prevY; }
 
 // LIGHTNING CLASS
-Lightning::Lightning(){ //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
-    this->len = 60; //change the grid size in the header
-    this->wid = 30; //if you mess with len and wid
-    this->leeway = 0.23;
-    this->branch = 0.15;
+Lightning::Lightning(int len, int wid, float leeway, float branch) {
+
+    //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
+    this->len = len;
+
+    //change the grid size in the header
+    this->wid = wid;
+
+    this->grid.resize(this->wid);
+    for (int i = 0; i < grid.size(); i++) {
+        this->grid[i].resize(this->len);
+    }
+    
+    //if you mess with len and wid
+    this->leeway = leeway;
+    this->branch = branch;
 }
+
 Lightning::~Lightning(){
 }
 
@@ -136,4 +148,15 @@ void Lightning::traverse(int x, int y){
 
     } // end while loop
 
+}
+
+vector<vector<Point>>& Lightning::getGrid(void) {
+    return grid;
+}
+
+int Lightning::getLen(void) {
+    return len;
+}
+int Lightning::getWid(void) {
+    return wid;
 }
