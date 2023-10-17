@@ -3,13 +3,12 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/includes/**",
-                "${default}"
+                "${workspaceFolder}/includes/**"
             ],
             "intelliSenseMode": "${default}",
-            "compilerPath": "${default}",
             "cStandard": "c17",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe"
         }
     ],
     "version": 4
