@@ -10,18 +10,18 @@
 #define WINDOW_H 1080
 
 vector<sf::Vertex> generateLighting () {
-    Lightning rasho(WINDOW_H, WINDOW_W);
+    Lightning rasho(109, 65);
     rasho.randomize();
     rasho.traverse(0, 0);
     vector<sf::Vertex> thunder;
 
-    for (int i = 0; i < rasho.getHei(); i++) {
-        for (int j = 0; j < rasho.getWid(); j++) {
+    for (int i = rasho.getHei()-1; i >= 0; i--) {
+        for (int j = rasho.getWid()-1; j >= 0; j--) {
             if (rasho.getGrid()[i][j].getIsLight()) {
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*100, i*100));
-                if (thunder.size() % 2 == 0) {
-                    thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*100, i*100));
-                }
+                int i0 = rasho.getGrid()[i][j].getPrevX();
+                int j0 = rasho.getGrid()[i][j].getPrevY();
+                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*25, i*25));
+                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j0*25, i0*25));
             }
         }
     }
