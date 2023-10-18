@@ -10,6 +10,9 @@
 #define WINDOW_H 1080
 
 vector<sf::Vertex> generateLighting () {
+    // thunder.
+    // feel the thunder.
+    // lightning as a thunder.
     Lightning rasho(109, 65);
     rasho.randomize();
     rasho.traverse(0, 0);
@@ -27,6 +30,21 @@ vector<sf::Vertex> generateLighting () {
     }
     return thunder;
 }
+
+// ¡¡¡¡FRACTALES!!!!
+// D = log(N) / log (S) | Fórmula de la dimensión fractal
+// D | Dimensión fractal
+// N | Número de piezas pequeñas final
+//    En sentido estricto, el número de piezas final es el número de líneas o rayos triviales
+//    ... es decir, el número de vértices entre dos.
+// S | Factor escala
+//    >> Tamaño de la pieza padre dividido por el tamaño de la pieza hija
+//    >> Por ejemplo, si la pieza hija tiene la mitad de tamaño, el factor escala es 2
+//    La pieza original es la rama del rayo más extensa
+//      ¡¡¡NO ES LO MISMO QUE LA QUE LLEGA MÁS LEJOS!!!
+//      La rama del rayo puede curvearse, enrollarse, ir en diagonal, etcétera
+//    La pieza hija inmediata sería la segunda rama más extensa
+//    Al tratar con líneas, nuestro factor de escala es la razón de longitudes (mayor sobre menor)
 
 int main()
 {    
