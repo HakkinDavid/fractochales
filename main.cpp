@@ -17,7 +17,7 @@
 vector<sf::Vertex> generateLighting (Lightning rasho = (109, 65)) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
     // thunder.
     // feel the thunder.
-    // lightning and a thunder.
+    // lightning then the thunder.
     rasho.randomize(); // aleatorizar los valores resistivos en el entorno
     rasho.traverse(0, 0); // generar el trazo de luz con coordenada inicial (0, 0)
     vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
@@ -119,6 +119,7 @@ int main()
         }*/
         wstringstream thunder_data;
         thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
+        thunder_data << "Ramas: " << storm.getN() << endl;
         thunder_data << "Fractalidad: " << storm.getFractality() << endl;
         text.setString((wstring) thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
