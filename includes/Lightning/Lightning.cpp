@@ -51,6 +51,9 @@ void Lightning::setLeeway(float l){ this->leeway = l; }
 void Lightning::setBranch(float b){ this->branch = b; }
 float Lightning::getLeeway(void){ return leeway; }
 float Lightning::getBranch(void){ return branch; }
+int Lightning::getLastLightX(void){ return lastLight[0]; }
+int Lightning::getLastLightY(void){ return lastLight[1]; }
+int Lightning::getFractality(void) { return fractality; }
 
 void Lightning::randomize(void){
     srand(time(NULL));
@@ -82,6 +85,8 @@ void Lightning::traverse(int x, int y){
         int key = 0, min = 3, min2 = 3;
 
         grid[x][y].setIsLight(true);
+        lastLight[0] = x;
+        lastLight[1] = y;
 
         // Find the accessible neighbors
         if(x == 0 && y == 0){

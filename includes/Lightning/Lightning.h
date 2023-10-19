@@ -41,7 +41,8 @@ private:
     vector<vector<Point>> grid;
     float leeway;
     float branch;
-
+    int lastLight[2];
+    int fractality = 0.00;
 public:
     Lightning(int hei = 60, int wid = 30, float leeway = 0.28, float branch = 0.12);
     ~Lightning();
@@ -50,9 +51,12 @@ public:
     void setBranch(float);
     float getLeeway(void);
     float getBranch(void);
+    int getLastLightX(void);
+    int getLastLightY(void);
     int getHei(void);
     int getWid(void);
     vector<vector<Point>>& getGrid(void);
+    int getFractality(void);
 
     void randomize(void);
     void show(void);
