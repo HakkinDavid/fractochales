@@ -3,7 +3,6 @@
     autor: David Emmanuel Santana Romero
 */
 #include <iostream>
-#include <conio.h>
 #include <chrono>
 #include <vector>
 #include <iomanip>
