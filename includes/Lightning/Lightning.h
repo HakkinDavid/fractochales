@@ -39,7 +39,7 @@ class Lightning{
 private:
     int hei;
     int wid;
-    vector<vector<Point>> grid;
+    Point ** grid = nullptr;
     float leeway;
     float branch;
     float fractality = 0.00;
@@ -59,7 +59,7 @@ public:
     float getBranch(void);
     int getHei(void);
     int getWid(void);
-    vector<vector<Point>>& getGrid(void);
+    Point** getGrid(void);
     int getN(void);
     float getFractality(void);
 

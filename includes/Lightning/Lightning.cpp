@@ -34,10 +34,10 @@ Lightning::Lightning(int hei, int wid, float leeway, float branch) {
     //change the grid size in the header
     this->wid = wid;
 
-    this->grid.resize(this->hei);
-    for (int i = 0; i < grid.size(); i++) {
-        this->grid[i].resize(this->wid);
-    }
+    this->grid = new Point* [this->hei];
+    for (int i = 0; i < this->hei; i++) {
+		this->grid[i] = new Point[this->wid];
+	}
     
     //if you mess with len and wid
     this->leeway = leeway;
@@ -128,7 +128,7 @@ void Lightning::traverse(int x, int y){
         if(min == 3) {
             // TODO
             // this is not getting executed ...
-            branches.emplace_back(x, y);
+            //branches.emplace_back(x, y);
             return;
         } // End of branch
 
@@ -158,7 +158,7 @@ void Lightning::traverse(int x, int y){
 
 }
 
-vector<vector<Point>>& Lightning::getGrid(void) {
+Point** Lightning::getGrid(void) {
     return grid;
 }
 
