@@ -51,7 +51,7 @@ void Lightning::setLeeway(float l){ this->leeway = l; }
 void Lightning::setBranch(float b){ this->branch = b; }
 float Lightning::getLeeway(void){ return leeway; }
 float Lightning::getBranch(void){ return branch; }
-int Lightning::getFractality(void) { return fractality; }
+float Lightning::getFractality(void) { return fractality; }
 
 void Lightning::randomize(void){
     srand(time(NULL));
@@ -111,7 +111,6 @@ void Lightning::traverse(int x, int y){
                 }
             }
         }
-
 
         // Find the path of least resistance
         for(int i=0; i<key; i++){

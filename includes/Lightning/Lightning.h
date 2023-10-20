@@ -42,7 +42,7 @@ private:
     vector<vector<Point>> grid;
     float leeway;
     float branch;
-    int fractality = 0.00;
+    float fractality = 0.00;
 
     // store the end of a branch
     // ... reverse head if you'd like to call them that
@@ -61,7 +61,7 @@ public:
     int getWid(void);
     vector<vector<Point>>& getGrid(void);
     int getN(void);
-    int getFractality(void);
+    float getFractality(void);
 
     void randomize(void);
     void show(void);
