@@ -30,8 +30,6 @@ Lightning::Lightning(int hei, int wid, float leeway, float branch) {
 
     //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
     this->hei = hei;
-
-    //change the grid size in the header
     this->wid = wid;
 
     this->grid = new Point* [this->hei];
@@ -39,7 +37,6 @@ Lightning::Lightning(int hei, int wid, float leeway, float branch) {
 		this->grid[i] = new Point[this->wid];
 	}
     
-    //if you mess with len and wid
     this->leeway = leeway;
     this->branch = branch;
 }

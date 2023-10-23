@@ -14,19 +14,17 @@
 #define WINDOW_W 1920
 #define WINDOW_H 1080
 
-vector<sf::Vertex> generateLighting (Lightning rasho = (109, 65)) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
-    // thunder.
-    // feel the thunder.
-    // lightning then the thunder.
-    rasho.randomize(); // aleatorizar los valores resistivos en el entorno
-    rasho.traverse(0, 0); // generar el trazo de luz con coordenada inicial (0, 0)
+vector<sf::Vertex> generateLighting (Lightning mcqueen = (109, 65)) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
+    // kachow
+    mcqueen.randomize(); // aleatorizar los valores resistivos en el entorno
+    mcqueen.traverse(0, 0); // generar el trazo de luz con coordenada inicial (0, 0)
     vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
 
-    for (int i = rasho.getHei()-1; i >= 0; i--) {
-        for (int j = rasho.getWid()-1; j >= 0; j--) {
-            if (rasho.getGrid()[i][j].getIsLight()) {
-                int i0 = rasho.getGrid()[i][j].getPrevX();
-                int j0 = rasho.getGrid()[i][j].getPrevY();
+    for (int i = mcqueen.getHei()-1; i >= 0; i--) {
+        for (int j = mcqueen.getWid()-1; j >= 0; j--) {
+            if (mcqueen.getGrid()[i][j].getIsLight()) {
+                int i0 = mcqueen.getGrid()[i][j].getPrevX();
+                int j0 = mcqueen.getGrid()[i][j].getPrevY();
                 thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*25, i*25));
                 thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j0*25, i0*25));
             }
@@ -49,6 +47,25 @@ vector<sf::Vertex> generateLighting (Lightning rasho = (109, 65)) { // objeto li
 //      La rama del rayo puede curvearse, enrollarse, ir en diagonal, etcétera
 //    La pieza hija inmediata sería la segunda rama más extensa
 //    Al tratar con líneas, nuestro factor de escala es la razón de longitudes (mayor sobre menor)
+
+// F r a  c t al e eeEEEes s s - Nota de Mauricio Putricio Alcántar Dueñas
+// He estado pensando en cómo chingados computar la mierda esta y me estoy volviendo chango
+// Hay algunos puntos que quiero tocar:
+//   1. No podemos tomar el factor escala en base a la segunda rama más extensa y luego
+//      tomar el número total de piezas pequeñas como el número de líneas, porque esas dos
+//      mediciones no son consistentes entre sí y nos podrían dar resultados como
+//      que la dimensión fractal de un rayo es 7.62. Which makes no sense.
+//   2. La manera en la que encontraríamos la segunda rama más extensa es algo complicada y
+//      me tomaría mil años explicarlo pero. La manera en la que lo haríamos también implicaría 
+//      encontrar el tamaño de las demás ramas así que En Teoría podríamos hacer el valor más
+//      exacto al tomar un promedio de la extensión de las ramas.
+//   3. Pero eso luego me lleva a lo complicado que es contar las ramas, verificar qué rama es 
+//      en realidad una subrama de otra, tomar las longitudes como la línea más extensa o el total 
+//      de líneas en el subárbol Man I Don't Fuckin Know. 
+// Por ahora el plan sería encontrar las ramas más largas que se desprendan de la rama principal,
+// hacer un promedio de sus longitudes y usar ESO (cantidad de subramas y promedio de longitudes)
+// para calcular la dimensión.
+//      tl;dr this shit sucks man i think i need an int matrix and a 12 pack of beer
 
 int main()
 {    
