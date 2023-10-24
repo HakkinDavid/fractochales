@@ -9,6 +9,16 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "compilerPath": "${default}"
+        },
+        {
+          "name": "macos-clang-x64",
+          "includePath": [
+            "${workspaceFolder}/includes/**"
+          ],
+          "intelliSenseMode": "macos-clang-x64",
+          "cStandard": "${default}",
+          "cppStandard": "${default}",
+          "compilerPath": "/usr/bin/clang"
         }
     ],
     "version": 4

@@ -2,7 +2,7 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "SFML Build",
+            "label": "(Windows) SFML Build",
             "command": "powershell",
             "args": [
                 "-Command \" g++ -c includes/Lightning/Lightning.cpp main.cpp -Iincludes/ -Iincludes/SFML -Iincludes/Lightning -DSFML_STATIC ; g++ Lightning.o main.o -o main icon.res -L\"${workspaceFolder}\\lib\" -lsfml-graphics-s -lsfml-window-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -mwindows \""
@@ -15,9 +15,97 @@
             ],
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
-            "detail": "Tocho Tarea"
+            "detail": "(Windows) SFML Build"
+        },
+        {
+            "type": "cppbuild",
+            "label": "Compile Mac",
+            "command": "x86_64-w64-mingw32-g++",
+            "args": [
+                "-c",
+                "includes/Lightning/Lightning.cpp",
+                "main.cpp",
+                "-Iincludes/",
+                "-Iincludes/SFML",
+                "-Iincludes/Lightning",
+                "-DSFML_STATIC"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "(Mac) Compile"
+        },
+        {
+            "label": "Link Mac",
+            "type": "cppbuild",
+            "detail": "(Mac) Link libraries",
+            "command": "x86_64-w64-mingw32-g++",
+            "args": [
+                "-DSFML_STATIC",
+                "Lightning.o",
+                "main.o",
+                "-o",
+                "main",
+                //"-L\"${workspaceFolder}/lib\"",
+                "\"${workspaceFolder}/lib/libsfml-graphics-s.a\"",
+                "\"${workspaceFolder}/lib/libsfml-window-s.a\"",
+                "\"${workspaceFolder}/lib/libsfml-audio-s.a\"",
+                "\"${workspaceFolder}/lib/libsfml-system-s.a\"",
+                "-lopengl32",
+                "\"${workspaceFolder}/lib/libfreetype.a\"",
+                "-lwinmm",
+                "-lgdi32",
+                "\"${workspaceFolder}/lib/libopenal32.a\"",
+                "\"${workspaceFolder}/lib/libflac.a\"",
+                "\"${workspaceFolder}/lib/libvorbisenc.a\"",
+                "\"${workspaceFolder}/lib/libvorbisfile.a\"",
+                "\"${workspaceFolder}/lib/libvorbis.a\"",
+                "\"${workspaceFolder}/lib/libogg.a\"",
+                "-mwindows"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "(Mac) SFML Build",
+            "command": "echo",
+            "args": [
+                "SEXING"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "dependsOn": [
+                "Compile Mac",
+                "Link Mac"
+            ],
+            "dependsOrder": "sequence",
+            "detail": "(Mac) SFML Build"
         }
     ],
     "version": "2.0.0"
