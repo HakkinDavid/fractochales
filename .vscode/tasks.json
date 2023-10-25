@@ -3,12 +3,36 @@
         {
             "type": "cppbuild",
             "label": "(Windows) SFML Build",
-            "command": "powershell",
+            "command": "g++",
             "args": [
-                "-Command \" g++ -c includes/Lightning/Lightning.cpp main.cpp -Iincludes/ -Iincludes/SFML -Iincludes/Lightning -DSFML_STATIC ; g++ Lightning.o main.o -o main icon.res -L\"${workspaceFolder}\\lib\" -lsfml-graphics-s -lsfml-window-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype -lwinmm -lgdi32 -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -mwindows \""
+                "includes/Lightning/Lightning.cpp",
+                "main.cpp",
+                "-Iincludes/",
+                "-Iincludes/SFML",
+                "-Iincludes/Lightning",
+                "icon.res",
+                "-o",
+                "${workspaceFolder}\\main.exe",
+                "-DSFML_STATIC",
+                "-L\"${workspaceFolder}\\lib\"",
+                "-lsfml-graphics-s",
+                "-lsfml-window-s",
+                "-lsfml-audio-s",
+                "-lsfml-system-s",
+                "-lopengl32",
+                "-lfreetype",
+                "-lwinmm",
+                "-lgdi32",
+                "-lopenal32",
+                "-lflac",
+                "-lvorbisenc",
+                "-lvorbisfile",
+                "-lvorbis",
+                "-logg",
+                "-mwindows"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
@@ -29,7 +53,7 @@
                 "-std=c++11",
                 "-stdlib=libc++",
                 "-o",
-                "main",
+                "${workspaceFolder}/main",
                 "includes/Lightning/Lightning.cpp",
                 "main.cpp",
                 "-Iincludes/",
@@ -48,7 +72,7 @@
                 "sfml-system"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
