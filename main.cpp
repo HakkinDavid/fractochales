@@ -1,6 +1,6 @@
 /*
     nombre: Interfaz del proyecto e implementación del ejecutable final
-    autor: David Emmanuel Santana Romero
+    autores: David Emmanuel Santana Romero & Mauricio Alcántar Dueñas
 */
 #include <iostream>
 #include <chrono>
@@ -118,6 +118,7 @@ int main()
     {
         auto exec_time = std::chrono::system_clock::now();
         sf::Event event;
+        
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
@@ -144,7 +145,7 @@ int main()
         text.setString((wstring) thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
         window.draw(text);
-        if (thunder.at(0).position.y >= WINDOW_H*40/100) {
+        if (thunder.at(0).position.y >= WINDOW_H*30/100) {
             switch (1 + sfx_i % 3) {
                 case 1:
                     sfx_i++;
@@ -165,5 +166,6 @@ int main()
         window.display();
         start_time = std::chrono::system_clock::now();
     }
+
     return 0;
 }
