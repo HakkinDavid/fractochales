@@ -48,7 +48,7 @@ private:
     // ... reverse head if you'd like to call them that
     // size of vector determines number of branches
     // also allows us to later determine branch size
-    vector<pair<int, int>> branches;
+    vector<tuple<int, int>> branches;
 public:
     Lightning(int hei = 60, int wid = 30, float leeway = 0.28, float branch = 0.12);
     ~Lightning();

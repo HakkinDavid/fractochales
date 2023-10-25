@@ -68,9 +68,11 @@ vector<sf::Vertex> generateLighting (Lightning mcqueen = (109, 65)) { // objeto 
 //      tl;dr this shit sucks man i think i need an int matrix and a 12 pack of beer
 
 int main()
-{    
-    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Fractochales", sf::Style::Default);
+{   
     sf::Image icon;
+    icon.loadFromFile("images/fractochales.png");
+
+    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Fractochales", sf::Style::Default);
     if (icon.loadFromFile("images/fractochales.png")) {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }

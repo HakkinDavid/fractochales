@@ -123,14 +123,13 @@ void Lightning::traverse(int x, int y){
             }
         }
         if(min == 3) {
-            // TODO
-            // this is not getting executed ...
-            //branches.emplace_back(x, y);
+            auto ending = make_tuple(x, y);
+            branches.push_back(ending);
             return;
         } // End of branch
 
         // Check for branching opportunities
-        for(int i=0; i<3; i++){
+        for(int i=0; i<key; i++){
             if(i != min && neighborVal[i] >= neighborVal[min]-branch){
                 if(min2 == 3 || neighborVal[i] > neighborVal[min2]){ min2 = i; }
             }
