@@ -4,6 +4,7 @@
 // Versión 1.0
 
 #include <iostream>
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <tuple>
@@ -42,7 +43,6 @@ private:
     Point ** grid = nullptr;
     float leeway;
     float branch;
-    float fractality = 0.00;
 
     // store the end of a branch
     // ... reverse head if you'd like to call them that
@@ -61,12 +61,13 @@ public:
     int getWid(void);
     Point** getGrid(void);
     int getN(void);
-    float getFractality(void);
 
     void randomize(void);
     void show(void);
 
     void traverse(int, int);
+    
+    float fractalComp(void);
 };
 
 #endif

@@ -25,8 +25,8 @@ vector<sf::Vertex> generateLighting (Lightning mcqueen = (109, 65)) { // objeto 
             if (mcqueen.getGrid()[i][j].getIsLight()) {
                 int i0 = mcqueen.getGrid()[i][j].getPrevX();
                 int j0 = mcqueen.getGrid()[i][j].getPrevY();
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*25, i*25));
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j0*25, i0*25));
+                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*15, i*15 + 1));
+                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j0*15, i0*15 + 1));
             }
         }
     }
@@ -140,7 +140,7 @@ int main()
         wstringstream thunder_data;
         thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Fractalidad: " << storm.getFractality() << endl;
+        thunder_data << "Fractalidad: " << endl;
         text.setString((wstring) thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
         window.draw(text);

@@ -48,7 +48,10 @@ void Lightning::setLeeway(float l){ this->leeway = l; }
 void Lightning::setBranch(float b){ this->branch = b; }
 float Lightning::getLeeway(void){ return leeway; }
 float Lightning::getBranch(void){ return branch; }
-float Lightning::getFractality(void) { return fractality; }
+int Lightning::getHei(void){ return hei; }
+int Lightning::getWid(void){ return wid; }
+Point** Lightning::getGrid(void){ return grid; }
+int Lightning::getN(void){ return branches.size(); }
 
 void Lightning::randomize(void){
     srand(time(NULL));
@@ -154,18 +157,72 @@ void Lightning::traverse(int x, int y){
 
 }
 
-Point** Lightning::getGrid(void) {
-    return grid;
-}
+float Lightning::fractalComp(void){
+    float avgLen = 0, frac = 0, S = 2;
+    int mainLen = 0, dex = 0, N = 2;
+    tuple<int, int> mainB = make_tuple(0, 0);
+    vector<int> branLens;
 
-int Lightning::getHei(void) {
-    return hei;
-}
-int Lightning::getWid(void) {
-    return wid;
-}
+    int ** fractalGrid = new int* [hei];
+    for(int i=0; i < hei; i++){
+		fractalGrid[i] = new int[wid];
+        for(int j=0; j < wid; j++){ fractalGrid[i][j] = 0; }
+	}
 
-int Lightning::getN(void)
-{
-    return branches.size();
+    for(int i=0; i < branches.size(); i++){
+        int currX = get<0>(branches[i]);
+        int currY = get<1>(branches[i]);
+        int currLen = 0, antX = 0, antY = 0;
+        while(currX != 0 || currY != 0){
+            antX = grid[currX][currY].getPrevX();
+            antY = grid[currX][currY].getPrevY();
+            currX = antX; currY = antY;
+            currLen++;
+        }
+        if(currLen > mainLen){ 
+            mainLen = currLen;
+            mainB = branches[i];
+            dex = i;
+        }
+    }
+
+    branches[dex] = make_tuple(0, 0);
+    int currX = get<0>(mainB);
+    int currY = get<1>(mainB);
+    int antX = 0, antY = 0;
+    fractalGrid[currX][currY] = -1;
+    while(currX != 0 || currY != 0){
+        antX = grid[currX][currY].getPrevX();
+        antY = grid[currX][currY].getPrevY();
+        currX = antX; currY = antY;
+        fractalGrid[currX][currY] = -1;
+    }
+
+    for(int i=0; i < branches.size(); i++){
+        currX = get<0>(branches[i]);
+        currY = get<1>(branches[i]);
+        int currLen = 0;
+        antX = 0; antY = 0;
+        while(fractalGrid[currX][currY] > -1){
+            fractalGrid[currX][currY] = currLen++;
+            antX = grid[currX][currY].getPrevX();
+            antY = grid[currX][currY].getPrevY();
+            currX = antX; currY = antY;
+            if(fractalGrid[currX][currY] >= currLen){ break; }
+            if(fractalGrid[currX][currY] < 0){ 
+                fractalGrid[currX][currY] -= 1;
+                branLens.push_back(currLen);
+            }
+        }
+    }
+    for(int i=0; i < branLens.size(); i++){ avgLen += branLens[i]; }
+    if(branLens.size() != 0){ avgLen /= (float)branLens.size(); }
+
+    if(branLens.size() > 1){ N = branLens.size(); }
+    if(avgLen != 0){ 
+        if((mainLen/avgLen) > 1){ S = mainLen/avgLen; }
+    }
+    //frac = getFractality(N, S);
+    frac = log(N)/log(S);
+    return frac;
 }
