@@ -2,3 +2,8 @@
 *.o
 makefile
 .dll
+main
+*.DS_Store
+lib
+*.a
+*.cmake
