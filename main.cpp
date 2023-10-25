@@ -14,7 +14,7 @@
 #define WINDOW_W 1920
 #define WINDOW_H 1080
 
-vector<sf::Vertex> generateLighting (Lightning mcqueen = (109, 65)) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
+vector<sf::Vertex> generateLighting (Lightning& mcqueen) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
     // kachow
     mcqueen.randomize(); // aleatorizar los valores resistivos en el entorno
     mcqueen.traverse(0, 0); // generar el trazo de luz con coordenada inicial (0, 0)
@@ -141,7 +141,7 @@ int main()
         wstringstream thunder_data;
         thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Fractalidad: " << endl;
+        thunder_data << "Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
         text.setString((wstring) thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
         window.draw(text);
