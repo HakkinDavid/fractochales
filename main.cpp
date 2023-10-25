@@ -14,7 +14,7 @@
 #define WINDOW_W 1920
 #define WINDOW_H 1080
 
-vector<sf::Vertex> generateLighting (Lightning mcqueen = (109, 65)) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
+vector<sf::Vertex> generateLighting (Lightning& mcqueen) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
     // kachow
     mcqueen.randomize(); // aleatorizar los valores resistivos en el entorno
     mcqueen.traverse(0, 0); // generar el trazo de luz con coordenada inicial (0, 0)
