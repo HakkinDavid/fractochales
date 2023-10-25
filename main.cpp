@@ -69,11 +69,12 @@ vector<sf::Vertex> generateLighting (Lightning mcqueen = (109, 65)) { // objeto 
 
 int main()
 {    
-    sf::Image icon;
-    icon.loadFromFile("images/fractochales.png");
-
     sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Fractochales", sf::Style::Default);
-    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+    sf::Image icon;
+    if (icon.loadFromFile("images/fractochales.png")) {
+        window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+    }
+
 
     sf::Texture background;
     background.loadFromFile("images/city.png");
