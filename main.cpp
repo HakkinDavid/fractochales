@@ -1,6 +1,6 @@
 /*
     nombre: Interfaz del proyecto e implementación del ejecutable final
-    autores: David Emmanuel Santana Romero & Mauricio Alcántar Dueñas
+    autores: David Emmanuel Santana Romero y Mauricio Alcántar Dueñas
 */
 #include <iostream>
 #include <chrono>
