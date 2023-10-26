@@ -94,11 +94,21 @@ void Lightning::traverse(int x, int y){
             if(y+difY >= 0 && y+difY < wid){ 
                 neighbors[key++] = make_tuple(x, y+difY); 
                 if(difX == 0){ 
-                    if(x+1 < hei){ neighbors[key++] = make_tuple(x+1, y+difY); }
-                    if(x-1 >= 0){ neighbors[key++] = make_tuple(x-1, y+difY); }
+                    if(x+1 < hei){ 
+                        if(!grid[x+1][y].getIsLight() || !grid[x][y+difY].getIsLight()){
+                            neighbors[key++] = make_tuple(x+1, y+difY); 
+                        }
+                    }
+                    if(x-1 >= 0){ 
+                        if(!grid[x-1][y].getIsLight() || !grid[x][y+difY].getIsLight()){
+                            neighbors[key++] = make_tuple(x-1, y+difY); 
+                        }
+                    }
                 }
                 else if(x+difX >= 0 && x+difX < hei){
-                    neighbors[key++] = make_tuple(x+difX, y+difY); 
+                    if(!grid[x+difX][y].getIsLight() || !grid[x][y+difY].getIsLight()){
+                        neighbors[key++] = make_tuple(x+difX, y+difY); 
+                    }
                 }
             }
         }
@@ -106,8 +116,16 @@ void Lightning::traverse(int x, int y){
             if(x+difX >= 0 && x+difX < hei){ 
                 neighbors[key++] = make_tuple(x+difX, y); 
                 if(difY == 0){ 
-                    if(y+1 < wid){ neighbors[key++] = make_tuple(x+difX, y+1); }
-                    if(y-1 >= 0){ neighbors[key++] = make_tuple(x+difX, y-1); }
+                    if(y+1 < wid){ 
+                        if(!grid[x+difX][y].getIsLight() || !grid[x][y+1].getIsLight()){
+                            neighbors[key++] = make_tuple(x+difX, y+1); 
+                        }
+                    }
+                    if(y-1 >= 0){ 
+                        if(!grid[x+difX][y].getIsLight() || !grid[x][y-1].getIsLight()){
+                            neighbors[key++] = make_tuple(x+difX, y-1); 
+                        }
+                    }
                 }
             }
         }
@@ -163,12 +181,14 @@ float Lightning::fractalComp(void){
     tuple<int, int> mainB = make_tuple(0, 0);
     vector<int> branLens;
 
+    // Auxiliary int grid
     int ** fractalGrid = new int* [hei];
     for(int i=0; i < hei; i++){
 		fractalGrid[i] = new int[wid];
         for(int j=0; j < wid; j++){ fractalGrid[i][j] = 0; }
 	}
 
+    // Find main branch and main branch length
     for(int i=0; i < branches.size(); i++){
         int currX = get<0>(branches[i]);
         int currY = get<1>(branches[i]);
@@ -186,6 +206,7 @@ float Lightning::fractalComp(void){
         }
     }
 
+    // Trace the main branch path in fractalGrid
     branches[dex] = make_tuple(0, 0);
     int currX = get<0>(mainB);
     int currY = get<1>(mainB);
@@ -198,6 +219,7 @@ float Lightning::fractalComp(void){
         fractalGrid[currX][currY] = -1;
     }
 
+    // Find secondary branches and calculate average length
     for(int i=0; i < branches.size(); i++){
         currX = get<0>(branches[i]);
         currY = get<1>(branches[i]);
@@ -216,11 +238,12 @@ float Lightning::fractalComp(void){
         }
     }
     for(int i=0; i < branLens.size(); i++){ avgLen += branLens[i]; }
-    if(branLens.size() != 0){ avgLen /= (float)branLens.size(); }
+    if(branLens.size() != 0){ avgLen /= (float)branLens.size(); } // Dont divide by zero
 
+    // Set values of N and S
     if(branLens.size() > 1){ N = branLens.size(); }
     if(avgLen != 0){ 
-        if((mainLen/avgLen) > 1){ S = mainLen/avgLen; }
+        if((mainLen/avgLen) > 1){ S = mainLen/avgLen; } // Never divide by zero
     }
     //frac = getFractality(N, S);
     frac = log(N)/log(S);
