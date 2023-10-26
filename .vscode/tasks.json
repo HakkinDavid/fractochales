@@ -69,7 +69,21 @@
                 "-framework",
                 "sfml-window",
                 "-framework",
-                "sfml-system"
+                "sfml-system",
+                "-framework",
+                "FLAC",
+                "-framework",
+                "freetype",
+                "-framework",
+                "ogg",
+                "-framework",
+                "OpenAL",
+                "-framework",
+                "vorbis",
+                "-framework",
+                "vorbisenc",
+                "-framework",
+                "vorbisfile"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
