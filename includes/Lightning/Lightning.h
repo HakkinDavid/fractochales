@@ -45,9 +45,6 @@ private:
     float branch;
 
     // store the end of a branch
-    // ... reverse head if you'd like to call them that
-    // size of vector determines number of branches
-    // also allows us to later determine branch size
     vector<tuple<int, int>> branches;
 public:
     Lightning(int hei = 60, int wid = 30, float leeway = 0.28, float branch = 0.12);
@@ -66,6 +63,7 @@ public:
     void show(void);
 
     void traverse(int, int);
+    void superTraverse(void);
     
     float fractalComp(void);
 };

@@ -58,7 +58,7 @@ void Lightning::randomize(void){
     float randy = 0;
     for (int i=0; i<hei; i++) {
         for (int j=0; j<wid; j++) {
-            randy = (rand()%(101-(10*i/wid)))/(float)100;
+            randy = (rand()%101)/(float)100;
             grid[i][j].setPotential(randy);
         }
     }
@@ -85,11 +85,6 @@ void Lightning::traverse(int x, int y){
         grid[x][y].setIsLight(true);
 
         // Find the accessible neighbors
-        if(x == 0 && y == 0){
-            neighbors[key++] = make_tuple(0, 1); 
-            neighbors[key++] = make_tuple(1, 0); 
-            neighbors[key++] = make_tuple(1, 1); 
-        }
         if(difY != 0){
             if(y+difY >= 0 && y+difY < wid){ 
                 neighbors[key++] = make_tuple(x, y+difY); 
@@ -175,6 +170,64 @@ void Lightning::traverse(int x, int y){
 
 }
 
+void Lightning::superTraverse(){
+    tuple<int,int> origins[3];
+    float originVal[3] = {0};
+    int min = 3, x = 0, y = 0; 
+
+    grid[0][0].setIsLight(true);
+    origins[0] = make_tuple(0, 1);
+    origins[1] = make_tuple(1, 0);
+    origins[2] = make_tuple(1, 1);
+    for(int i=0; i < 3; i++){
+        originVal[i] = grid[0][0].getPotential() + leeway;
+        originVal[i] -= grid[get<0>(origins[i])][get<1>(origins[i])].getPotential();
+        if(min == 3 || originVal[i] > originVal[min]){ min = i; }
+    }
+    x = get<0>(origins[min]);
+    y = get<1>(origins[min]);
+
+    do{
+        traverse(x, y);
+
+        x = -1; y = -1;
+        for(int i = hei-1; i >= 0; i--){
+            for(int j = wid-1; j >=0; j--){
+                if(grid[i][j].getIsLight()){ 
+                    x = i;
+                    y = j;
+                    break;
+                }
+            }
+            if(x != -1){ break; }
+        }
+
+        if(x < hei/2){
+            int dex = branches.size();
+            for(int i=0; i < branches.size(); i++){
+                if(get<0>(branches[i]) == x && get<1>(branches[i]) == y){ dex = i; }
+            }
+            if(dex != branches.size()){
+                branches[dex].swap(branches.back());
+                branches.pop_back();
+            }
+            int difY = y - grid[x][y].getPrevY();
+            if(y+difY >=0 && y+difY < wid){
+                grid[x+1][y+difY].setPrevX(x);
+                grid[x+1][y+difY].setPrevY(y);
+                y += difY;
+            }
+            else{
+                grid[x+1][y].setPrevX(x);
+                grid[x+1][y].setPrevY(y);
+            }
+            x += 1;
+            grid[x][y].setIsLight(true);
+        }
+    } while(x < hei/2);
+
+}
+
 float Lightning::fractalComp(void){
     float avgLen = 0, frac = 0, S = 2;
     int mainLen = 0, dex = 0, N = 2;
@@ -207,7 +260,8 @@ float Lightning::fractalComp(void){
     }
 
     // Trace the main branch path in fractalGrid
-    branches[dex] = make_tuple(0, 0);
+    branches[dex].swap(branches.back());
+    branches.pop_back();
     int currX = get<0>(mainB);
     int currY = get<1>(mainB);
     int antX = 0, antY = 0;

@@ -18,7 +18,7 @@
 vector<sf::Vertex> generateLighting (Lightning& mcqueen) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
     // kachow
     mcqueen.randomize(); // aleatorizar los valores resistivos en el entorno
-    mcqueen.traverse(0, 0); // generar el trazo de luz con coordenada inicial (0, 0)
+    mcqueen.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
     vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
 
     for (int i = mcqueen.getHei()-1; i >= 0; i--) {
@@ -126,7 +126,7 @@ int main(){
 
     text.setFillColor(sf::Color::White);
     timeSliderTitle.setFillColor(sf::Color::White);
-    timeSliderHandleT.setFillColor(sf::Color::Black);
+    timeSliderHandleT.setFillColor(sf::Color::White);
 
     text.setStyle(sf::Text::Bold);
     timeSliderTitle.setStyle(sf::Text::Bold);
@@ -147,10 +147,6 @@ int main(){
         {
             if (event.type == sf::Event::Closed)
                 window.close();
-        }
-
-        if (std::chrono::duration_cast<std::chrono::seconds>(exec_time - start_time).count() < 1) {
-            continue;
         }
 
         // Time Slider handling; si el usuario esta clickeando izq.
@@ -195,15 +191,16 @@ int main(){
             thP << timeSliderPercentage;
             timeSliderHandleT.setString(thP.str() + "%");
         }
+
+        if (std::chrono::duration_cast<std::chrono::seconds>(exec_time - start_time).count() < 5) {
+            continue;
+        }
+
         window.clear(sf::Color(6, 0, 64));
         window.draw(s_bg);
         Lightning storm (109, 65);
         vector<sf::Vertex> thunder = generateLighting(storm);
-        // INEFFICIENT WAY TO PREVENT SHORT LIGHTNINGS.
-        // IT FREEZES THE PROGRAM A GOOD BIT
-        /*while (thunder.at(0).position.y <= 200) {
-            thunder = generateLighting(storm);
-        }*/
+
         wstringstream thunder_data;
         thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
