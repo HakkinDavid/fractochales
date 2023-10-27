@@ -1,8 +1,9 @@
 /*
     nombre: Interfaz del proyecto e implementación del ejecutable final
-    autores: David Emmanuel Santana Romero y Mauricio Alcántar Dueñas
+    autores: David Emmanuel Santana Romero, Mauricio Alcántar Dueñas y Diego Emilio Casta Valle
 */
 #include <iostream>
+#include <string>
 #include <chrono>
 #include <vector>
 #include <iomanip>
@@ -67,8 +68,7 @@ vector<sf::Vertex> generateLighting (Lightning& mcqueen) { // objeto lightning p
 // para calcular la dimensión.
 //      tl;dr this shit sucks man i think i need an int matrix and a 12 pack of beer
 
-int main()
-{   
+int main(){
     sf::Image icon;
     icon.loadFromFile("images/fractochales.png");
 
@@ -77,6 +77,15 @@ int main()
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
 
+    // TIME slider
+    sf::RectangleShape timeSlider(sf::Vector2f(250,15));
+    timeSlider.setPosition(window.getSize().x * 0.04f, window.getSize().y * 0.8f);
+    timeSlider.setFillColor(sf::Color::White);
+
+    // TIME slider handle
+    sf::RectangleShape timeSliderHandle(sf::Vector2f(20,25));
+    timeSliderHandle.setPosition(timeSlider.getSize().x/1.5,timeSlider.getPosition().y-2);
+    timeSliderHandle.setFillColor(sf::Color::Black);
 
     sf::Texture background;
     background.loadFromFile("images/city.png");
@@ -103,16 +112,31 @@ int main()
     font.loadFromFile("fonts/ComicSansMS3.ttf");
 
     sf::Text text;
+    sf::Text timeSliderTitle; // Position is dependent on the Time Slider's position
+    sf::Text timeSliderHandleT; // Slides with the slider; says what % it is at
 
     text.setFont(font);
+    timeSliderTitle.setFont(font);
+    timeSliderTitle.setString("Silence Between Two Strikes");
+    timeSliderHandleT.setFont(font);
 
     text.setCharacterSize(24);
+    timeSliderTitle.setCharacterSize(18);
+    timeSliderHandleT.setCharacterSize(12);
 
     text.setFillColor(sf::Color::White);
+    timeSliderTitle.setFillColor(sf::Color::White);
+    timeSliderHandleT.setFillColor(sf::Color::Black);
 
     text.setStyle(sf::Text::Bold);
+    timeSliderTitle.setStyle(sf::Text::Bold);
+
+    timeSliderTitle.setPosition(timeSlider.getPosition().x/2+35,timeSlider.getPosition().y - (timeSliderTitle.getCharacterSize()*2));
+    timeSliderHandleT.setPosition(timeSliderHandle.getPosition().x-2,timeSlider.getPosition().y + (timeSliderHandleT.getCharacterSize()*2.15));
 
     auto start_time = std::chrono::system_clock::from_time_t((time_t) 0);
+
+    bool isDragging=false; // Determines whether the user is dragging a slider handle or not
 
     while (window.isOpen())
     {
@@ -129,6 +153,48 @@ int main()
             continue;
         }
 
+        // Time Slider handling; si el usuario esta clickeando izq.
+        if(event.type == sf::Event::MouseButtonPressed){
+            if(event.mouseButton.button == sf::Mouse::Left){
+                sf::Vector2i mousePos=sf::Mouse::getPosition(window);
+                sf::FloatRect timeBounds = timeSliderHandle.getGlobalBounds(); // ghost rectangle...
+                if(timeBounds.contains(static_cast<sf::Vector2f>(mousePos))){ // Si el click izq. esta dentro del slider handle
+                    isDragging=true;
+                }
+            }
+            
+        }
+        // Si el usuario deja de mantener click izq.
+        else if(event.type == sf::Event::MouseButtonReleased){
+            if(event.mouseButton.button == sf::Mouse::Left){
+                isDragging=false;
+            }
+        }
+        //Si el usuario esta holding click izq.
+        if(isDragging){
+            sf::Vector2i mousePos=sf::Mouse::getPosition(window);
+            // If out of bounds (below 0; left overboard)
+            if(mousePos.x < timeSlider.getPosition().x){
+                timeSliderHandle.setPosition(timeSlider.getPosition().x,timeSliderHandle.getPosition().y);
+            }
+            // If out of bounds (above 100; right overboard)
+            else if (mousePos.x > timeSlider.getPosition().x + timeSlider.getSize().x - timeSliderHandle.getSize().x){
+                timeSliderHandle.setPosition(timeSlider.getPosition().x + timeSlider.getSize().x - timeSliderHandle.getSize().x, timeSliderHandle.getPosition().y);
+            }
+            // Inside (No esta Afuera)
+            else{
+                timeSliderHandle.setPosition(mousePos.x - timeSliderHandle.getSize().x/2, timeSliderHandle.getPosition().y);
+            }
+        }
+        float timeSliderPercentage= ((timeSliderHandle.getPosition().x - timeSlider.getPosition().x)/timeSlider.getSize().x)*100.0f;
+        if(timeSliderPercentage>=92){
+            timeSliderHandleT.setString("100%"); // Due to the position of the Handle, sometimes this may not display 100% (When it is)
+        }
+        else{
+            stringstream thP;
+            thP << timeSliderPercentage;
+            timeSliderHandleT.setString(thP.str() + "%");
+        }
         window.clear(sf::Color(6, 0, 64));
         window.draw(s_bg);
         Lightning storm (109, 65);
@@ -144,7 +210,11 @@ int main()
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
         text.setString((wstring) thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
+        window.draw(timeSlider);
+        window.draw(timeSliderHandle);
         window.draw(text);
+        window.draw(timeSliderTitle);
+        window.draw(timeSliderHandleT);
         if (thunder.at(0).position.y >= WINDOW_H*30/100) {
             switch (1 + sfx_i % 3) {
                 case 1:
@@ -166,6 +236,5 @@ int main()
         window.display();
         start_time = std::chrono::system_clock::now();
     }
-
     return 0;
 }
