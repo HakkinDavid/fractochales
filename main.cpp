@@ -87,6 +87,11 @@ int main(){
     timeSliderHandle.setPosition(timeSlider.getSize().x/1.5,timeSlider.getPosition().y-2);
     timeSliderHandle.setFillColor(sf::Color::Black);
 
+    // BUTTON TIME.
+    sf::RectangleShape lightButt(sf::Vector2f(100,50));
+    lightButt.setPosition(window.getSize().x*0.4f,window.getSize().y*0.85f);
+    lightButt.setFillColor(sf::Color(47,45,194,255));
+
     sf::Texture background;
     background.loadFromFile("images/city.png");
     sf::Sprite s_bg(background);
@@ -114,29 +119,37 @@ int main(){
     sf::Text text;
     sf::Text timeSliderTitle; // Position is dependent on the Time Slider's position
     sf::Text timeSliderHandleT; // Slides with the slider; says what % it is at
+    sf::Text lightButtText; // PRESS TO GENERATE LIGHTNING
 
     text.setFont(font);
     timeSliderTitle.setFont(font);
     timeSliderTitle.setString("Silence Between Two Strikes");
     timeSliderHandleT.setFont(font);
+    lightButtText.setFont(font);
+    lightButtText.setString("ZAP!!!");
 
     text.setCharacterSize(24);
     timeSliderTitle.setCharacterSize(18);
     timeSliderHandleT.setCharacterSize(12);
+    lightButtText.setCharacterSize(20);
 
     text.setFillColor(sf::Color::White);
     timeSliderTitle.setFillColor(sf::Color::White);
     timeSliderHandleT.setFillColor(sf::Color::White);
+    lightButtText.setFillColor(sf::Color(230,230,230,255));
 
     text.setStyle(sf::Text::Bold);
     timeSliderTitle.setStyle(sf::Text::Bold);
+    lightButtText.setStyle(sf::Text::Bold);
 
     timeSliderTitle.setPosition(timeSlider.getPosition().x/2+35,timeSlider.getPosition().y - (timeSliderTitle.getCharacterSize()*2));
     timeSliderHandleT.setPosition(timeSliderHandle.getPosition().x-2,timeSlider.getPosition().y + (timeSliderHandleT.getCharacterSize()*2.15));
+    lightButtText.setPosition(lightButt.getPosition().x+20,lightButt.getPosition().y+16);
 
     auto start_time = std::chrono::system_clock::from_time_t((time_t) 0);
 
     bool isDragging=false; // Determines whether the user is dragging a slider handle or not
+    bool isClicking=false; // Determines stuff for buttons
 
     while (window.isOpen())
     {
@@ -192,10 +205,27 @@ int main(){
             timeSliderHandleT.setString(thP.str() + "%");
         }
 
-        if (std::chrono::duration_cast<std::chrono::seconds>(exec_time - start_time).count() < 5) {
-            continue;
+        // Clicking Button Zap
+        if(event.type == sf::Event::MouseButtonPressed){
+            if(event.mouseButton.button == sf::Mouse::Left){
+                sf::Vector2i mousePos=sf::Mouse::getPosition(window);
+                sf::FloatRect buttBounds = lightButt.getGlobalBounds(); // ghost rectangle...
+                if(buttBounds.contains(static_cast<sf::Vector2f>(mousePos))){ // Si el click izq. esta dentro del slider handle
+                    isClicking=true;
+                }
+            }
         }
-
+            // makes the button light up when clicking it
+            if(isClicking==true){
+                lightButt.setFillColor(sf::Color(67,65,224,255));
+            }
+            // this should make it un-light up but buggy (?)
+        else if(event.type == sf::Event::MouseButtonReleased){
+            if(event.mouseButton.button == sf::Mouse::Left){
+                isClicking=false;
+            }
+        }
+            
         window.clear(sf::Color(6, 0, 64));
         window.draw(s_bg);
         Lightning storm (109, 65);
@@ -212,6 +242,8 @@ int main(){
         window.draw(text);
         window.draw(timeSliderTitle);
         window.draw(timeSliderHandleT);
+        window.draw(lightButt);
+        window.draw(lightButtText);
         if (thunder.at(0).position.y >= WINDOW_H*30/100) {
             switch (1 + sfx_i % 3) {
                 case 1:
