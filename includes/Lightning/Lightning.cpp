@@ -176,7 +176,9 @@ void Lightning::superTraverse(){
     int min = 3, x = 0, y = 0;
     int middle = wid/2;
 
+    // Start of lightning at top center of screen
     grid[0][middle].setIsLight(true);
+    grid[0][middle].setPrevY(middle);
     origins[0] = make_tuple(1, middle-1);
     origins[1] = make_tuple(1, middle);
     origins[2] = make_tuple(1, middle+1);
@@ -189,22 +191,26 @@ void Lightning::superTraverse(){
     y = get<1>(origins[min]);
     grid[x][y].setPrevY(middle);
 
+    // Traversing loop
     do{
         traverse(x, y);
 
+        // Find lowest and closest to center lightning point
         x = -1; y = -1;
         for(int i = hei-1; i >= 0; i--){
             for(int j = wid-1; j >=0; j--){
                 if(grid[i][j].getIsLight()){ 
                     x = i; 
-                    y = j;
-                    break;
+                    if((abs(j-middle)) < (abs(y-middle))){ y = j; }
+                    else{ break; }
                 }
             }
             if(x != -1){ break; }
         }
 
+        // Lowest point isn't low enough
         if(x < hei/2){
+            // If lowest point is a branch ending, delete branch
             int dex = branches.size();
             for(int i=0; i < branches.size(); i++){
                 if(get<0>(branches[i]) == x && get<1>(branches[i]) == y){ dex = i; }
@@ -213,6 +219,7 @@ void Lightning::superTraverse(){
                 branches[dex].swap(branches.back());
                 branches.pop_back();
             }
+            // Force to continue going down
             int difY = y - grid[x][y].getPrevY();
             if(y+difY >=0 && y+difY < wid){
                 grid[x+1][y+difY].setPrevX(x);
@@ -226,7 +233,7 @@ void Lightning::superTraverse(){
             x += 1;
             grid[x][y].setIsLight(true);
         }
-    } while(x < hei/2);
+    } while(x < hei/2); // Loop if not low enough
 
 }
 
@@ -248,7 +255,7 @@ float Lightning::fractalComp(void){
         int currX = get<0>(branches[i]);
         int currY = get<1>(branches[i]);
         int currLen = 0, antX = 0, antY = 0;
-        while(currX != 0 || currY != 0){
+        while(currX != 0 || currY != wid/2){
             antX = grid[currX][currY].getPrevX();
             antY = grid[currX][currY].getPrevY();
             currX = antX; currY = antY;
@@ -268,7 +275,7 @@ float Lightning::fractalComp(void){
     int currY = get<1>(mainB);
     int antX = 0, antY = 0;
     fractalGrid[currX][currY] = -1;
-    while(currX != 0 || currY != 0){
+    while(currX != 0 || currY != wid/2){
         antX = grid[currX][currY].getPrevX();
         antY = grid[currX][currY].getPrevY();
         currX = antX; currY = antY;

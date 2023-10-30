@@ -47,7 +47,7 @@ private:
     // store the end of a branch
     vector<tuple<int, int>> branches;
 public:
-    Lightning(int hei = 181, int wid = 257, float leeway = 0.28, float branch = 0.12);
+    Lightning(int hei = 181, int wid = 257, float leeway = 0.24, float branch = 0.12);
     ~Lightning();
 
     void setLeeway(float);
