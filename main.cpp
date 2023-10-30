@@ -95,6 +95,7 @@ int main(){
     sf::Texture background;
     background.loadFromFile("images/city.png");
     sf::Sprite s_bg(background);
+    window.draw(s_bg);
 
     sf::SoundBuffer buffer1;
     buffer1.loadFromFile("sfx/thunder1.wav");
@@ -127,7 +128,7 @@ int main(){
     timeSliderTitle.setString("currently obsolete slider");
     timeSliderHandleT.setFont(font);
     lightButtText.setFont(font);
-    lightButtText.setString("ZAP!!!");
+    lightButtText.setString("Strike");
 
     // Setting the character size
     text.setCharacterSize(24);
@@ -149,7 +150,7 @@ int main(){
     // Placing them on specific locations in the window (X,Y)
     timeSliderTitle.setPosition(timeSlider.getPosition().x/2+35,timeSlider.getPosition().y - (timeSliderTitle.getCharacterSize()*2));
     timeSliderHandleT.setPosition(timeSliderHandle.getPosition().x-2,timeSlider.getPosition().y + (timeSliderHandleT.getCharacterSize()*2.15));
-    lightButtText.setPosition(lightButt.getPosition().x+20,lightButt.getPosition().y+16);
+    lightButtText.setPosition(lightButt.getPosition().x+17.5,lightButt.getPosition().y+16);
 
     // Idk what this does tbh
     auto start_time = std::chrono::system_clock::from_time_t((time_t) 0);
@@ -157,10 +158,16 @@ int main(){
     bool isDragging=false; // Determines whether the user is dragging a slider handle or not
     bool isClicking=false; // Determines stuff for buttons
 
+    window.draw(lightButt);
+    window.draw(lightButtText);
+    window.draw(timeSlider);
+    window.draw(timeSliderHandle);
+    window.draw(timeSliderTitle);
+    window.draw(timeSliderHandleT);
+
     // Open Window Cycle (Program = running)
     while (window.isOpen())
     {
-        auto exec_time = std::chrono::system_clock::now();
         sf::Event event;
         
         while (window.pollEvent(event))
@@ -219,36 +226,40 @@ int main(){
                 }
             }
         }
+        bool isButtPressed=false;
             // makes the button light up when clicking it
             if(isClicking==true){
                 lightButt.setFillColor(sf::Color(67,65,224,255));
+                isButtPressed=true;
             }
             if(event.type == sf::Event::MouseButtonReleased){
-            if(event.mouseButton.button == sf::Mouse::Left){
+             if(event.mouseButton.button == sf::Mouse::Left){
                 isClicking=false;
                 lightButt.setFillColor(sf::Color(47,45,194,255));
+                isButtPressed=false;
             }
         }
-
-        window.clear(sf::Color(6, 0, 64));
-        window.draw(s_bg);
-        Lightning storm;
-        vector<sf::Vertex> thunder = generateLighting(storm);
-
-        wstringstream thunder_data;
-        thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
-        thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
-        text.setString((wstring) thunder_data.str());
-        window.draw(&thunder[0], thunder.size(), sf::Lines);
-        window.draw(timeSlider);
-        window.draw(timeSliderHandle);
-        window.draw(text);
-        window.draw(timeSliderTitle);
-        window.draw(timeSliderHandleT);
+        
+        if(isButtPressed){
+            window.clear(); // CLEARS CONTENT OF WINDOW
+            window.draw(s_bg);
+            Lightning storm;
+            vector<sf::Vertex> thunder = generateLighting(storm);
+            window.draw(&thunder[0], thunder.size(), sf::Lines);
+            wstringstream thunder_data;
+            thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
+            thunder_data << "Ramas: " << storm.getN() << endl;
+            thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
+            text.setString((wstring) thunder_data.str());
+            window.draw(text);
+            window.draw(timeSliderTitle);
+        }
         window.draw(lightButt);
         window.draw(lightButtText);
-        if (thunder.at(0).position.y >= WINDOW_H*30/100) {
+        window.draw(timeSlider);
+        window.draw(timeSliderHandle);
+        window.draw(timeSliderHandleT);
+        /*if (thunder.at(0).position.y >= WINDOW_H*30/100) {
             switch (1 + sfx_i % 3) {
                 case 1:
                     sfx_i++;
@@ -265,9 +276,8 @@ int main(){
                 default:
                     break;
             }
-        }
+        }*/
         window.display();
-        start_time = std::chrono::system_clock::now();
     }
     return 0;
 }
