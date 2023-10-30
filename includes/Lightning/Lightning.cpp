@@ -173,7 +173,7 @@ void Lightning::traverse(int x, int y){
 void Lightning::superTraverse(){
     tuple<int,int> origins[3];
     float originVal[3] = {0};
-    int min = 3, x = 0, y = 0;
+    int min = 3, key = 0, x = 0, y = 0;
     int middle = wid/2;
 
     // Start of lightning at top center of screen
@@ -219,22 +219,26 @@ void Lightning::superTraverse(){
                 branches[dex].swap(branches.back());
                 branches.pop_back();
             }
+
             // Force to continue going down
-            int difY = y - grid[x][y].getPrevY();
-            if(y+difY >=0 && y+difY < wid){
-                grid[x+1][y+difY].setPrevX(x);
-                grid[x+1][y+difY].setPrevY(y);
-                y += difY;
+            key = 0; min = 3;
+            origins[key++] = make_tuple(x+1, y);
+            if(y-1 >= 0){ origins[key++] = make_tuple(x+1, y-1); }
+            if(y+1 < wid){ origins[key++] = make_tuple(x+1, y+1); }
+            for(int i=0; i < key; i++){
+                originVal[i] = grid[x][y].getPotential() + leeway;
+                originVal[i] -= grid[get<0>(origins[i])][get<1>(origins[i])].getPotential();
+                if(min == 3 || originVal[i] > originVal[min]){ min = i; }
             }
-            else{
-                grid[x+1][y].setPrevX(x);
-                grid[x+1][y].setPrevY(y);
-            }
+            grid[get<0>(origins[min])][get<1>(origins[min])].setPrevX(x);
+            grid[get<0>(origins[min])][get<1>(origins[min])].setPrevY(y);
             x += 1;
+            y = get<1>(origins[min]);
             grid[x][y].setIsLight(true);
         }
-    } while(x < hei/2); // Loop if not low enough
 
+    } while(x < hei/2); // Loop if not low enough
+    
 }
 
 float Lightning::fractalComp(void){
