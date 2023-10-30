@@ -173,19 +173,21 @@ void Lightning::traverse(int x, int y){
 void Lightning::superTraverse(){
     tuple<int,int> origins[3];
     float originVal[3] = {0};
-    int min = 3, x = 0, y = 0; 
+    int min = 3, x = 0, y = 0;
+    int middle = wid/2;
 
-    grid[0][0].setIsLight(true);
-    origins[0] = make_tuple(0, 1);
-    origins[1] = make_tuple(1, 0);
-    origins[2] = make_tuple(1, 1);
+    grid[0][middle].setIsLight(true);
+    origins[0] = make_tuple(1, middle-1);
+    origins[1] = make_tuple(1, middle);
+    origins[2] = make_tuple(1, middle+1);
     for(int i=0; i < 3; i++){
-        originVal[i] = grid[0][0].getPotential() + leeway;
+        originVal[i] = grid[0][middle].getPotential() + leeway;
         originVal[i] -= grid[get<0>(origins[i])][get<1>(origins[i])].getPotential();
         if(min == 3 || originVal[i] > originVal[min]){ min = i; }
     }
     x = get<0>(origins[min]);
     y = get<1>(origins[min]);
+    grid[x][y].setPrevY(middle);
 
     do{
         traverse(x, y);
@@ -194,7 +196,7 @@ void Lightning::superTraverse(){
         for(int i = hei-1; i >= 0; i--){
             for(int j = wid-1; j >=0; j--){
                 if(grid[i][j].getIsLight()){ 
-                    x = i;
+                    x = i; 
                     y = j;
                     break;
                 }

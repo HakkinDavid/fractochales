@@ -26,8 +26,8 @@ vector<sf::Vertex> generateLighting (Lightning& mcqueen) { // objeto lightning p
             if (mcqueen.getGrid()[i][j].getIsLight()) {
                 int i0 = mcqueen.getGrid()[i][j].getPrevX();
                 int j0 = mcqueen.getGrid()[i][j].getPrevY();
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j*15, i*15 + 1));
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/3 + j0*15, i0*15 + 1));
+                thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j*6, i*6 + 1));
+                thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j0*6, i0*6 + 1));
             }
         }
     }
@@ -237,7 +237,7 @@ int main(){
 
         window.clear(sf::Color(6, 0, 64));
         window.draw(s_bg);
-        Lightning storm (109, 65);
+        Lightning storm;
         vector<sf::Vertex> thunder = generateLighting(storm);
 
         wstringstream thunder_data;
