@@ -113,7 +113,7 @@ int main(){
 
     int sfx_i = 1;
 
-    sf::Font font;
+    sf::Font font;  // Sets our font to this
     font.loadFromFile("fonts/ComicSansMS3.ttf");
 
     sf::Text text;
@@ -121,36 +121,43 @@ int main(){
     sf::Text timeSliderHandleT; // Slides with the slider; says what % it is at
     sf::Text lightButtText; // PRESS TO GENERATE LIGHTNING
 
+    // Inicializacion de fonts y strings para Labels
     text.setFont(font);
     timeSliderTitle.setFont(font);
-    timeSliderTitle.setString("Silence Between Two Strikes");
+    timeSliderTitle.setString("currently obsolete slider");
     timeSliderHandleT.setFont(font);
     lightButtText.setFont(font);
     lightButtText.setString("ZAP!!!");
 
+    // Setting the character size
     text.setCharacterSize(24);
     timeSliderTitle.setCharacterSize(18);
     timeSliderHandleT.setCharacterSize(12);
     lightButtText.setCharacterSize(20);
 
+    // Setting the color of the text to either pre-sets or customs (R,G,B, Opacity)
     text.setFillColor(sf::Color::White);
     timeSliderTitle.setFillColor(sf::Color::White);
     timeSliderHandleT.setFillColor(sf::Color::White);
     lightButtText.setFillColor(sf::Color(230,230,230,255));
 
+    // Stylization of text (Bold, Itallic, etc.)
     text.setStyle(sf::Text::Bold);
     timeSliderTitle.setStyle(sf::Text::Bold);
     lightButtText.setStyle(sf::Text::Bold);
 
+    // Placing them on specific locations in the window (X,Y)
     timeSliderTitle.setPosition(timeSlider.getPosition().x/2+35,timeSlider.getPosition().y - (timeSliderTitle.getCharacterSize()*2));
     timeSliderHandleT.setPosition(timeSliderHandle.getPosition().x-2,timeSlider.getPosition().y + (timeSliderHandleT.getCharacterSize()*2.15));
     lightButtText.setPosition(lightButt.getPosition().x+20,lightButt.getPosition().y+16);
 
+    // Idk what this does tbh
     auto start_time = std::chrono::system_clock::from_time_t((time_t) 0);
 
     bool isDragging=false; // Determines whether the user is dragging a slider handle or not
     bool isClicking=false; // Determines stuff for buttons
 
+    // Open Window Cycle (Program = running)
     while (window.isOpen())
     {
         auto exec_time = std::chrono::system_clock::now();
@@ -187,7 +194,7 @@ int main(){
                 timeSliderHandle.setPosition(timeSlider.getPosition().x,timeSliderHandle.getPosition().y);
             }
             // If out of bounds (above 100; right overboard)
-            else if (mousePos.x > timeSlider.getPosition().x + timeSlider.getSize().x - timeSliderHandle.getSize().x){
+            else if (mousePos.x > timeSlider.getPosition().x + timeSlider.getSize().x){
                 timeSliderHandle.setPosition(timeSlider.getPosition().x + timeSlider.getSize().x - timeSliderHandle.getSize().x, timeSliderHandle.getPosition().y);
             }
             // Inside (No esta Afuera)
@@ -195,8 +202,10 @@ int main(){
                 timeSliderHandle.setPosition(mousePos.x - timeSliderHandle.getSize().x/2, timeSliderHandle.getPosition().y);
             }
         }
-        float timeSliderPercentage= ((timeSliderHandle.getPosition().x - timeSlider.getPosition().x)/timeSlider.getSize().x)*100.0f;
-        if(timeSliderPercentage>=92){
+
+        // Slider #1 (our currently only one) values from -3% to 92% ; make sure to divide this by 100 in calculations
+        float timeSliderPercentage=((timeSliderHandle.getPosition().x - timeSlider.getPosition().x)/timeSlider.getSize().x)*100.0f;
+        if(timeSliderPercentage>=100){
             timeSliderHandleT.setString("100%"); // Due to the position of the Handle, sometimes this may not display 100% (When it is)
         }
         else{
@@ -209,7 +218,7 @@ int main(){
         if(event.type == sf::Event::MouseButtonPressed){
             if(event.mouseButton.button == sf::Mouse::Left){
                 sf::Vector2i mousePos=sf::Mouse::getPosition(window);
-                sf::FloatRect buttBounds = lightButt.getGlobalBounds(); // ghost rectangle...
+                sf::FloatRect buttBounds = lightButt.getGlobalBounds(); // ghost rectangle... [2]
                 if(buttBounds.contains(static_cast<sf::Vector2f>(mousePos))){ // Si el click izq. esta dentro del slider handle
                     isClicking=true;
                 }
@@ -219,13 +228,13 @@ int main(){
             if(isClicking==true){
                 lightButt.setFillColor(sf::Color(67,65,224,255));
             }
-            // this should make it un-light up but buggy (?)
-        else if(event.type == sf::Event::MouseButtonReleased){
+            if(event.type == sf::Event::MouseButtonReleased){
             if(event.mouseButton.button == sf::Mouse::Left){
                 isClicking=false;
+                lightButt.setFillColor(sf::Color(47,45,194,255));
             }
         }
-            
+
         window.clear(sf::Color(6, 0, 64));
         window.draw(s_bg);
         Lightning storm (109, 65);
