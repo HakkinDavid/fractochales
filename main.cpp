@@ -190,11 +190,11 @@ int main(){
         if(isDragging){
             sf::Vector2i mousePos=sf::Mouse::getPosition(window);
             // If out of bounds (below 0; left overboard)
-            if(mousePos.x < timeSlider.getPosition().x){
+            if(mousePos.x - (timeSliderHandle.getLocalBounds().width / 2) < timeSlider.getPosition().x){
                 timeSliderHandle.setPosition(timeSlider.getPosition().x,timeSliderHandle.getPosition().y);
             }
             // If out of bounds (above 100; right overboard)
-            else if (mousePos.x > timeSlider.getPosition().x + timeSlider.getSize().x){
+            else if (mousePos.x + (timeSliderHandle.getLocalBounds().width / 2) > timeSlider.getPosition().x + timeSlider.getSize().x){
                 timeSliderHandle.setPosition(timeSlider.getPosition().x + timeSlider.getSize().x - timeSliderHandle.getSize().x, timeSliderHandle.getPosition().y);
             }
             // Inside (No esta Afuera)
@@ -203,16 +203,11 @@ int main(){
             }
         }
 
-        // Slider #1 (our currently only one) values from -3% to 92% ; make sure to divide this by 100 in calculations
-        float timeSliderPercentage=((timeSliderHandle.getPosition().x - timeSlider.getPosition().x)/timeSlider.getSize().x)*100.0f;
-        if(timeSliderPercentage>=100){
-            timeSliderHandleT.setString("100%"); // Due to the position of the Handle, sometimes this may not display 100% (When it is)
-        }
-        else{
-            stringstream thP;
-            thP << timeSliderPercentage;
-            timeSliderHandleT.setString(thP.str() + "%");
-        }
+        // Slider #1 (our currently only one) values from 0% to 100% ; make sure to divide this by 100 in calculations
+        float timeSliderPercentage=((timeSliderHandle.getPosition().x - timeSlider.getPosition().x)/(timeSlider.getSize().x - timeSliderHandle.getLocalBounds().width))*100.0f;
+        stringstream thP;
+        thP << setprecision(3) << timeSliderPercentage;
+        timeSliderHandleT.setString(thP.str() + "%");
 
         // Clicking Button Zap
         if(event.type == sf::Event::MouseButtonPressed){
