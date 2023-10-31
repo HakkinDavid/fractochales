@@ -221,10 +221,12 @@ void Lightning::superTraverse(){
             }
 
             // Force to continue going down
+            int difX = x - grid[x][y].getPrevX();
+            int difY = y - grid[x][y].getPrevY();
             key = 0; min = 3;
-            origins[key++] = make_tuple(x+1, y);
-            if(y-1 >= 0){ origins[key++] = make_tuple(x+1, y-1); }
-            if(y+1 < wid){ origins[key++] = make_tuple(x+1, y+1); }
+            if(difX != 0){ origins[key++] = make_tuple(x+1, y); }
+            if(difY <= 0 && y-1 >= 0){ origins[key++] = make_tuple(x+1, y-1); }
+            if(difY >= 0 && y+1 < wid){ origins[key++] = make_tuple(x+1, y+1); }
             for(int i=0; i < key; i++){
                 originVal[i] = grid[x][y].getPotential() + leeway;
                 originVal[i] -= grid[get<0>(origins[i])][get<1>(origins[i])].getPotential();
