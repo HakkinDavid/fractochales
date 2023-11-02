@@ -15,25 +15,6 @@
 #define WINDOW_W 1920
 #define WINDOW_H 1080
 
-vector<sf::Vertex> generateLighting (Lightning& mcqueen) { // objeto lightning por defecto, si quieres cambiar los valores usados en el programa, ve a la llamada
-    // kachow
-    mcqueen.randomize(); // aleatorizar los valores resistivos en el entorno
-    mcqueen.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
-    vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
-
-    for (int i = mcqueen.getHei()-1; i >= 0; i--) {
-        for (int j = mcqueen.getWid()-1; j >= 0; j--) {
-            if (mcqueen.getGrid()[i][j].getIsLight()) {
-                int i0 = mcqueen.getGrid()[i][j].getPrevX();
-                int j0 = mcqueen.getGrid()[i][j].getPrevY();
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j*6, i*6 + 1));
-                thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j0*6, i0*6 + 1));
-            }
-        }
-    }
-    return thunder;
-}
-
 // ¡¡¡¡FRACTALES!!!! - Nota de David Emmanuel Santana Romero
 // D = log(N) / log (S) | Fórmula de la dimensión fractal
 // D | Dimensión fractal
@@ -72,7 +53,7 @@ int main(){
     sf::Image icon;
     icon.loadFromFile("images/fractochales.png");
 
-    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Fractochales", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Fractochales", sf::Style::Fullscreen);
     if (icon.loadFromFile("images/fractochales.png")) {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
@@ -95,7 +76,6 @@ int main(){
     sf::Texture background;
     background.loadFromFile("images/city.png");
     sf::Sprite s_bg(background);
-    window.draw(s_bg);
 
     sf::SoundBuffer buffer1;
     buffer1.loadFromFile("sfx/thunder1.wav");
@@ -158,12 +138,12 @@ int main(){
     bool isDragging=false; // Determines whether the user is dragging a slider handle or not
     bool isClicking=false; // Determines stuff for buttons
 
-    window.draw(lightButt);
-    window.draw(lightButtText);
-    window.draw(timeSlider);
-    window.draw(timeSliderHandle);
-    window.draw(timeSliderTitle);
-    window.draw(timeSliderHandleT);
+    Lightning storm;
+    storm.randomize(); // aleatorizar los valores resistivos en el entorno
+    storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+    wstringstream thunder_data;
+    thunder_data << "Ramas: " << storm.getN() << endl;
+    thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
 
     // Open Window Cycle (Program = running)
     while (window.isOpen())
@@ -175,6 +155,9 @@ int main(){
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+
+        window.clear(); // CLEARS CONTENT OF WINDOW
+        window.draw(s_bg);
 
         // Time Slider handling; si el usuario esta clickeando izq.
         if(event.type == sf::Event::MouseButtonPressed){
@@ -241,25 +224,12 @@ int main(){
         }
         
         if(isButtPressed){
-            window.clear(); // CLEARS CONTENT OF WINDOW
-            window.draw(s_bg);
-            Lightning storm;
-            vector<sf::Vertex> thunder = generateLighting(storm);
-            window.draw(&thunder[0], thunder.size(), sf::Lines);
-            wstringstream thunder_data;
-            thunder_data << "Rayo con altura: " << fixed << setprecision(2) << thunder.at(0).position.y << endl;
+            storm = Lightning();
+            storm.randomize(); // aleatorizar los valores resistivos en el entorno
+            storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+            thunder_data.str(std::wstring());
             thunder_data << "Ramas: " << storm.getN() << endl;
             thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
-            text.setString((wstring) thunder_data.str());
-            window.draw(text);
-            window.draw(timeSliderTitle);
-        }
-        window.draw(lightButt);
-        window.draw(lightButtText);
-        window.draw(timeSlider);
-        window.draw(timeSliderHandle);
-        window.draw(timeSliderHandleT);
-        /*if (thunder.at(0).position.y >= WINDOW_H*30/100) {
             switch (1 + sfx_i % 3) {
                 case 1:
                     sfx_i++;
@@ -276,8 +246,30 @@ int main(){
                 default:
                     break;
             }
-        }*/
+        }
+        // kachow
+        vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
+        for (int i = storm.getHei()-1; i >= 0; i--) {
+            for (int j = storm.getWid()-1; j >= 0; j--) {
+                if (storm.getGrid()[i][j].getIsLight()) {
+                    int i0 = storm.getGrid()[i][j].getPrevX();
+                    int j0 = storm.getGrid()[i][j].getPrevY();
+                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j*6, i*6 + 1));
+                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j0*6, i0*6 + 1));
+                }
+            }
+        }
+        text.setString((wstring) thunder_data.str());
+        window.draw(&thunder[0], thunder.size(), sf::Lines);
+        window.draw(text);
+        window.draw(lightButt);
+        window.draw(lightButtText);
+        window.draw(timeSlider);
+        window.draw(timeSliderTitle);
+        window.draw(timeSliderHandle);
+        window.draw(timeSliderHandleT);
         window.display();
+        thunder.clear();
     }
     return 0;
 }
