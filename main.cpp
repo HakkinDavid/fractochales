@@ -11,6 +11,8 @@
 #include "includes/Lightning/Lightning.h"
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
+#include "includes/Slider/slider.h"
+#include "includes/Button/button.h"
 
 #define WINDOW_W 1920
 #define WINDOW_H 1080
@@ -58,21 +60,6 @@ int main(){
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
 
-    // TIME slider
-    sf::RectangleShape timeSlider(sf::Vector2f(250,15));
-    timeSlider.setPosition(window.getSize().x * 0.04f, window.getSize().y * 0.8f);
-    timeSlider.setFillColor(sf::Color::White);
-
-    // TIME slider handle
-    sf::RectangleShape timeSliderHandle(sf::Vector2f(20,25));
-    timeSliderHandle.setPosition(timeSlider.getSize().x/1.5,timeSlider.getPosition().y-2);
-    timeSliderHandle.setFillColor(sf::Color::Black);
-
-    // BUTTON TIME.
-    sf::RectangleShape lightButt(sf::Vector2f(100,50));
-    lightButt.setPosition(window.getSize().x*0.4f,window.getSize().y*0.85f);
-    lightButt.setFillColor(sf::Color(47,45,194,255));
-
     sf::Texture background;
     background.loadFromFile("images/city.png");
     sf::Sprite s_bg(background);
@@ -98,45 +85,27 @@ int main(){
     font.loadFromFile("fonts/ComicSansMS3.ttf");
 
     sf::Text text;
-    sf::Text timeSliderTitle; // Position is dependent on the Time Slider's position
-    sf::Text timeSliderHandleT; // Slides with the slider; says what % it is at
-    sf::Text lightButtText; // PRESS TO GENERATE LIGHTNING
 
     // Inicializacion de fonts y strings para Labels
     text.setFont(font);
-    timeSliderTitle.setFont(font);
-    timeSliderTitle.setString("currently obsolete slider");
-    timeSliderHandleT.setFont(font);
-    lightButtText.setFont(font);
-    lightButtText.setString("Strike");
 
     // Setting the character size
     text.setCharacterSize(24);
-    timeSliderTitle.setCharacterSize(18);
-    timeSliderHandleT.setCharacterSize(12);
-    lightButtText.setCharacterSize(20);
 
     // Setting the color of the text to either pre-sets or customs (R,G,B, Opacity)
     text.setFillColor(sf::Color::White);
-    timeSliderTitle.setFillColor(sf::Color::White);
-    timeSliderHandleT.setFillColor(sf::Color::White);
-    lightButtText.setFillColor(sf::Color(230,230,230,255));
 
     // Stylization of text (Bold, Itallic, etc.)
     text.setStyle(sf::Text::Bold);
-    timeSliderTitle.setStyle(sf::Text::Bold);
-    lightButtText.setStyle(sf::Text::Bold);
 
-    // Placing them on specific locations in the window (X,Y)
-    timeSliderTitle.setPosition(timeSlider.getPosition().x/2+35,timeSlider.getPosition().y - (timeSliderTitle.getCharacterSize()*2));
-    timeSliderHandleT.setPosition(timeSliderHandle.getPosition().x-2,timeSlider.getPosition().y + (timeSliderHandleT.getCharacterSize()*2.15));
-    lightButtText.setPosition(lightButt.getPosition().x+17.5,lightButt.getPosition().y+16);
+    float testVar = 0.0;
+    bool zap = false;
+    bool attemptClose = false;
 
-    // Idk what this does tbh
-    auto start_time = std::chrono::system_clock::from_time_t((time_t) 0);
-
-    bool isDragging=false; // Determines whether the user is dragging a slider handle or not
-    bool isClicking=false; // Determines stuff for buttons
+    // inicializar interfaz
+    Slider testSlider (testVar, 200.0f, 1000.0f, window.getSize().x * 0.04f, window.getSize().y * 0.8f, font, L"Test Tickles", true);
+    Button zapping (zap, window.getSize().x*0.4f, window.getSize().y*0.85f, font, L"Zap", 100, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
+    Button closeButton (attemptClose, window.getSize().x-50, 0, font, L"X", 50, 50, sf::Color::Red, sf::Color::Red);
 
     Lightning storm;
     storm.randomize(); // aleatorizar los valores resistivos en el entorno
@@ -144,10 +113,12 @@ int main(){
     wstringstream thunder_data;
     thunder_data << "Ramas: " << storm.getN() << endl;
     thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
+    thunder_data << "Testeo Variable: " << fixed << setprecision(4) << testVar << endl;
 
     // Open Window Cycle (Program = running)
     while (window.isOpen())
     {
+        if (attemptClose) window.close();
         sf::Event event;
         
         while (window.pollEvent(event))
@@ -159,77 +130,37 @@ int main(){
         window.clear(); // CLEARS CONTENT OF WINDOW
         window.draw(s_bg);
 
-        // Time Slider handling; si el usuario esta clickeando izq.
+        // si el usuario está haciendo click izquierdo
         if(event.type == sf::Event::MouseButtonPressed){
             if(event.mouseButton.button == sf::Mouse::Left){
-                sf::Vector2i mousePos=sf::Mouse::getPosition(window);
-                sf::FloatRect timeBounds = timeSliderHandle.getGlobalBounds(); // ghost rectangle...
-                if(timeBounds.contains(static_cast<sf::Vector2f>(mousePos))){ // Si el click izq. esta dentro del slider handle
-                    isDragging=true;
-                }
+                testSlider.checkDragging(sf::Mouse::getPosition(window));
+                zapping.checkClicking(sf::Mouse::getPosition(window));
+                closeButton.checkClicking(sf::Mouse::getPosition(window));
             }
             
         }
-        // Si el usuario deja de mantener click izq.
+
+        // si el usuario deja de mantener click izquierdo
         else if(event.type == sf::Event::MouseButtonReleased){
             if(event.mouseButton.button == sf::Mouse::Left){
-                isDragging=false;
-            }
-        }
-        //Si el usuario esta holding click izq.
-        if(isDragging){
-            sf::Vector2i mousePos=sf::Mouse::getPosition(window);
-            // If out of bounds (below 0; left overboard)
-            if(mousePos.x - (timeSliderHandle.getLocalBounds().width / 2) < timeSlider.getPosition().x){
-                timeSliderHandle.setPosition(timeSlider.getPosition().x,timeSliderHandle.getPosition().y);
-            }
-            // If out of bounds (above 100; right overboard)
-            else if (mousePos.x + (timeSliderHandle.getLocalBounds().width / 2) > timeSlider.getPosition().x + timeSlider.getSize().x){
-                timeSliderHandle.setPosition(timeSlider.getPosition().x + timeSlider.getSize().x - timeSliderHandle.getSize().x, timeSliderHandle.getPosition().y);
-            }
-            // Inside (No esta Afuera)
-            else{
-                timeSliderHandle.setPosition(mousePos.x - timeSliderHandle.getSize().x/2, timeSliderHandle.getPosition().y);
-            }
-        }
-
-        // Slider #1 (our currently only one) values from 0% to 100% ; make sure to divide this by 100 in calculations
-        float timeSliderPercentage=((timeSliderHandle.getPosition().x - timeSlider.getPosition().x)/(timeSlider.getSize().x - timeSliderHandle.getLocalBounds().width))*100.0f;
-        stringstream thP;
-        thP << setprecision(3) << timeSliderPercentage;
-        timeSliderHandleT.setString(thP.str() + "%");
-
-        // Clicking Button Zap
-        if(event.type == sf::Event::MouseButtonPressed){
-            if(event.mouseButton.button == sf::Mouse::Left){
-                sf::Vector2i mousePos=sf::Mouse::getPosition(window);
-                sf::FloatRect buttBounds = lightButt.getGlobalBounds(); // ghost rectangle... [2]
-                if(buttBounds.contains(static_cast<sf::Vector2f>(mousePos))){ // Si el click izq. esta dentro del slider handle
-                    isClicking=true;
-                }
-            }
-        }
-        bool isButtPressed=false;
-            // makes the button light up when clicking it
-            if(isClicking==true){
-                lightButt.setFillColor(sf::Color(67,65,224,255));
-                isButtPressed=true;
-            }
-            if(event.type == sf::Event::MouseButtonReleased){
-             if(event.mouseButton.button == sf::Mouse::Left){
-                isClicking=false;
-                lightButt.setFillColor(sf::Color(47,45,194,255));
-                isButtPressed=false;
+                testSlider.setIsDragging(false);
+                zapping.setIsClicking(false);
+                closeButton.setIsClicking(false);
             }
         }
         
-        if(isButtPressed){
+        testSlider.updatePercentage(sf::Mouse::getPosition(window));
+        zapping.updateState();
+        closeButton.updateState();
+        
+        if (zap){
             storm = Lightning();
             storm.randomize(); // aleatorizar los valores resistivos en el entorno
             storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
             thunder_data.str(std::wstring());
             thunder_data << "Ramas: " << storm.getN() << endl;
             thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
+            thunder_data << "Testeo Variable: " << fixed << setprecision(4) << testVar << endl;
             switch (1 + sfx_i % 3) {
                 case 1:
                     sfx_i++;
@@ -259,15 +190,12 @@ int main(){
                 }
             }
         }
-        text.setString((wstring) thunder_data.str());
+        text.setString(thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
         window.draw(text);
-        window.draw(lightButt);
-        window.draw(lightButtText);
-        window.draw(timeSlider);
-        window.draw(timeSliderTitle);
-        window.draw(timeSliderHandle);
-        window.draw(timeSliderHandleT);
+        testSlider.draw(window);
+        zapping.draw(window);
+        closeButton.draw(window);
         window.display();
         thunder.clear();
     }
