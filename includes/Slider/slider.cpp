@@ -14,8 +14,8 @@ Slider::Slider(float &binded, float lowerBound, float upperBound, float position
     this->shape = sf::RectangleShape (sf::Vector2f(250, 15));
     this->shape.setPosition (position_x, position_y);
     this->shape.setFillColor (color_shape);
-    this->handle = sf::RectangleShape (sf::Vector2f(20, 25));
-    this->handle.setPosition(shape.getSize().x/1.5, shape.getPosition().y-2);
+    this->handle = sf::RectangleShape (sf::Vector2f(20, 35));
+    this->handle.setPosition(shape.getPosition().x + ((shape.getSize().x - handle.getLocalBounds().width)/100) * ((*(this->x) - lowerBound)/((upperBound - lowerBound)/100)), shape.getPosition().y + ((shape.getSize().y - handle.getLocalBounds().height)/2));
     this->handle.setFillColor(color_handle);
     this->title.setFont(font);
     this->handle_percent.setFont(font);

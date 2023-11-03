@@ -98,22 +98,47 @@ int main(){
     // Stylization of text (Bold, Itallic, etc.)
     text.setStyle(sf::Text::Bold);
 
-    float testVar = 0.0;
+    float leeway = 0.24F;
+    float branch = 0.12F;
+    int lightning_height = 181;
+    int lightning_width = 257;
     bool zap = false;
     bool attemptClose = false;
 
     // inicializar interfaz
-    Slider testSlider (testVar, 200.0f, 1000.0f, window.getSize().x * 0.04f, window.getSize().y * 0.8f, font, L"Test Tickles", true);
+    Slider leewaySlider (leeway, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.8f, font, L"Leeway", false, sf::Color::Cyan, sf::Color::White);
+    Slider branchSlider (branch, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.6f, font, L"Branch", false, sf::Color::Magenta, sf::Color::White);
     Button zapping (zap, window.getSize().x*0.4f, window.getSize().y*0.85f, font, L"Zap", 100, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
     Button closeButton (attemptClose, window.getSize().x-50, 0, font, L"X", 50, 50, sf::Color::Red, sf::Color::Red);
 
     Lightning storm;
-    storm.randomize(); // aleatorizar los valores resistivos en el entorno
-    storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
     wstringstream thunder_data;
-    thunder_data << "Ramas: " << storm.getN() << endl;
-    thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
-    thunder_data << "Testeo Variable: " << fixed << setprecision(4) << testVar << endl;
+    vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
+
+    // función lambda que permite trabajar con las variables de main () por referencia
+    // por lo que se llama sin parámetros
+    auto generateLightning = [&] () {
+        storm = Lightning(lightning_height, lightning_width, leeway, branch);
+        thunder.clear();
+        storm.randomize(); // aleatorizar los valores resistivos en el entorno
+        storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+        for (int i = storm.getHei()-1; i >= 0; i--) {
+            for (int j = storm.getWid()-1; j >= 0; j--) {
+                if (storm.getGrid()[i][j].getIsLight()) {
+                    int i0 = storm.getGrid()[i][j].getPrevX();
+                    int j0 = storm.getGrid()[i][j].getPrevY();
+                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j*6, i*6 + 1));
+                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j0*6, i0*6 + 1));
+                }
+            }
+        }
+        thunder_data.str(std::wstring());
+        thunder_data << "Altura: " << (int) thunder[0].position.y << endl;
+        thunder_data << "Ramas: " << storm.getN() << endl;
+        thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
+    };
+
+    generateLightning();
 
     // Open Window Cycle (Program = running)
     while (window.isOpen())
@@ -133,9 +158,11 @@ int main(){
         // si el usuario está haciendo click izquierdo
         if(event.type == sf::Event::MouseButtonPressed){
             if(event.mouseButton.button == sf::Mouse::Left){
-                testSlider.checkDragging(sf::Mouse::getPosition(window));
-                zapping.checkClicking(sf::Mouse::getPosition(window));
-                closeButton.checkClicking(sf::Mouse::getPosition(window));
+                sf::Vector2i mousepos = sf::Mouse::getPosition(window);
+                leewaySlider.checkDragging(mousepos);
+                branchSlider.checkDragging(mousepos);
+                zapping.checkClicking(mousepos);
+                closeButton.checkClicking(mousepos);
             }
             
         }
@@ -143,24 +170,20 @@ int main(){
         // si el usuario deja de mantener click izquierdo
         else if(event.type == sf::Event::MouseButtonReleased){
             if(event.mouseButton.button == sf::Mouse::Left){
-                testSlider.setIsDragging(false);
+                leewaySlider.setIsDragging(false);
+                branchSlider.setIsDragging(false);
                 zapping.setIsClicking(false);
                 closeButton.setIsClicking(false);
             }
         }
         
-        testSlider.updatePercentage(sf::Mouse::getPosition(window));
+        leewaySlider.updatePercentage(sf::Mouse::getPosition(window));
+        branchSlider.updatePercentage(sf::Mouse::getPosition(window));
         zapping.updateState();
         closeButton.updateState();
         
         if (zap){
-            storm = Lightning();
-            storm.randomize(); // aleatorizar los valores resistivos en el entorno
-            storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
-            thunder_data.str(std::wstring());
-            thunder_data << "Ramas: " << storm.getN() << endl;
-            thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
-            thunder_data << "Testeo Variable: " << fixed << setprecision(4) << testVar << endl;
+            generateLightning();
             switch (1 + sfx_i % 3) {
                 case 1:
                     sfx_i++;
@@ -178,26 +201,14 @@ int main(){
                     break;
             }
         }
-        // kachow
-        vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
-        for (int i = storm.getHei()-1; i >= 0; i--) {
-            for (int j = storm.getWid()-1; j >= 0; j--) {
-                if (storm.getGrid()[i][j].getIsLight()) {
-                    int i0 = storm.getGrid()[i][j].getPrevX();
-                    int j0 = storm.getGrid()[i][j].getPrevY();
-                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j*6, i*6 + 1));
-                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j0*6, i0*6 + 1));
-                }
-            }
-        }
         text.setString(thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
         window.draw(text);
-        testSlider.draw(window);
+        leewaySlider.draw(window);
+        branchSlider.draw(window);
         zapping.draw(window);
         closeButton.draw(window);
         window.display();
-        thunder.clear();
     }
     return 0;
 }
