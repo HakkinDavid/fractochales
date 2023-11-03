@@ -65,6 +65,7 @@ public:
     void traverse(int, int);
     void superTraverse(void);
     
+    float* directionComp(void);
     float fractalComp(void);
 };
 
