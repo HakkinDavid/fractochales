@@ -61,8 +61,12 @@ int main(){
     }
 
     sf::Texture background;
+    sf::Texture splash;
     background.loadFromFile("images/city.png");
+    splash.loadFromFile("images/fractochales.png");
     sf::Sprite s_bg(background);
+    sf::Sprite splash_screen(splash);
+    splash_screen.setPosition(sf::Vector2f((window.getSize().x - splash_screen.getLocalBounds().width)/2, (window.getSize().y - splash_screen.getLocalBounds().height)/2));
 
     sf::SoundBuffer buffer1;
     buffer1.loadFromFile("sfx/thunder1.wav");
@@ -99,6 +103,13 @@ int main(){
     text.setStyle(sf::Text::Bold);
 
     text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
+
+    sf::Text loading_percentage;
+    loading_percentage.setFont(font);
+    loading_percentage.setCharacterSize(50);
+    loading_percentage.setFillColor(sf::Color::Black);
+    loading_percentage.setStyle(sf::Text::Bold);
+    loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
 
     float leeway = 0.24F;
     float branch = 0.12F;
@@ -149,6 +160,9 @@ int main(){
 
     generateLightning();
 
+    auto start_time = std::chrono::system_clock::now();
+    bool yetToBoot = true;
+
     // Open Window Cycle (Program = running)
     while (window.isOpen())
     {
@@ -159,6 +173,21 @@ int main(){
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+        }
+
+        if (yetToBoot) {
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
+            if (elapsed < 1000) {
+                loading_percentage.setString(to_string(elapsed/10) + "%");
+                window.clear(sf::Color::White);
+                window.draw(splash_screen);
+                window.draw(loading_percentage);
+                window.display();
+                continue;
+            }
+            else {
+                yetToBoot = false;
+            }
         }
 
         window.clear(); // CLEARS CONTENT OF WINDOW
