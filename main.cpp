@@ -117,6 +117,7 @@ int main(){
     float lightning_height = 181;
     float lightning_scale = 6;
     float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
+    float* direction = nullptr;
     bool zap = false;
     bool attemptClose = false;
 
@@ -145,16 +146,22 @@ int main(){
                 }
             }
         }
+        thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1));
+        thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1));
     };
 
     auto generateLightning = [&] () {
         storm = Lightning(lightning_height, lightning_width, leeway, branch);
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+        direction = storm.directionComp();
         recalculateLightningVertex();
         thunder_data.str(std::wstring());
         thunder_data << "Altura: " << (int) thunder[0].position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
+        thunder_data << "a1: " << fixed << setprecision(4) << direction[0] << endl;
+        thunder_data << "a0: " << fixed << setprecision(4) << direction[1] << endl;
+        thunder_data << "r: " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
     };
 

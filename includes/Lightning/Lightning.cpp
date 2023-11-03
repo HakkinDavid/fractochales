@@ -243,6 +243,34 @@ void Lightning::superTraverse(){
     
 }
 
+//directionComp should be called before fractalComp
+//or the main branch wont accounted
+float* Lightning::directionComp(void){
+    int n = branches.size();
+    int xi = 0, yi = 0;
+    int Ex = 0, Ey = 0, Ex2 = 0, Ey2 = 0, Exy = 0;
+    float numer = 0;
+    float* direction = new float[3]; // Array pointer to return
+
+    for(int i=0; i < n; i++){   // Calculate sums
+        xi = get<0>(branches[i]);
+        yi = get<1>(branches[i]);
+        Ex += xi;
+        Ey += yi;
+        Ex2 += xi * xi;
+        Ey2 += yi * yi;
+        Exy += xi * yi;
+    }
+
+    numer = (n*Exy - Ex*Ey);
+    direction[0] = numer / (float)(n*Ex2 - Ex*Ex); // a1, slope
+    direction[1] = ((float)Ey/n) - direction[0]*((float)Ex/n); // a0, displacement
+    direction[2] = numer / (sqrt(n*Ex2 - Ex*Ex) * sqrt(n*Ey2 - Ey*Ey)); // r, error
+    direction[2] *= direction[2]; // r^2, idk how important it is to square it but whatever
+
+    return direction; // a1, a0, r
+}
+
 float Lightning::fractalComp(void){
     float avgLen = 0, frac = 0, S = 2;
     int mainLen = 0, dex = 0, N = 2;
