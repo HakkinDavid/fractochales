@@ -7,7 +7,19 @@
 
 #include "slider.h"
 
-Slider::Slider(float &binded, float lowerBound, float upperBound, float position_x, float position_y, sf::Font &font, wstring title, bool swapToUnits, sf::Color color_shape, sf::Color color_handle) {
+Slider::Slider
+(
+        float &binded, // variable externa a modificar
+        float lowerBound, // valor mínimo
+        float upperBound, // valor máximo
+        float position_x, // ubicación en la ventana (x)
+        float position_y, // ubicación en la ventana (y)
+        sf::Font &font, // objeto fuente de letra (por referencia)
+        wstring title, // título del deslizador
+        bool swapToUnits, // mostrar las unidades en lugar del porcentaje
+        sf::Color color_shape, // color de la barra deslizable
+        sf::Color color_handle // color de la manija deslizable
+) {
     this->x = &binded;
     this->lowerBound = lowerBound;
     this->upperBound = upperBound;
