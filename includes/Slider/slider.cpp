@@ -42,7 +42,8 @@ void Slider::setIsDragging (bool v) {
     isDragging = v;
 }
 
-void Slider::updatePercentage (sf::Vector2i mouse) {
+bool Slider::updatePercentage (sf::Vector2i mouse) {
+    float oldPercent = percent;
     if (isDragging) {
         // fuera del límite (bajo 0; muy a la izquierda)
         if (mouse.x - (handle.getLocalBounds().width / 2) < shape.getPosition().x) {
@@ -63,6 +64,8 @@ void Slider::updatePercentage (sf::Vector2i mouse) {
     if (swapToUnits) handle_text_percentage << fixed << setprecision(2) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
     handle_percent.setString(handle_text_percentage.str());
+    if (percent != oldPercent) return true;
+    else return false;
 }
 
 void Slider::draw(sf::RenderWindow &window) {

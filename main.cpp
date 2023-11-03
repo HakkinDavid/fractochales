@@ -98,18 +98,23 @@ int main(){
     // Stylization of text (Bold, Itallic, etc.)
     text.setStyle(sf::Text::Bold);
 
+    text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
+
     float leeway = 0.24F;
     float branch = 0.12F;
-    int lightning_height = 181;
-    int lightning_width = 257;
+    float lightning_width = 257;
+    float lightning_height = 181;
+    float lightning_scale = 6;
+    float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
     bool zap = false;
     bool attemptClose = false;
 
     // inicializar interfaz
-    Slider leewaySlider (leeway, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.8f, font, L"Leeway", false, sf::Color::Cyan, sf::Color::White);
-    Slider branchSlider (branch, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.6f, font, L"Branch", false, sf::Color::Magenta, sf::Color::White);
-    Button zapping (zap, window.getSize().x*0.4f, window.getSize().y*0.85f, font, L"Zap", 100, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
-    Button closeButton (attemptClose, window.getSize().x-50, 0, font, L"X", 50, 50, sf::Color::Red, sf::Color::Red);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.6f, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
+    Slider branchSlider (branch, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.7f, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
+    Slider leewaySlider (leeway, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.8f, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
+    Button zapping (zap, window.getSize().x*0.04f, window.getSize().y*0.9f, font, L"Zap", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
+    Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
 
     Lightning storm;
     wstringstream thunder_data;
@@ -117,21 +122,25 @@ int main(){
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
-    auto generateLightning = [&] () {
-        storm = Lightning(lightning_height, lightning_width, leeway, branch);
+    auto recalculateLightningVertex = [&] () {
         thunder.clear();
-        storm.randomize(); // aleatorizar los valores resistivos en el entorno
-        storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
                 if (storm.getGrid()[i][j].getIsLight()) {
                     int i0 = storm.getGrid()[i][j].getPrevX();
                     int j0 = storm.getGrid()[i][j].getPrevY();
-                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j*6, i*6 + 1));
-                    thunder.emplace_back(sf::Vector2f(WINDOW_W/5 + j0*6, i0*6 + 1));
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1));
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1));
                 }
             }
         }
+    };
+
+    auto generateLightning = [&] () {
+        storm = Lightning(lightning_height, lightning_width, leeway, branch);
+        storm.randomize(); // aleatorizar los valores resistivos en el entorno
+        storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+        recalculateLightningVertex();
         thunder_data.str(std::wstring());
         thunder_data << "Altura: " << (int) thunder[0].position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
@@ -159,6 +168,7 @@ int main(){
         if(event.type == sf::Event::MouseButtonPressed){
             if(event.mouseButton.button == sf::Mouse::Left){
                 sf::Vector2i mousepos = sf::Mouse::getPosition(window);
+                alignmentSlider.checkDragging(mousepos);
                 leewaySlider.checkDragging(mousepos);
                 branchSlider.checkDragging(mousepos);
                 zapping.checkClicking(mousepos);
@@ -170,6 +180,7 @@ int main(){
         // si el usuario deja de mantener click izquierdo
         else if(event.type == sf::Event::MouseButtonReleased){
             if(event.mouseButton.button == sf::Mouse::Left){
+                alignmentSlider.setIsDragging(false);
                 leewaySlider.setIsDragging(false);
                 branchSlider.setIsDragging(false);
                 zapping.setIsClicking(false);
@@ -177,9 +188,14 @@ int main(){
             }
         }
         
+        if (alignmentSlider.updatePercentage(sf::Mouse::getPosition(window))) {
+            recalculateLightningVertex();
+        }
         leewaySlider.updatePercentage(sf::Mouse::getPosition(window));
         branchSlider.updatePercentage(sf::Mouse::getPosition(window));
-        zapping.updateState();
+        if (zapping.updateState()) {
+            window.clear(sf::Color::White);
+        }
         closeButton.updateState();
         
         if (zap){
@@ -204,6 +220,7 @@ int main(){
         text.setString(thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
         window.draw(text);
+        alignmentSlider.draw(window);
         leewaySlider.draw(window);
         branchSlider.draw(window);
         zapping.draw(window);

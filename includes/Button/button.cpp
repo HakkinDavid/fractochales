@@ -16,7 +16,7 @@ Button::Button(bool &binded, float position_x, float position_y, sf::Font &font,
     this->shape.setFillColor (colors[0]);
     this->title.setFont(font);
     this->title.setString(title);
-    this->title.setCharacterSize(18);
+    this->title.setCharacterSize(shape.getSize().y/2);
     this->title.setFillColor(color_text);
     this->title.setStyle(sf::Text::Bold);
     this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2));
@@ -33,9 +33,14 @@ void Button::setIsClicking (bool v) {
     isClicking = v;
 }
 
-void Button::updateState () {
+bool Button::updateState () {
+    bool hasChanged = false;
+    if (*x != isClicking) {
+        hasChanged = true;
+    }
     *x = isClicking;
     shape.setFillColor(colors[isClicking]);
+    return hasChanged;
 }
 
 void Button::draw(sf::RenderWindow &window) {

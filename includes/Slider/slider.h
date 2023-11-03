@@ -28,7 +28,7 @@ class Slider {
         Slider (float &binded, float lowerBound, float upperBound, float position_x, float position_y, sf::Font &font, wstring title = wstring(), bool swapToUnits = false, sf::Color color_shape = sf::Color::White, sf::Color color_handle = sf::Color::Black);
         void checkDragging (sf::Vector2i mouse);
         void setIsDragging (bool v);
-        void updatePercentage (sf::Vector2i mouse);
+        bool updatePercentage (sf::Vector2i mouse);
         void draw (sf::RenderWindow &window);
 };
 
