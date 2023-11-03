@@ -83,6 +83,11 @@ int main(){
     sf::Sound sound3;
     sound3.setBuffer(buffer3);
 
+    sf::Music background_music;
+    background_music.openFromFile("sfx/rain.wav");
+    background_music.setLoop(true);
+    background_music.setVolume(50);
+
     int sfx_i = 1;
 
     sf::Font font;  // Sets our font to this
@@ -187,6 +192,7 @@ int main(){
             }
             else {
                 yetToBoot = false;
+                background_music.play();
             }
         }
 
