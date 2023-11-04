@@ -273,13 +273,11 @@ int main(){
         }
         leewaySlider.updatePercentage(mousepos_update);
         branchSlider.updatePercentage(mousepos_update);
-        if (zapping.updateState()) {
-            window.clear(sf::Color::White);
-        }
         closeButton.updateState();
         
-        if (zap){
+        if (zapping.updateState() && zap){
             generateLightning();
+            window.clear(sf::Color::White);
             switch (1 + sfx_i % 3) {
                 case 1:
                     sfx_i++;
