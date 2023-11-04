@@ -5,8 +5,9 @@
     "xstring": "cpp",
     "string": "cpp",
     "new": "cpp",
-    "tuple": "cpp"
-  },
+    "tuple": "cpp",
+    "functional": "cpp"
+},
   "C_Cpp_Runner.msvcBatchPath": "",
   "C_Cpp_Runner.cCompilerPath": "clang",
   "C_Cpp_Runner.cppCompilerPath": "clang++",

@@ -89,20 +89,15 @@ int main(){
     font.loadFromFile("fonts/ComicSansMS3.ttf");
 
     sf::Text text;
-
-    // Inicializacion de fonts y strings para Labels
     text.setFont(font);
-
-    // Setting the character size
     text.setCharacterSize(24);
-
-    // Setting the color of the text to either pre-sets or customs (R,G,B, Opacity)
     text.setFillColor(sf::Color::White);
-
-    // Stylization of text (Bold, Itallic, etc.)
     text.setStyle(sf::Text::Bold);
-
     text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
+
+    sf::RectangleShape dim_text_bg;
+    dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
+    dim_text_bg.setFillColor(sf::Color(0, 0, 0, 127));
 
     sf::Text loading_percentage;
     loading_percentage.setFont(font);
@@ -116,17 +111,66 @@ int main(){
     float lightning_width = 257;
     float lightning_height = 181;
     float lightning_scale = 6;
+    float lightning_color [3] = {245, 230, 83};
     float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
     float* direction = nullptr;
     bool zap = false;
     bool attemptClose = false;
 
     // inicializar interfaz
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.6f, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
-    Slider branchSlider (branch, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.7f, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
-    Slider leewaySlider (leeway, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.8f, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
-    Button zapping (zap, window.getSize().x*0.04f, window.getSize().y*0.9f, font, L"Zap", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.56f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
+    Slider branchSlider (branch, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
+    Slider leewaySlider (leeway, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
+    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White);
+    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White);
+    Button zapping (zap, window.getSize().x*0.04f, window.getSize().y*0.95f, font, L"Zap", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
+
+    // colocar los sliders que recibirán eventos en grupo
+    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider};
+    // colocar los botones que recibirán eventos en grupo
+    Button * all_buttons [] = {&zapping, &closeButton};
+
+    // agrupar y ejecutar los eventos correspondientes a los sliders
+    auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
+        for (auto &i : all_sliders) {
+            switch (type) {
+                case 0: // cuando usuario clickea
+                    i->checkDragging(*mouse);
+                break;
+                case 1: // cuando usuario desclickea
+                    i->setIsDragging(false);
+                break;
+                case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
+                    i->updatePercentage(*mouse);
+                break;
+                case 3: // dibujar
+                    i->draw(window);
+                break;
+                default:
+                break;
+            }
+        }
+        for (auto &i : all_buttons) {
+            switch (type) {
+                case 0: // cuando usuario clickea
+                    i->checkClicking(*mouse);
+                break;
+                case 1: // cuando usuario desclickea
+                    i->setIsClicking(false);
+                break;
+                case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
+                    i->updateState();
+                break;
+                case 3: // dibujar
+                    i->draw(window);
+                break;
+                default:
+                break;
+            }
+        }
+    };
 
     Lightning storm;
     wstringstream thunder_data;
@@ -141,16 +185,17 @@ int main(){
                 if (storm.getGrid()[i][j].getIsLight()) {
                     int i0 = storm.getGrid()[i][j].getPrevX();
                     int j0 = storm.getGrid()[i][j].getPrevY();
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1));
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1));
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]));
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]));
                 }
             }
         }
-        thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1));
-        thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1));
+        thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
+        thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
     };
 
     auto generateLightning = [&] () {
+        if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
         storm = Lightning(lightning_height, lightning_width, leeway, branch);
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
@@ -159,10 +204,11 @@ int main(){
         thunder_data.str(std::wstring());
         thunder_data << "Altura: " << (int) thunder[0].position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "a1: " << fixed << setprecision(4) << direction[0] << endl;
-        thunder_data << "a0: " << fixed << setprecision(4) << direction[1] << endl;
-        thunder_data << "r: " << fixed << setprecision(4) << direction[2] << endl;
+        thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "") << " " << fixed << setprecision(4) << direction[0] << "y" << endl;
+        thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.fractalComp() << endl;
+        text.setString(thunder_data.str());
+        dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 10));
     };
 
     generateLightning();
@@ -170,7 +216,6 @@ int main(){
     auto start_time = std::chrono::system_clock::now();
     bool yetToBoot = true;
 
-    // Open Window Cycle (Program = running)
     while (window.isOpen())
     {
         if (attemptClose) window.close();
@@ -204,11 +249,7 @@ int main(){
         if(event.type == sf::Event::MouseButtonPressed){
             if(event.mouseButton.button == sf::Mouse::Left){
                 sf::Vector2i mousepos = sf::Mouse::getPosition(window);
-                alignmentSlider.checkDragging(mousepos);
-                leewaySlider.checkDragging(mousepos);
-                branchSlider.checkDragging(mousepos);
-                zapping.checkClicking(mousepos);
-                closeButton.checkClicking(mousepos);
+                UI_events(0, &mousepos);
             }
             
         }
@@ -216,19 +257,17 @@ int main(){
         // si el usuario deja de mantener click izquierdo
         else if(event.type == sf::Event::MouseButtonReleased){
             if(event.mouseButton.button == sf::Mouse::Left){
-                alignmentSlider.setIsDragging(false);
-                leewaySlider.setIsDragging(false);
-                branchSlider.setIsDragging(false);
-                zapping.setIsClicking(false);
-                closeButton.setIsClicking(false);
+                UI_events(1);
             }
         }
+
+        sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
         
-        if (alignmentSlider.updatePercentage(sf::Mouse::getPosition(window))) {
+        if (alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
             recalculateLightningVertex();
         }
-        leewaySlider.updatePercentage(sf::Mouse::getPosition(window));
-        branchSlider.updatePercentage(sf::Mouse::getPosition(window));
+        leewaySlider.updatePercentage(mousepos_update);
+        branchSlider.updatePercentage(mousepos_update);
         if (zapping.updateState()) {
             window.clear(sf::Color::White);
         }
@@ -253,15 +292,13 @@ int main(){
                     break;
             }
         }
-        text.setString(thunder_data.str());
         window.draw(&thunder[0], thunder.size(), sf::Lines);
+        window.draw(dim_text_bg);
         window.draw(text);
-        alignmentSlider.draw(window);
-        leewaySlider.draw(window);
-        branchSlider.draw(window);
-        zapping.draw(window);
-        closeButton.draw(window);
+        UI_events(3);
         window.display();
     }
+    // liberar memoria
+    delete [] direction;
     return 0;
 }
