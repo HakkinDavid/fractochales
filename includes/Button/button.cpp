@@ -19,7 +19,7 @@ Button::Button(bool &binded, float position_x, float position_y, sf::Font &font,
     this->title.setCharacterSize(shape.getSize().y/2);
     this->title.setFillColor(color_text);
     this->title.setStyle(sf::Text::Bold);
-    this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2));
+    this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2) - 4);
     this->isClicking = false;
 }
 
