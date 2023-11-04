@@ -60,11 +60,9 @@ int main(){
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
 
-    sf::Texture background;
     sf::Texture splash;
-    background.loadFromFile("images/city.png");
     splash.loadFromFile("images/fractochales.png");
-    sf::Sprite s_bg(background);
+
     sf::Sprite splash_screen(splash);
     splash_screen.setPosition(sf::Vector2f((window.getSize().x - splash_screen.getLocalBounds().width)/2, (window.getSize().y - splash_screen.getLocalBounds().height)/2));
 
@@ -111,9 +109,30 @@ int main(){
     float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
     float* direction = nullptr;
     bool zap = false;
+    bool switchingBG = false;
     bool attemptClose = false;
 
     int renderIndex = 0;
+    int bgIndex = 0;
+
+    // inicializar fondos
+    sf::Texture city;
+    city.loadFromFile("images/city.png");
+
+    sf::Texture water;
+    water.loadFromFile("images/water.jpg");
+
+    sf::Texture wood;
+    wood.loadFromFile("images/wood.jpeg");
+
+    sf::Texture black;
+    black.loadFromFile("images/black.png");
+
+    // fondos a iterar con el botón "alternar fondo"
+    // esto podría sincronizarse con otro arreglo de valores de variable para entornos
+    sf::Texture * bg [] = {&city, &water, &wood, &black, nullptr};
+
+    sf::Sprite background (*bg[bgIndex]);
 
     // inicializar interfaz
     // deslizadores
@@ -124,13 +143,14 @@ int main(){
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White);
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White);
     // botones
-    Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
+    Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224));
+    Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.45f, font, L"Alternar fondo", 200, 50, sf::Color(245, 173, 66), sf::Color(252, 210, 146));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider};
     // colocar los botones que recibirán eventos en grupo
-    Button * all_buttons [] = {&zapping, &closeButton};
+    Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -178,8 +198,8 @@ int main(){
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
-    auto recalculateLightningVertex = [&] () {
-        renderIndex = 0;
+    auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
+        if (!skipRedraw) renderIndex = 0;
         thunder.clear();
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
@@ -250,7 +270,7 @@ int main(){
         if (renderIndex != thunder.size() && renderIndex >= 120) renderIndex = thunder.size();
 
         window.clear(); // CLEARS CONTENT OF WINDOW
-        window.draw(s_bg);
+        window.draw(background);
 
         // si el usuario está haciendo click izquierdo
         if(event.type == sf::Event::MouseButtonPressed){
@@ -271,10 +291,15 @@ int main(){
         sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
         
         if (alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
-            recalculateLightningVertex();
+            recalculateLightningVertex(true);
         }
         leewaySlider.updatePercentage(mousepos_update);
         branchSlider.updatePercentage(mousepos_update);
+        if (backgroundButton.updateState() && switchingBG) {
+            bgIndex++;
+            if (bg[bgIndex] == nullptr) bgIndex = 0;
+            background.setTexture(*bg[bgIndex]);
+        }
         closeButton.updateState();
         
         if (zapping.updateState() && zap){
