@@ -99,12 +99,8 @@ int main(){
     dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
     dim_text_bg.setFillColor(sf::Color(0, 0, 0, 127));
 
-    sf::Text loading_percentage;
-    loading_percentage.setFont(font);
-    loading_percentage.setCharacterSize(50);
-    loading_percentage.setFillColor(sf::Color::Black);
-    loading_percentage.setStyle(sf::Text::Bold);
-    loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
+    sf::RectangleShape loading_percentage;
+    loading_percentage.setFillColor(sf::Color::Cyan);
 
     float leeway = 0.24F;
     float branch = 0.12F;
@@ -117,14 +113,16 @@ int main(){
     bool zap = false;
     bool attemptClose = false;
 
+    int renderIndex = 0;
+
     // inicializar interfaz
     Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.56f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
-    Slider branchSlider (branch, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
-    Slider leewaySlider (leeway, 0.0f, 1.0f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White);
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White);
-    Button zapping (zap, window.getSize().x*0.04f, window.getSize().y*0.95f, font, L"Zap", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
+    Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Zap", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
 
     // colocar los sliders que recibirán eventos en grupo
@@ -179,6 +177,7 @@ int main(){
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
     auto recalculateLightningVertex = [&] () {
+        renderIndex = 0;
         thunder.clear();
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
@@ -192,6 +191,7 @@ int main(){
         }
         thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
         thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
+        reverse(thunder.begin(), thunder.end());
     };
 
     auto generateLightning = [&] () {
@@ -230,7 +230,8 @@ int main(){
         if (yetToBoot) {
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
             if (elapsed < 1000) {
-                loading_percentage.setString(to_string(elapsed/10) + "%");
+                loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
+                loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
                 window.clear(sf::Color::White);
                 window.draw(splash_screen);
                 window.draw(loading_percentage);
@@ -241,6 +242,10 @@ int main(){
                 yetToBoot = false;
             }
         }
+
+        // renderizar un solo punto a la vez (hasta 120), para dar la ilusión de que el rayo "cae"
+        if (renderIndex+1 <= thunder.size()) renderIndex++;
+        if (renderIndex != thunder.size() && renderIndex >= 120) renderIndex = thunder.size();
 
         window.clear(); // CLEARS CONTENT OF WINDOW
         window.draw(s_bg);
@@ -292,7 +297,7 @@ int main(){
                     break;
             }
         }
-        window.draw(&thunder[0], thunder.size(), sf::Lines);
+        window.draw(&thunder[0], renderIndex, sf::Lines);
         window.draw(dim_text_bg);
         window.draw(text);
         UI_events(3);
