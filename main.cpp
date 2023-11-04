@@ -116,16 +116,18 @@ int main(){
     int renderIndex = 0;
 
     // inicializar interfaz
+    // deslizadores
     Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.56f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White);
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White);
-    Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Zap", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
+    // botones
+    Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194,255), sf::Color(67,65,224,255));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
 
-    // colocar los sliders que recibirán eventos en grupo
+    // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton};
