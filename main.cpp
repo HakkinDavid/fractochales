@@ -125,12 +125,15 @@ int main(){
     sf::Texture wood;
     wood.loadFromFile("images/wood.jpeg");
 
+    sf::Texture shrek;
+    shrek.loadFromFile("images/shrek.png");
+
     sf::Texture black;
     black.loadFromFile("images/black.png");
 
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
-    sf::Texture * bg [] = {&city, &water, &wood, &black, nullptr};
+    sf::Texture * bg [] = {&city, &water, &wood, &shrek, &black, nullptr};
 
     sf::Sprite background (*bg[bgIndex]);
 
