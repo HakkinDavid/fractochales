@@ -52,6 +52,7 @@ int Lightning::getHei(void){ return hei; }
 int Lightning::getWid(void){ return wid; }
 Point** Lightning::getGrid(void){ return grid; }
 int Lightning::getN(void){ return branches.size(); }
+vector<float>* Lightning::getFracs(void){ return &fracs; }
 
 void Lightning::randomize(void){
     srand(time(NULL));
@@ -244,7 +245,7 @@ void Lightning::superTraverse(){
 }
 
 //directionComp should be called before fractalComp
-//or the main branch wont accounted
+//or the main branch wont be accounted for
 float* Lightning::directionComp(void){
     int n = branches.size();
     int xi = 0, yi = 0;
@@ -271,9 +272,9 @@ float* Lightning::directionComp(void){
     return direction; // a1, a0, r
 }
 
-float Lightning::fractalComp(void){
-    float avgLen = 0, frac = 0, S = 2;
-    int mainLen = 0, dex = 0, N = 2;
+void Lightning::fractalComp(void){
+    float avgLen = 0, S = exp(1), N = exp(1);
+    int mainLen = 0, dex = 0;
     tuple<int, int> mainB = make_tuple(0, 0);
     vector<int> branLens;
 
@@ -342,7 +343,19 @@ float Lightning::fractalComp(void){
     if(avgLen != 0){ 
         if((mainLen/avgLen) > 1){ S = mainLen/avgLen; } // Never divide by zero
     }
-    //frac = getFractality(N, S);
-    frac = log(N)/log(S);
-    return frac;
+
+    //Calculate fractality using Maclaurin Series
+    float er = 100, logN = 0, logS = 0;
+    int i = 1;
+    N = (1.0/N) - 1;
+    S = (1.0/S) - 1;
+    while(er > 0.000001){
+        logN += (pow(-1, i+1)) * (pow(N, i)/i);
+        logS += (pow(-1, i+1)) * (pow(S, i)/i);
+        fracs.emplace_back(logN/logS);
+        if(i > 1){
+            er = (fracs[i-1] - fracs[i-2]) * 100 / fracs[i-1];
+        }
+        i++;
+    }
 }

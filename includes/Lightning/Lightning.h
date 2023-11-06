@@ -43,9 +43,9 @@ private:
     Point ** grid = nullptr;
     float leeway;
     float branch;
-
-    // store the end of a branch
     vector<tuple<int, int>> branches;
+    vector<float> fracs;
+
 public:
     Lightning(int hei = 181, int wid = 257, float leeway = 0.24, float branch = 0.12);
     ~Lightning();
@@ -58,6 +58,7 @@ public:
     int getWid(void);
     Point** getGrid(void);
     int getN(void);
+    vector<float>* getFracs(void);
 
     void randomize(void);
     void show(void);
@@ -66,7 +67,7 @@ public:
     void superTraverse(void);
     
     float* directionComp(void);
-    float fractalComp(void);
+    void fractalComp(void);
 };
 
 #endif
