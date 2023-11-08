@@ -7,16 +7,26 @@
 
 #include "switch.h"
 
-Switch::Switch(bool &binded, float position_x, float position_y, sf::Font &font, wstring title, float size_x, float size_y, sf::Color color_shape, sf::Color color_shape_clicked, sf::Color color_text) : Button (binded, position_x, position_y, font, title + L" [OFF]", size_x, size_y, color_shape, color_shape_clicked, color_text) {
+Switch::Switch(bool &binded, float position_x, float position_y, sf::Font &font, wstring title, sf::Color color_shape, sf::Color color_shape_clicked, sf::Color color_handle, sf::Color color_text) : Button (binded, position_x, position_y, font, title, 60, 15, color_shape, color_shape_clicked, color_text) {
     this->alreadyDispatched = false;
-    this->rawTitle = title;
+    this->handle = sf::RectangleShape (sf::Vector2f(20, 25));
+    this->handle.setPosition(shape.getPosition().x, shape.getPosition().y + ((shape.getSize().y - handle.getLocalBounds().height)/2));
+    this->handle.setFillColor(color_handle);
+    this->title.setCharacterSize(18);
+    this->title.setStyle(sf::Text::Bold);
+    this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y - (this->title.getCharacterSize()*2));
 }
 
 bool Switch::updateState () {
     if (isClicking && !alreadyDispatched) {
         *x = !(*x);
+        if (*x) {
+            handle.setPosition(shape.getPosition().x + shape.getSize().x - handle.getSize().x, handle.getPosition().y);
+        }
+        else {
+            handle.setPosition(shape.getPosition().x, handle.getPosition().y);
+        }
         shape.setFillColor(colors[*x]);
-        title.setString(formatTitle(rawTitle));
         return true;
     }
     return false;
@@ -30,11 +40,7 @@ void Switch::checkClicking (sf::Vector2i mouse) {
     else alreadyDispatched = true;
 }
 
-wstring Switch::formatTitle (wstring value) {
-    if (*x) {
-        return value + L" [ON]";
-    }
-    else {
-        return value + L" [OFF]";
-    }
+void Switch::draw (sf::RenderWindow &window) {
+    Button::draw(window);
+    window.draw(handle);
 }

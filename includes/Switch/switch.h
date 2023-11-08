@@ -16,12 +16,12 @@ using namespace std;
 class Switch : public Button {
     private:
         bool alreadyDispatched; // ¿ya había recibido este evento?
-        wstring rawTitle;
+        sf::RectangleShape handle;
     public:
-        Switch (bool &binded, float position_x, float position_y, sf::Font &font, wstring title = wstring(), float size_x = 100, float size_y = 50, sf::Color color_shape = sf::Color::Black, sf::Color color_shape_clicked = sf::Color::Green, sf::Color color_text = sf::Color::White);
+        Switch (bool &binded, float position_x, float position_y, sf::Font &font, wstring title = wstring(), sf::Color color_shape = sf::Color::Black, sf::Color color_shape_clicked = sf::Color::Green, sf::Color color_handle = sf::Color::White, sf::Color color_text = sf::Color::White);
         bool updateState ();
         void checkClicking (sf::Vector2i mouse);
-        wstring formatTitle(wstring value);
+        void draw (sf::RenderWindow &window);
 };
 
 #endif
