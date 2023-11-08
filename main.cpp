@@ -230,6 +230,7 @@ int main(){
         thunder_data.str(std::wstring());
         thunder_data << "Altura: " << (int) thunder[0].position.y << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
+        thunder_data << "Nodos encendidos: " << storm.getLightPoints() << endl;
         thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "") << " " << fixed << setprecision(4) << direction[0] << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;

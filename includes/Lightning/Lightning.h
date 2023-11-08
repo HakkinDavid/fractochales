@@ -43,6 +43,7 @@ private:
     Point ** grid = nullptr;
     float leeway;
     float branch;
+    int lightPoints;
     vector<tuple<int, int>> branches;
     vector<float> fracs;
 
@@ -56,6 +57,7 @@ public:
     float getBranch(void);
     int getHei(void);
     int getWid(void);
+    int getLightPoints(void);
     Point** getGrid(void);
     int getN(void);
     vector<float>* getFracs(void);

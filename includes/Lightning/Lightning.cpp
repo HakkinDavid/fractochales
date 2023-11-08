@@ -31,14 +31,14 @@ Lightning::Lightning(int hei, int wid, float leeway, float branch) {
     //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
     this->hei = hei;
     this->wid = wid;
+    this->leeway = leeway;
+    this->branch = branch;
 
+    this->lightPoints = 0;
     this->grid = new Point* [this->hei];
     for (int i = 0; i < this->hei; i++) {
 		this->grid[i] = new Point[this->wid];
 	}
-    
-    this->leeway = leeway;
-    this->branch = branch;
 }
 
 Lightning::~Lightning(){
@@ -50,6 +50,7 @@ float Lightning::getLeeway(void){ return leeway; }
 float Lightning::getBranch(void){ return branch; }
 int Lightning::getHei(void){ return hei; }
 int Lightning::getWid(void){ return wid; }
+int Lightning::getLightPoints(void){ return lightPoints; }
 Point** Lightning::getGrid(void){ return grid; }
 int Lightning::getN(void){ return branches.size(); }
 vector<float>* Lightning::getFracs(void){ return &fracs; }
@@ -83,6 +84,7 @@ void Lightning::traverse(int x, int y){
         float neighborVal[3] = {0};
         int key = 0, min = 3, min2 = 3;
 
+        if(!grid[x][y].getIsLight()){ lightPoints++; }
         grid[x][y].setIsLight(true);
 
         // Find the accessible neighbors
@@ -180,6 +182,7 @@ void Lightning::superTraverse(){
     // Start of lightning at top center of screen
     grid[0][middle].setIsLight(true);
     grid[0][middle].setPrevY(middle);
+    lightPoints++;
     origins[0] = make_tuple(1, middle-1);
     origins[1] = make_tuple(1, middle);
     origins[2] = make_tuple(1, middle+1);
@@ -238,6 +241,7 @@ void Lightning::superTraverse(){
             x += 1;
             y = get<1>(origins[min]);
             grid[x][y].setIsLight(true);
+            lightPoints++;
         }
 
     } while(x < hei/2); // Loop if not low enough
