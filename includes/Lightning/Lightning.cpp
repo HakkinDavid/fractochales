@@ -270,8 +270,7 @@ float* Lightning::directionComp(void){
     numer = (n*Exy - Ex*Ey);
     direction[0] = numer / (float)(n*Ex2 - Ex*Ex); // a1, slope
     direction[1] = ((float)Ey/n) - direction[0]*((float)Ex/n); // a0, displacement
-    direction[2] = numer / (sqrt(n*Ex2 - Ex*Ex) * sqrt(n*Ey2 - Ey*Ey)); // r, error
-    direction[2] *= direction[2]; // r^2, idk how important it is to square it but whatever
+    direction[2] = numer / (sqrt(n*Ex2 - Ex*Ex) * sqrt(n*Ey2 - Ey*Ey)); // r, correlation coefficient (THIS SHOULD NOT BE SQUARED YET) ... its square is a different number (determination coefficient)
 
     return direction; // a1, a0, r
 }

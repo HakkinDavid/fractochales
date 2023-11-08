@@ -18,7 +18,7 @@ class Switch : public Button {
         bool alreadyDispatched; // ¿ya había recibido este evento?
         sf::RectangleShape handle;
     public:
-        Switch (bool &binded, float position_x, float position_y, sf::Font &font, wstring title = wstring(), sf::Color color_shape = sf::Color::Black, sf::Color color_shape_clicked = sf::Color::Green, sf::Color color_handle = sf::Color::White, sf::Color color_text = sf::Color::White);
+        Switch (bool &binded, float position_x, float position_y, sf::Font &font, wstring title = wstring(), sf::Color color_shape = sf::Color(84,0,14), sf::Color color_shape_active = sf::Color(0,84,46), sf::Color color_handle = sf::Color::White, sf::Color color_text = sf::Color::White);
         bool updateState ();
         void checkClicking (sf::Vector2i mouse);
         void draw (sf::RenderWindow &window);

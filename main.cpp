@@ -152,7 +152,7 @@ int main(){
     Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.45f, font, L"Alternar fondo", 200, 50, sf::Color(245, 173, 66), sf::Color(252, 210, 146));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
     // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal", sf::Color(84,0,14), sf::Color(0,84,46));
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal");
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider};
@@ -259,6 +259,7 @@ int main(){
         thunder_data << "Nodos encendidos: " << storm.getLightPoints() << endl;
         thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "") << " " << fixed << setprecision(4) << direction[0] << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
+        thunder_data << L"Coeficiente de determinación (R^2): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
         text.setString(thunder_data.str());
         dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 10));
