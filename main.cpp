@@ -12,6 +12,7 @@
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
 #include "includes/Slider/slider.h"
+#include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
 
 #define WINDOW_W 1920
@@ -109,6 +110,7 @@ int main(){
     float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
     float* direction = nullptr;
     bool zap = false;
+    bool linear_adjustment_line = false;
     bool switchingBG = false;
     bool attemptClose = false;
 
@@ -149,11 +151,15 @@ int main(){
     Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224));
     Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.45f, font, L"Alternar fondo", 200, 50, sf::Color(245, 173, 66), sf::Color(252, 210, 146));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
+    // interruptores
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.025f, window.getSize().y*0.38f, font, L"Mostrar ajuste lineal", 400, 50, sf::Color(84,0,14), sf::Color(0,84,46));
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
+    // colocar los interruptores que recibirán eventos en grupo
+    Switch * all_switches [] = {&linear_adjustment_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -193,6 +199,24 @@ int main(){
                 break;
             }
         }
+        for (auto &i : all_switches) {
+            switch (type) {
+                case 0: // cuando usuario clickea
+                    i->checkClicking(*mouse);
+                break;
+                case 1: // cuando usuario desclickea
+                    i->setIsClicking(false);
+                break;
+                case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
+                    i->updateState();
+                break;
+                case 3: // dibujar
+                    i->draw(window);
+                break;
+                default:
+                break;
+            }
+        }
     };
 
     Lightning storm;
@@ -214,8 +238,10 @@ int main(){
                 }
             }
         }
-        thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
-        thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
+        if (linear_adjustment_line) {
+            thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
+            thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
+        }
         reverse(thunder.begin(), thunder.end());
     };
 
@@ -295,7 +321,7 @@ int main(){
 
         sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
         
-        if (alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
+        if (linear_adjustment_switch.updateState() || alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
             recalculateLightningVertex(true);
         }
         leewaySlider.updatePercentage(mousepos_update);

@@ -13,7 +13,7 @@ using namespace std;
 #define BUTTON_H
 
 class Button {
-    private:
+    protected:
         bool * x;
         sf::RectangleShape shape;
         sf::Text title; // su posición depende del slider
