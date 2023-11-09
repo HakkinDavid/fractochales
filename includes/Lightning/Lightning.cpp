@@ -378,7 +378,7 @@ unsigned long long int Lightning::getInvolvedElectrons () {
     return (
         // this parentheses should account for all electrons in each node
         (
-            (gridHeightInMeters / (float) wid) // get SI height of a node
+            (gridHeightInMeters / (float) hei) // get SI height of a node
             *
             // for reference see (A)
             /*
