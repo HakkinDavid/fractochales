@@ -47,6 +47,8 @@ private:
     vector<tuple<int, int>> branches;
     vector<float> fracs;
 
+    float gridHeightInMeters = 5000;
+
 public:
     Lightning(int hei = 181, int wid = 257, float leeway = 0.24, float branch = 0.12);
     ~Lightning();
@@ -70,6 +72,10 @@ public:
     
     float* directionComp(void);
     void fractalComp(void);
+    float getGridHeightInMeters(void);
+
+    unsigned long long int getInvolvedElectrons (void);
+    long double getElectronicMass (void);
 };
 
 #endif

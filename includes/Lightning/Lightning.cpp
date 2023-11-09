@@ -362,3 +362,49 @@ void Lightning::fractalComp(void){
         i++;
     }
 }
+
+float Lightning::getGridHeightInMeters () {
+    return gridHeightInMeters;
+}
+
+unsigned long long int Lightning::getInvolvedElectrons () {
+    // unlike the approach we talked about in class, i realized a lighting is unidimensional and by no means uses a cubic meter ... let alone 16 m^3 or shit
+    // so here is a non volume-dependant approach
+    // this COULD BE adapted into a more dynamic [no pun intended] calc so we can consider different ambients and not just air structure and proportions
+    // if someone wants to do it, it's the same idea : node height in meters * environmental factor
+    // environmental factor = (proportion of element / element atomic height * valence electrons per atom) + ...
+    // since we wanna precalc these values (because they are constant and use quite big numbers), different environmental factors can be stored in an array i guess, then just multiply by height of a node in meters
+    // then you just multiply by number of nodes that were lit up
+    return (
+        // this parentheses should account for all electrons in each node
+        (
+            (gridHeightInMeters / (float) wid) // get SI height of a node
+            *
+            // for reference see (A)
+            /*
+            (
+                (
+                    0.79 // proportion of nitrogen in air || if this is confusing your mind out, consider that our lighting is kinda unidimensional, so strictly all we have are individual atoms stacked up, therefore, the height is composed of this percentage of nitrogen atoms
+                    / (0.000000000092 * 2) // 0.000000000092 m is nitrogen radius (double it and you get the atom height) ... if you divide total height that corresponds to this kind of atom, you should get the number of atoms involved
+                    * 5 // valence electrons of each nitrogen atom
+                )
+                +
+                (
+                    0.21 // proportion of oxygen in air || if this is confusing your mind out, consider that our lighting is kinda unidimensional, so strictly all we have are individual atoms stacked up, therefore, the height is composed of this percentage of oxygen atoms
+                    / (0.000000000073 * 2) // 0.000000000073 m is oxygen radius (double it and you get the atom height) ... if you divide total height that corresponds to this kind of atom, you should get the number of atoms involved
+                    * 6 // valence electrons of each oxygen atom
+                )
+            )
+            */
+           // (A) distributive law allows us to precalculate the parentheses (environmental factor) without affecting the result
+           // result is 30 097 528 290 . 649 197, so we just multiply it by SI height
+           30097528290.649197
+        )
+        *
+        lightPoints // multiply by all nodes that have been lit up
+    );
+}
+
+long double Lightning::getElectronicMass (void) {
+    return ((float) getInvolvedElectrons() * (float) 0.00000000000000000000000000000091);  // un electrón tiene masa de 9.1x(10^(-31)) kg
+}

@@ -254,9 +254,10 @@ int main(){
         storm.fractalComp();
         recalculateLightningVertex();
         thunder_data.str(std::wstring());
-        thunder_data << "Altura: " << (int) thunder[0].position.y << endl;
+        thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getWid()) << "m" << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Nodos encendidos: " << storm.getLightPoints() << endl;
+        thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons() << endl;
+        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass() << "kg" << endl;
         thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "") << " " << fixed << setprecision(4) << direction[0] << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Coeficiente de determinación (R^2): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
