@@ -273,7 +273,6 @@ int main(){
 
     while (window.isOpen())
     {
-        if (attemptClose) window.close();
         sf::Event event;
         
         while (window.pollEvent(event))
@@ -333,7 +332,7 @@ int main(){
             if (bg[bgIndex] == nullptr) bgIndex = 0;
             background.setTexture(*bg[bgIndex]);
         }
-        closeButton.updateState();
+        if (closeButton.updateState() && attemptClose) window.close();
         
         if (zapping.updateState() && zap){
             generateLightning();
