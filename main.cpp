@@ -258,7 +258,7 @@ int main(){
         thunder_data << "Ramas: " << storm.getN() << endl;
         thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons() << endl;
         thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass() << "kg" << endl;
-        thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "") << " " << fixed << setprecision(4) << direction[0] << "y" << endl;
+        thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Coeficiente de determinación (R^2): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
