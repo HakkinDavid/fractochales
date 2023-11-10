@@ -367,7 +367,7 @@ float Lightning::getGridHeightInMeters () {
     return gridHeightInMeters;
 }
 
-unsigned long long int Lightning::getInvolvedElectrons (long double * environmental_factor) {
+unsigned long Lightning::getInvolvedElectrons (float &environmental_factor) {
     // MAURICIO'S APPROACH, IMPLEMENTED BY DAVID
     return
     (
@@ -398,7 +398,7 @@ unsigned long long int Lightning::getInvolvedElectrons (long double * environmen
             */
             // (A) distributive law allows us to precalculate this parentheses (aka environmental factor) without affecting the result
             // 3107424876.30374896651003593080636010231246734962391002 electrons per linear meter of air
-            (environmental_factor != nullptr) ? *environmental_factor : 3107424876.30374896651003593080636010231246734962391002
+            environmental_factor
         )
         *
         lightPoints // multiply by all nodes that have been lit up
@@ -443,6 +443,6 @@ unsigned long long int Lightning::getInvolvedElectrons (long double * environmen
     */
 }
 
-long double Lightning::getElectronicMass (long double * environmental_factor) {
+long double Lightning::getElectronicMass (float &environmental_factor) {
     return ((float) getInvolvedElectrons(environmental_factor) * (float) 0.00000000000000000000000000000091);  // un electrón tiene masa de 9.1x(10^(-31)) kg
 }

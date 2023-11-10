@@ -101,8 +101,10 @@ int main(){
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
 
-    float leeway = 0.24F;
-    float branch = 0.12F;
+    const float defaultLeeway = 0.24F;
+    const float defaultBranch = 0.12F;
+    float leeway = defaultLeeway;
+    float branch = defaultBranch;
     float lightning_width = 257;
     float lightning_height = 181;
     float lightning_scale = 6;
@@ -125,34 +127,41 @@ int main(){
     water.loadFromFile("images/water.jpg");
 
     sf::Texture wood;
-    wood.loadFromFile("images/wood.jpeg");
+    wood.loadFromFile("images/wood.jpg");
 
     sf::Texture shrek;
     shrek.loadFromFile("images/shrek.png");
+
+    sf::Texture space;
+    space.loadFromFile("images/space.jpg");
 
     sf::Texture black;
     black.loadFromFile("images/black.png");
 
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
-    sf::Texture * bg [] = {&city, &water, &wood, &shrek, &black, nullptr};
+    sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
 
     // valores de entorno para el rayo
-    // si es nullptr, se asume que es aire
-    long double * environmental_factors [] = {
-        nullptr, // ciudad [usa el valor predeterminado]
-        new long double (25746383589.4834602095982075849351178030077195309528665478627), // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
-        new long double (81206048428.74334182814399729120705789177218382976918208), // madera [cbrt(2042797000000000000000000000)*(64)] : 2042797000000000000000000000 moléculas en un metro cúbico de madera ( 550 [kg/m^3] / 12.011*6+1.00784*10+15.999*5 [g/mol] * Número de Avogadro ), obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" de la celulosa C6H10O5 (4*6+10+6*5) como molécula para obtener los electrones en un metro lineal
-        nullptr,
-        new long double (0), // vacío
-        nullptr // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
+    // el primero se toma como el valor PREDETERMINADO o EJE
+    float environmental_factors [] = {
+        3107424876.30374896651003593080636010231246734962391002, // ciudad / aire [cbrt(26521541178535914242048000)*(0.79*2*5 + 0.21*2*6)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (79%) y oxígeno (21%) para obtener los electrones en un metro lineal
+        25746383589.4834602095982075849351178030077195309528665478627, // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
+        81206048428.74334182814399729120705789177218382976918208, // madera [cbrt(2042797000000000000000000000)*(64)] : 2042797000000000000000000000 moléculas en un metro cúbico de madera ( 550 [kg/m^3] / 12.011*6+1.00784*10+15.999*5 [g/mol] * Número de Avogadro ), obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" de la celulosa C6H10O5 (4*6+10+6*5) como molécula para obtener los electrones en un metro lineal
+        2683956227.13375630504705598630107878318735183748706240, // pántano [cbrt(26521541178535914242048000)*(0.5*8 + 0.5*10)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (50%) y metano (50%) para obtener los electrones en un metro lineal
+        100, // vacío interestelar [cbrt(10^6)*1] : 10^6 átomos de hidrógeno por metro cúbico de espacio interestelar, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del hidrógeno singular para obtener los electrones en un metro lineal
+        1.0f, // negro ... valor por defecto
+        0.0f // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
     };
+
+    float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
 
     // inicializar interfaz
     // deslizadores
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.56f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.47f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White);
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White);
@@ -160,13 +169,13 @@ int main(){
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White);
     // botones
     Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224));
-    Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.45f, font, L"Alternar fondo", 200, 50, sf::Color(245, 173, 66), sf::Color(252, 210, 146));
+    Button backgroundButton (switchingBG, window.getSize().x*0.95f - 220, window.getSize().y*0.92f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146));
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
     // interruptores
     Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal");
 
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider};
+    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
@@ -241,8 +250,8 @@ int main(){
         thunder_data.str(std::wstring());
         thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(environmental_factors[bgIndex]) << endl;
-        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass(environmental_factors[bgIndex]) << "kg" << endl;
+        thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(current_environmental_factor) << endl;
+        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass(current_environmental_factor) << "kg" << endl;
         thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
@@ -337,18 +346,26 @@ int main(){
         }
 
         sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
+
+        if (backgroundButton.updateState() && switchingBG) {
+            bgIndex++;
+            if (bg[bgIndex] == nullptr) bgIndex = 0;
+            background.setTexture(*bg[bgIndex]);
+            current_environmental_factor = environmental_factors[bgIndex];
+            leeway = defaultLeeway * (current_environmental_factor)/(environmental_factors[0]); // if more electrons, more leeway
+            branch = defaultBranch * (environmental_factors[0])/(current_environmental_factor); // if more electrons, less branching
+        }
+
+        if (envfactorSlider.updatePercentage(mousepos_update)) {
+            retypeInfo();
+        }
         
         if (linear_adjustment_switch.updateState() || alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
             recalculateLightningVertex(true);
         }
         leewaySlider.updatePercentage(mousepos_update);
         branchSlider.updatePercentage(mousepos_update);
-        if (backgroundButton.updateState() && switchingBG) {
-            bgIndex++;
-            if (bg[bgIndex] == nullptr) bgIndex = 0;
-            background.setTexture(*bg[bgIndex]);
-            retypeInfo();
-        }
+        
         if (closeButton.updateState() && attemptClose) window.close();
         
         if (zapping.updateState() && zap){
@@ -379,10 +396,5 @@ int main(){
     }
     // liberar memoria
     delete [] direction;
-    bgIndex = 0;
-    while (bg[bgIndex] != nullptr) {
-        delete environmental_factors[bgIndex];
-        bgIndex++;
-    }
     return 0;
 }

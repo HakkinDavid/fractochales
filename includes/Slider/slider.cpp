@@ -71,10 +71,28 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
         else {
             handle.setPosition(mouse.x - handle.getSize().x/2, handle.getPosition().y);
         }
-        handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
+        percent = ((handle.getPosition().x - shape.getPosition().x)/(shape.getSize().x - handle.getLocalBounds().width))*100.0f;
+        *x = ((upperBound - lowerBound)/100) * percent + lowerBound;
     }
-    percent = ((handle.getPosition().x - shape.getPosition().x)/(shape.getSize().x - handle.getLocalBounds().width))*100.0f;
-    *x = ((upperBound - lowerBound)/100) * percent + lowerBound;
+    else {
+        percent = (*x - lowerBound)/(upperBound - lowerBound)*100.0f;
+        if (percent != oldPercent) {
+            int x_based_pos = shape.getPosition().x + ((shape.getSize().x - handle.getLocalBounds().width)/100) * ((*x - lowerBound)/((upperBound - lowerBound)/100));
+            // fuera del límite (bajo 0; muy a la izquierda)
+            if (x_based_pos < shape.getPosition().x) {
+                handle.setPosition(shape.getPosition().x, handle.getPosition().y);
+            }
+            // fuera del límite (sobre 100; muy a la derecha)
+            else if (x_based_pos > shape.getPosition().x + shape.getSize().x) {
+                handle.setPosition(shape.getPosition().x + shape.getSize().x - handle.getSize().x, handle.getPosition().y);
+            }
+            // está adentro (nyaaaaa~)
+            else {
+                handle.setPosition(x_based_pos, handle.getPosition().y);
+            }
+        }
+    }
+    handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
     handle_text_percentage.str(string());
     if (swapToUnits) handle_text_percentage << fixed << setprecision(2) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
