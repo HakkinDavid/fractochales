@@ -367,7 +367,7 @@ float Lightning::getGridHeightInMeters () {
     return gridHeightInMeters;
 }
 
-unsigned long long int Lightning::getInvolvedElectrons (unsigned long long int * environmental_factor) {
+unsigned long long int Lightning::getInvolvedElectrons (long double * environmental_factor) {
     // MAURICIO'S APPROACH, IMPLEMENTED BY DAVID
     return
     (
@@ -443,6 +443,6 @@ unsigned long long int Lightning::getInvolvedElectrons (unsigned long long int *
     */
 }
 
-long double Lightning::getElectronicMass (unsigned long long int * environmental_factor) {
+long double Lightning::getElectronicMass (long double * environmental_factor) {
     return ((float) getInvolvedElectrons(environmental_factor) * (float) 0.00000000000000000000000000000091);  // un electrón tiene masa de 9.1x(10^(-31)) kg
 }

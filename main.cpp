@@ -139,12 +139,12 @@ int main(){
 
     // valores de entorno para el rayo
     // si es nullptr, se asume que es aire
-    unsigned long long int * environmental_factors [] = {
+    long double * environmental_factors [] = {
         nullptr, // ciudad [usa el valor predeterminado]
-        new unsigned long long int (25746383589.4834602095982075849351178030077195309528665478627), // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
+        new long double (25746383589.4834602095982075849351178030077195309528665478627), // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
+        new long double (81206048428.74334182814399729120705789177218382976918208), // madera [cbrt(2042797000000000000000000000)*(64)] : 2042797000000000000000000000 moléculas en un metro cúbico de madera ( 550 [kg/m^3] / 12.011*6+1.00784*10+15.999*5 [g/mol] * Número de Avogadro ), obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" de la celulosa C6H10O5 (4*6+10+6*5) como molécula para obtener los electrones en un metro lineal
         nullptr,
-        nullptr,
-        new unsigned long long int (0), // vacío
+        new long double (0), // vacío
         nullptr // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
     };
 
