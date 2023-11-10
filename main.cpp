@@ -85,18 +85,18 @@ int main(){
     int sfx_i = 1;
 
     sf::Font font;  // Sets our font to this
-    font.loadFromFile("fonts/ComicSansMS3.ttf");
+    font.loadFromFile("fonts/NunitoSans.ttf");
 
     sf::Text text;
     text.setFont(font);
-    text.setCharacterSize(24);
+    text.setCharacterSize(20);
     text.setFillColor(sf::Color::White);
     text.setStyle(sf::Text::Bold);
     text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
 
     sf::RectangleShape dim_text_bg;
     dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
-    dim_text_bg.setFillColor(sf::Color(0, 0, 0, 127));
+    dim_text_bg.setFillColor(sf::Color(0, 0, 0, 50));
 
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
