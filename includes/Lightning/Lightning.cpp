@@ -367,7 +367,46 @@ float Lightning::getGridHeightInMeters () {
     return gridHeightInMeters;
 }
 
-unsigned long long int Lightning::getInvolvedElectrons () {
+unsigned long long int Lightning::getInvolvedElectrons (unsigned long long int * environmental_factor) {
+    // MAURICIO'S APPROACH, IMPLEMENTED BY DAVID
+    return
+    (
+        (gridHeightInMeters / (float) hei) // get height of a node in meters
+        *
+        (
+            // for reference, see (A)
+            /*
+            cbrt(26521541178535914242048000) // there are 26521541178535914242048000 molecules in a cubic meter of air, so its cubic root should be density per meter
+            *
+            (
+                (
+                    0.79 // 79% of air is nitrogen molecules
+                    *
+                    2 // 2 atoms per nitrogen molecule
+                    *
+                    5 // 5 valence electrons per nitrogen atom
+                )
+                +
+                (
+                    0.21 // 21% of air is oxygen molecules
+                    *
+                    2 // 2 atoms per oxygen molecule
+                    *
+                    6 // 6 valence electrons per oxygen atom
+                )
+            )
+            */
+            // (A) distributive law allows us to precalculate this parentheses (aka environmental factor) without affecting the result
+            // 3107424876.30374896651003593080636010231246734962391002 electrons per linear meter of air
+            (environmental_factor != nullptr) ? *environmental_factor : 3107424876.30374896651003593080636010231246734962391002
+        )
+        *
+        lightPoints // multiply by all nodes that have been lit up
+    );
+
+
+    /*
+    // UNUSED DAVID APPROACH (IT'S NOT STRICTLY WRONG BUT DOESN'T ACCOUNT FOR ACTUAL DENSITY)
     // unlike the approach we talked about in class, i realized a lighting is unidimensional and by no means uses a cubic meter ... let alone 16 m^3 or shit
     // so here is a non volume-dependant approach
     // this COULD BE adapted into a more dynamic [no pun intended] calc so we can consider different ambients and not just air structure and proportions
@@ -381,7 +420,6 @@ unsigned long long int Lightning::getInvolvedElectrons () {
             (gridHeightInMeters / (float) hei) // get SI height of a node
             *
             // for reference see (A)
-            /*
             (
                 (
                     0.79 // proportion of nitrogen in air || if this is confusing your mind out, consider that our lighting is kinda unidimensional, so strictly all we have are individual atoms stacked up, therefore, the height is composed of this percentage of nitrogen atoms
@@ -395,16 +433,16 @@ unsigned long long int Lightning::getInvolvedElectrons () {
                     * 6 // valence electrons of each oxygen atom
                 )
             )
-            */
            // (A) distributive law allows us to precalculate the parentheses (environmental factor) without affecting the result
            // result is 30 097 528 290 . 649 197, so we just multiply it by SI height
-           30097528290.649197
+           // 30097528290.649197
         )
         *
         lightPoints // multiply by all nodes that have been lit up
     );
+    */
 }
 
-long double Lightning::getElectronicMass (void) {
-    return ((float) getInvolvedElectrons() * (float) 0.00000000000000000000000000000091);  // un electrón tiene masa de 9.1x(10^(-31)) kg
+long double Lightning::getElectronicMass (unsigned long long int * environmental_factor) {
+    return ((float) getInvolvedElectrons(environmental_factor) * (float) 0.00000000000000000000000000000091);  // un electrón tiene masa de 9.1x(10^(-31)) kg
 }

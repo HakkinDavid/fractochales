@@ -137,6 +137,17 @@ int main(){
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &black, nullptr};
 
+    // valores de entorno para el rayo
+    // si es nullptr, se asume que es aire
+    unsigned long long int * environmental_factors [] = {
+        nullptr, // ciudad [usa el valor predeterminado]
+        new unsigned long long int (25746383589.4834602095982075849351178030077195309528665478627), // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
+        nullptr,
+        nullptr,
+        new unsigned long long int (0), // vacío
+        nullptr // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
+    };
+
     sf::Sprite background (*bg[bgIndex]);
 
     // inicializar interfaz
@@ -225,6 +236,21 @@ int main(){
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
+
+    auto retypeInfo = [&] () {
+        thunder_data.str(std::wstring());
+        thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
+        thunder_data << "Ramas: " << storm.getN() << endl;
+        thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(environmental_factors[bgIndex]) << endl;
+        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass(environmental_factors[bgIndex]) << "kg" << endl;
+        thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
+        thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
+        thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
+        thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
+        text.setString(thunder_data.str());
+        dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 10));
+    };
+
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
         if (!skipRedraw) renderIndex = 0;
         thunder.clear();
@@ -253,17 +279,7 @@ int main(){
         direction = storm.directionComp();
         storm.fractalComp();
         recalculateLightningVertex();
-        thunder_data.str(std::wstring());
-        thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
-        thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons() << endl;
-        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass() << "kg" << endl;
-        thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
-        thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
-        thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
-        thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
-        text.setString(thunder_data.str());
-        dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 10));
+        retypeInfo();
     };
 
     generateLightning();
@@ -331,6 +347,7 @@ int main(){
             bgIndex++;
             if (bg[bgIndex] == nullptr) bgIndex = 0;
             background.setTexture(*bg[bgIndex]);
+            retypeInfo();
         }
         if (closeButton.updateState() && attemptClose) window.close();
         
@@ -362,5 +379,10 @@ int main(){
     }
     // liberar memoria
     delete [] direction;
+    bgIndex = 0;
+    while (bg[bgIndex] != nullptr) {
+        delete environmental_factors[bgIndex];
+        bgIndex++;
+    }
     return 0;
 }

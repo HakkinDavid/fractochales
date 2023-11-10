@@ -74,8 +74,8 @@ public:
     void fractalComp(void);
     float getGridHeightInMeters(void);
 
-    unsigned long long int getInvolvedElectrons (void);
-    long double getElectronicMass (void);
+    unsigned long long int getInvolvedElectrons (unsigned long long int * environmental_factor = nullptr);
+    long double getElectronicMass (unsigned long long int * environmental_factor = nullptr);
 };
 
 #endif
