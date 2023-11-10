@@ -14,6 +14,7 @@
 #include "includes/Slider/slider.h"
 #include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
+#include "includes/ThickLine/thickline.h"
 
 #define WINDOW_W 1920
 #define WINDOW_H 1080
@@ -241,14 +242,14 @@ int main(){
 
     Lightning storm;
     wstringstream thunder_data;
-    vector<sf::Vertex> thunder; // crear el vector de vértices a renderizar
+    vector<thickLine> thunder; // crear el vector de vértices a renderizar
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
 
     auto retypeInfo = [&] () {
         thunder_data.str(std::wstring());
-        thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
+        //thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
         thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(current_environmental_factor) << endl;
         thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass(current_environmental_factor) << "kg" << endl;
@@ -261,23 +262,23 @@ int main(){
     };
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
-        if (!skipRedraw) renderIndex = 0;
         thunder.clear();
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
                 if (storm.getGrid()[i][j].getIsLight()) {
                     int i0 = storm.getGrid()[i][j].getPrevX();
                     int j0 = storm.getGrid()[i][j].getPrevY();
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]));
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]));
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(255, 255, 255), 4.f);
                 }
             }
         }
         if (linear_adjustment_line) {
-            thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
-            thunder.emplace_back(sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]));
+            thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 1.f);
         }
         reverse(thunder.begin(), thunder.end());
+        if (!skipRedraw) renderIndex = 0;
+        else renderIndex = thunder.size();
     };
 
     auto generateLightning = [&] () {
@@ -324,7 +325,7 @@ int main(){
 
         // renderizar un solo punto a la vez (hasta 120), para dar la ilusión de que el rayo "cae"
         if (renderIndex+1 <= thunder.size()) renderIndex++;
-        if (renderIndex != thunder.size() && renderIndex >= 30) renderIndex = thunder.size();
+        if (renderIndex != thunder.size() && renderIndex >= 12) renderIndex = thunder.size();
 
         window.clear(); // CLEARS CONTENT OF WINDOW
         window.draw(background);
@@ -388,7 +389,9 @@ int main(){
                     break;
             }
         }
-        window.draw(&thunder[0], renderIndex, sf::Lines);
+        for (int i = 0; i < renderIndex; i++) {
+            thunder.at(i).draw(window);
+        }
         window.draw(dim_text_bg);
         window.draw(text);
         UI_events(3);
