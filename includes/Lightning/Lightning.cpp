@@ -26,13 +26,16 @@ int Point::getPrevX(void){ return prevX; }
 int Point::getPrevY(void){ return prevY; }
 
 // LIGHTNING CLASS
-Lightning::Lightning(int hei, int wid, float leeway, float branch) {
+Lightning::Lightning(int hei, int wid, float leeway, float branch, float gridHeightInMeters, float forcedHeight, float downWeight) {
 
-    //FUCK AROUND WITH THESE FOUR NUMBERS AND FIND OUT
+    //FUCK AROUND WITH THESE NUMBERS AND FIND OUT
     this->hei = hei;
     this->wid = wid;
     this->leeway = leeway;
     this->branch = branch;
+    this->gridHeightInMeters = gridHeightInMeters;
+    this->forcedHeight = forcedHeight;
+    this->downWeight = downWeight;
 
     this->lightPoints = 0;
     this->grid = new Point* [this->hei];
@@ -136,6 +139,10 @@ void Lightning::traverse(int x, int y){
             else{
                 neighborVal[i] = grid[x][y].getPotential() + leeway;
                 neighborVal[i] -= grid[get<0>(neighbors[i])][get<1>(neighbors[i])].getPotential();
+                // Interesting question: should we add the downWeight bonus before or after the next test? we may never knoe....
+                if(get<0>(neighbors[i]) - x == 1){
+                    neighborVal[i] += downWeight;
+                }
                 if(neighborVal[i] > 0){
                     if(min == 3 || neighborVal[i] > neighborVal[min]){ min = i; }
                 }
@@ -213,7 +220,7 @@ void Lightning::superTraverse(){
         }
 
         // Lowest point isn't low enough
-        if(x < hei/2){
+        if(x < hei*forcedHeight){
             // If lowest point is a branch ending, delete branch
             int dex = branches.size();
             for(int i=0; i < branches.size(); i++){
@@ -244,7 +251,7 @@ void Lightning::superTraverse(){
             lightPoints++;
         }
 
-    } while(x < hei/2); // Loop if not low enough
+    } while(x < hei*forcedHeight); // Loop if not low enough
     
 }
 

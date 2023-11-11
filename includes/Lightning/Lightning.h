@@ -47,10 +47,12 @@ private:
     vector<tuple<int, int>> branches;
     vector<float> fracs;
 
-    float gridHeightInMeters = 5000;
+    float gridHeightInMeters;
+    float forcedHeight;
+    float downWeight;
 
 public:
-    Lightning(int hei = 181, int wid = 257, float leeway = 0.24, float branch = 0.12);
+    Lightning(int hei = 181, int wid = 257, float leeway = 0.24, float branch = 0.12, float gridHeightInMeters = 5000, float forcedHeight = 0.75, float downWeight = 0);
     ~Lightning();
 
     void setLeeway(float);
