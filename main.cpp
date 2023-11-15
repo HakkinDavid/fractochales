@@ -61,7 +61,7 @@ wstring to_super (wstring num) {
     const wchar_t super [10] = {
         L'⁰', L'¹', L'²', L'³', L'⁴', L'⁵', L'⁶', L'⁷', L'⁸', L'⁹'
     };
-    for (int i = 0; i < num.size(); i++) {
+    for (int i = 0; i < num.length(); i++) {
         num[i] = super[num.at(i) - L'0'];
     }
     return num;
@@ -70,10 +70,14 @@ wstring to_super (wstring num) {
 void format (wstringstream & s) {
     std::wstring temporal (s.str());
     const std::wregex exponential (L"e([+-])([0-9]+)");
-    std::wsmatch match;
+    std::match_results<std::wstring::iterator> match;
+    int substart = 0;
 
-    while (regex_search(temporal, match, exponential)) {
-        temporal.replace(temporal.begin() + match.position(0), temporal.begin() + match.position(0) + match.length(0), wstring(L"×10") + (match[1].compare(L"-") ? wstring(L"⁻") : wstring(L"⁺")) + to_super(match[2].str()));
+    // super efficient regex (each iteration, string is only analyzed after first match)
+    while (regex_search(temporal.begin() + substart, temporal.end(), match, exponential)) {
+        wstring replacement = L"×10" + (match[1].compare(L"-") ? wstring(L"⁻") : wstring(L"")) + to_super(match[2].str());
+        temporal.replace(temporal.begin() + substart + match.position(0), temporal.begin() + substart + match.position(0) + match.length(0), replacement);
+        substart += match.position(0) + replacement.length();
     }
 
     s.str(temporal);
