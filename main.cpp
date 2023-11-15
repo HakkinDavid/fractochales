@@ -8,6 +8,7 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
+#include <regex>
 #include "includes/Lightning/Lightning.h"
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
@@ -15,6 +16,7 @@
 #include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
 #include "includes/ThickLine/thickline.h"
+#include "includes/Physics/physics.h"
 
 #define WINDOW_W 1920
 #define WINDOW_H 1080
@@ -53,7 +55,31 @@
 // para calcular la dimensión.
 //      tl;dr this shit sucks man i think i need an int matrix and a 12 pack of beer
 
-int main(){
+wstringstream console;
+
+wstring to_super (wstring num) {
+    const wchar_t super [10] = {
+        L'⁰', L'¹', L'²', L'³', L'⁴', L'⁵', L'⁶', L'⁷', L'⁸', L'⁹'
+    };
+    for (int i = 0; i < num.size(); i++) {
+        num[i] = super[num.at(i) - L'0'];
+    }
+    return num;
+}
+
+void format (wstringstream & s) {
+    std::wstring temporal (s.str());
+    const std::wregex exponential (L"e([+-])([0-9]+)");
+    std::wsmatch match;
+
+    while (regex_search(temporal, match, exponential)) {
+        temporal.replace(temporal.begin() + match.position(0), temporal.begin() + match.position(0) + match.length(0), wstring(L"×10") + (match[1].compare(L"-") ? wstring(L"⁻") : wstring(L"⁺")) + to_super(match[2].str()));
+    }
+
+    s.str(temporal);
+}
+
+int main() {
     sf::Image icon;
     icon.loadFromFile("images/fractochales.png");
 
@@ -86,24 +112,34 @@ int main(){
     int sfx_i = 1;
 
     sf::Font font;  // Sets our font to this
-    font.loadFromFile("fonts/NunitoSans.ttf");
+    font.loadFromFile("fonts/arial.ttf"); // THERE A VERY LIMITED SET OF FONTS SUPPORTING SUPERSCRIPT PLUS/MINUS SIGNS
 
     sf::Text text;
+    sf::Text physicsOutput;
     text.setFont(font);
+    physicsOutput.setFont(font);
     text.setCharacterSize(20);
+    physicsOutput.setCharacterSize(20);
     text.setFillColor(sf::Color::White);
+    physicsOutput.setFillColor(sf::Color::White);
     text.setStyle(sf::Text::Bold);
+    physicsOutput.setStyle(sf::Text::Bold);
     text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
+    physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.01 + 50);
 
     sf::RectangleShape dim_text_bg;
-    dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
+    sf::RectangleShape dim_physicsOutput_bg;
     dim_text_bg.setFillColor(sf::Color(0, 0, 0, 50));
+    dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
+    dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
 
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
+    auto t0 = std::chrono::system_clock::now();
+    long double time;
     float leeway = defaultLeeway;
     float branch = defaultBranch;
     float lightning_width = 257;
@@ -241,24 +277,40 @@ int main(){
     };
 
     Lightning storm;
-    wstringstream thunder_data;
+    wstringstream thunder_data, thunder_physics_data;
     vector<thickLine> thunder; // crear el vector de vértices a renderizar
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
 
     auto retypeInfo = [&] () {
+        long double e_mass = storm.getElectronicMass(current_environmental_factor);
         thunder_data.str(std::wstring());
+        thunder_physics_data.str(std::wstring());
+        console.str(std::wstring());
         //thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
         thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(current_environmental_factor) << endl;
-        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << storm.getElectronicMass(current_environmental_factor) << "kg" << endl;
+        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl;
         thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
+
+        thunder_physics_data << L"W = " << scientific << setprecision(4) << e_mass << L"kg × 9.81 m/s² = " << Physics::W(e_mass) << L"N" << endl;
+        thunder_physics_data << L"t = " << time << L"ns" << endl;
+
+        format(thunder_data);
+        format(thunder_physics_data);
+
         text.setString(thunder_data.str());
+        physicsOutput.setString(thunder_physics_data.str() + console.str());
+
+        physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, physicsOutput.getPosition().y);
+        dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
+        
         dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 10));
+        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 10));
     };
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
@@ -282,6 +334,7 @@ int main(){
     };
 
     auto generateLightning = [&] () {
+        t0 = std::chrono::system_clock::now();
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
         storm = Lightning(lightning_height, lightning_width, leeway, branch);
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
@@ -289,6 +342,7 @@ int main(){
         direction = storm.directionComp();
         storm.fractalComp();
         recalculateLightningVertex();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count();
         retypeInfo();
     };
 
@@ -393,7 +447,9 @@ int main(){
             thunder.at(i).draw(window);
         }
         window.draw(dim_text_bg);
+        window.draw(dim_physicsOutput_bg);
         window.draw(text);
+        window.draw(physicsOutput);
         UI_events(3);
         window.display();
     }
