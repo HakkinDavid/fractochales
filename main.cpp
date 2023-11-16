@@ -120,7 +120,7 @@ int main() {
     int sfx_i = 1;
 
     sf::Font font;  // Sets our font to this
-    font.loadFromFile("fonts/arial.ttf"); // THERE A VERY LIMITED SET OF FONTS SUPPORTING SUPERSCRIPT PLUS/MINUS SIGNS
+    font.loadFromFile("fonts/arial.ttf"); // THERE A VERY LIMITED SET OF FONTS SUPPORTING SUPERSCRIPT
 
     sf::Text text;
     sf::Text physicsOutput;
@@ -311,7 +311,6 @@ int main() {
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
         console.str(std::wstring());
-        //thunder_data << "Altura: " << fixed << setprecision(4) << ((thunder.back().position.y-1)/lightning_scale) * (storm.getGridHeightInMeters() / (float) storm.getHei()) << "m" << endl;
         thunder_data << "Ramas: " << storm.getN() << endl;
         thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(current_environmental_factor) << endl;
         thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl;
@@ -322,27 +321,41 @@ int main() {
 
         thunder_physics_data << scientific << setprecision(4);
         thunder_physics_data << L"W = ";
-            if (show_math) thunder_physics_data << e_mass << L"kg × 9.81 m/s²\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << e_mass << L"kg·9.81 m/s²\n\t= ";
+            // resultado
             thunder_physics_data << Physics::W(e_mass) << L"N" << endl;
         thunder_physics_data << L"t = " << time << L"s" << endl;
         thunder_physics_data << L"v = " << vf << L"m/s" << endl;
         thunder_physics_data << L"a = ";
-            if (show_math) thunder_physics_data << L"(" << vf << L"m/s - 0) / " << time << L"s\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << L"(" << vf << L"m/s - 0) / " << time << L"s\n\t= ";
+            // resultado
             thunder_physics_data << acceleration << L"m/s²" << endl;
         thunder_physics_data << L"F = ";
-            if (show_math) thunder_physics_data << e_mass << L"kg × " << acceleration << L"m/s²\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << e_mass << L"kg·" << acceleration << L"m/s²\n\t= ";
+            // resultado
             thunder_physics_data << force << L"N" << endl;
         thunder_physics_data << L"Δy = ";
-            if (show_math) thunder_physics_data << L"(" << acceleration << L"m/s² × (" << time << L"s)²)/2\n\t\t+ 0m/s × (" << time << L"s) + 0m\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << L"(" << acceleration << L"m/s²·(" << time << L"s)²)/2\n\t\t+ 0m/s·(" << time << L"s) + 0m\n\t= ";
+            // resultado
             thunder_physics_data << delta_y << L"m" << endl;
         thunder_physics_data << L"T = ";
-            if (show_math) thunder_physics_data << force << L"N × " << delta_y << L"m\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << force << L"N·" << delta_y << L"m\n\t= ";
+            // resultado
             thunder_physics_data << work << L"J" << endl;
         thunder_physics_data << L"Ec₁ = ";
-            if (show_math) thunder_physics_data << L"(" << e_mass << L"kg × (" << vf << L"m/s)²)/2\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << L"(" << e_mass << L"kg·(" << vf << L"m/s)²)/2\n\t= ";
+            // resultado
             thunder_physics_data << Ecf << L"J" << endl;
         thunder_physics_data << L"P = ";
-            if (show_math) thunder_physics_data << force << L"N × " << vf << L"m/s\n\t= ";
+                // cálculos (se pueden ocultar)
+                if (show_math) thunder_physics_data << force << L"N·" << vf << L"m/s\n\t= ";
+            // resultado
             thunder_physics_data << Pf << L"kgm/s" << endl;
 
         format(thunder_data);
