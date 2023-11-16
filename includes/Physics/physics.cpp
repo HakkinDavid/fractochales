@@ -1,5 +1,9 @@
 #include "physics.h"
 
+float Physics :: mean_a (float initial_v, float final_v, float time) {
+    return (final_v - initial_v)/time;
+}
+
 float Physics :: F (float mass, float acceleration) {
     return mass * acceleration;
 }
@@ -9,7 +13,7 @@ float Physics :: W (float mass) {
 float Physics :: v (float acceleration, float time, float initial_v) {
     return acceleration * time + initial_v;
 }
-float Physics :: x (float acceleration, float time, float initial_v, float initial_x) {
+float Physics :: delta_x (float acceleration, float time, float initial_v, float initial_x) {
     return ((acceleration*time*time)/2) + initial_v*time + initial_x;
 }
 float Physics :: Em (float mass, float velocity, float height) {

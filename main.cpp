@@ -75,9 +75,13 @@ void format (wstringstream & s) {
 
     // super efficient regex (each iteration, string is only analyzed after first match)
     while (regex_search(temporal.begin() + substart, temporal.end(), match, exponential)) {
-        wstring replacement = L"×10" + (match[1].compare(L"-") ? wstring(L"⁻") : wstring(L"")) + to_super(match[2].str());
+        wstring replacement = (match[2].str() != L"00" ? L"×10" + (match[1].str() == L"-" ? wstring(L"⁻") : wstring(L"")) + (match[2].str() == L"01" && match[1] == L"+" ? wstring(L"") : to_super(match[2].str())) : L"");
         temporal.replace(temporal.begin() + substart + match.position(0), temporal.begin() + substart + match.position(0) + match.length(0), replacement);
         substart += match.position(0) + replacement.length();
+    }
+
+    if (temporal.back() == L'\n') {
+        temporal.pop_back();
     }
 
     s.str(temporal);
@@ -140,24 +144,6 @@ int main() {
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
 
-    const float defaultLeeway = 0.24F;
-    const float defaultBranch = 0.12F;
-    auto t0 = std::chrono::system_clock::now();
-    long double time;
-    float leeway = defaultLeeway;
-    float branch = defaultBranch;
-    float lightning_width = 257;
-    float lightning_height = 181;
-    float lightning_scale = 6;
-    float lightning_color [3] = {245, 230, 83};
-    float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
-    float* direction = nullptr;
-    bool zap = false;
-    bool linear_adjustment_line = false;
-    bool switchingBG = false;
-    bool attemptClose = false;
-
-    int renderIndex = 0;
     int bgIndex = 0;
 
     // inicializar fondos
@@ -198,6 +184,34 @@ int main() {
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
+
+    Lightning storm;
+    wstringstream thunder_data, thunder_physics_data;
+    vector<thickLine> thunder; // crear el vector de vértices a renderizar
+
+    const float defaultLeeway = 0.24F;
+    const float defaultBranch = 0.12F;
+
+    auto t0 = std::chrono::system_clock::now();
+    long double time;
+    float acceleration;
+    long double e_mass;
+    float force;
+
+    float leeway = defaultLeeway;
+    float branch = defaultBranch;
+    float lightning_width = 257;
+    float lightning_height = 181;
+    float lightning_scale = 6;
+    float lightning_color [3] = {245, 230, 83};
+    float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
+    float* direction = nullptr;
+    bool zap = false;
+    bool linear_adjustment_line = false;
+    bool switchingBG = false;
+    bool attemptClose = false;
+
+    int renderIndex = 0;
 
     // inicializar interfaz
     // deslizadores
@@ -280,15 +294,14 @@ int main() {
         }
     };
 
-    Lightning storm;
-    wstringstream thunder_data, thunder_physics_data;
-    vector<thickLine> thunder; // crear el vector de vértices a renderizar
-
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
 
     auto retypeInfo = [&] () {
-        long double e_mass = storm.getElectronicMass(current_environmental_factor);
+        acceleration = Physics::mean_a(0, 100000000, time);
+        e_mass = storm.getElectronicMass(current_environmental_factor);
+        force = Physics::F(e_mass, acceleration);
+
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
         console.str(std::wstring());
@@ -302,19 +315,22 @@ int main() {
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
 
         thunder_physics_data << L"W = " << scientific << setprecision(4) << e_mass << L"kg × 9.81 m/s² = " << Physics::W(e_mass) << L"N" << endl;
-        thunder_physics_data << L"t = " << time << L"ns" << endl;
+        thunder_physics_data << L"t = " << time << L"s" << endl;
+        thunder_physics_data << L"a = (10⁸m/s - 0) / " << time << L"s = " << acceleration << L"m/s²" << endl;
+        thunder_physics_data << L"F = " << force << L"N" << endl;
+        thunder_physics_data << L"Δy = " << Physics::delta_x(acceleration, time) << "m" << endl;
 
         format(thunder_data);
         format(thunder_physics_data);
-
+        
         text.setString(thunder_data.str());
-        physicsOutput.setString(thunder_physics_data.str() + console.str());
+        physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
 
         physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, physicsOutput.getPosition().y);
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
         
-        dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 10));
-        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 10));
+        dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
+        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 15));
     };
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
@@ -338,15 +354,15 @@ int main() {
     };
 
     auto generateLightning = [&] () {
-        t0 = std::chrono::system_clock::now();
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
         storm = Lightning(lightning_height, lightning_width, leeway, branch);
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
+        t0 = std::chrono::system_clock::now();
         storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.1; // * 0.000000001 (ns -> s) * 0.1 ajuste manual (rayo >>> pc)
         direction = storm.directionComp();
         storm.fractalComp();
         recalculateLightningVertex();
-        time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count();
         retypeInfo();
     };
 
