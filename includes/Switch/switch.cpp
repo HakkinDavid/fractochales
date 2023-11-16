@@ -36,6 +36,9 @@ void Switch::checkClicking (sf::Vector2i mouse) {
     if (!isClicking) {
         alreadyDispatched = false;
         Button::checkClicking(mouse);
+        if (!isClicking && handle.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse))) {
+            isClicking = true;
+        }
     }
     else alreadyDispatched = true;
 }

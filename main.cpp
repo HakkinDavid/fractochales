@@ -133,7 +133,7 @@ int main() {
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
     text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
-    physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.01 + 50);
+    physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.01);
 
     sf::RectangleShape dim_text_bg;
     sf::RectangleShape dim_physicsOutput_bg;
@@ -210,6 +210,7 @@ int main() {
     bool linear_adjustment_line = false;
     bool switchingBG = false;
     bool attemptClose = false;
+    bool show_math = false;
 
     int renderIndex = 0;
 
@@ -228,13 +229,14 @@ int main() {
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
     // interruptores
     Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal");
+    Switch show_math_switch (show_math, window.getSize().x*0.95f - 150, window.getSize().y*0.88f, font, L"Mostrar cálculos");
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch * all_switches [] = {&linear_adjustment_switch};
+    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -318,15 +320,30 @@ int main() {
         thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
 
-        thunder_physics_data << L"W = " << scientific << setprecision(4) << e_mass << L"kg × 9.81 m/s² = " << Physics::W(e_mass) << L"N" << endl;
+        thunder_physics_data << scientific << setprecision(4);
+        thunder_physics_data << L"W = ";
+            if (show_math) thunder_physics_data << e_mass << L"kg × 9.81 m/s²\n\t= ";
+            thunder_physics_data << Physics::W(e_mass) << L"N" << endl;
         thunder_physics_data << L"t = " << time << L"s" << endl;
         thunder_physics_data << L"v = " << vf << L"m/s" << endl;
-        thunder_physics_data << L"a = (" << vf << L"m/s - 0) / " << time << L"s = " << acceleration << L"m/s²" << endl;
-        thunder_physics_data << L"F = " << e_mass << L"kg × " << acceleration << L"m/s² = " << force << L"N" << endl;
-        thunder_physics_data << L"Δy = " << delta_y << L"m" << endl;
-        thunder_physics_data << L"T = " << force << L"N × " << delta_y << L"m = " << work << L"J" << endl;
-        thunder_physics_data << L"Ec₁ = " << Ecf << L"J" << endl;
-        thunder_physics_data << L"P = " << force << L"N × " << vf << L"m/s = " << Pf << L"kgm/s" << endl;
+        thunder_physics_data << L"a = ";
+            if (show_math) thunder_physics_data << L"(" << vf << L"m/s - 0) / " << time << L"s\n\t= ";
+            thunder_physics_data << acceleration << L"m/s²" << endl;
+        thunder_physics_data << L"F = ";
+            if (show_math) thunder_physics_data << e_mass << L"kg × " << acceleration << L"m/s²\n\t= ";
+            thunder_physics_data << force << L"N" << endl;
+        thunder_physics_data << L"Δy = ";
+            if (show_math) thunder_physics_data << L"(" << acceleration << L"m/s² × (" << time << L"s)²)/2\n\t\t+ 0m/s × (" << time << L"s) + 0m\n\t= ";
+            thunder_physics_data << delta_y << L"m" << endl;
+        thunder_physics_data << L"T = ";
+            if (show_math) thunder_physics_data << force << L"N × " << delta_y << L"m\n\t= ";
+            thunder_physics_data << work << L"J" << endl;
+        thunder_physics_data << L"Ec₁ = ";
+            if (show_math) thunder_physics_data << L"(" << e_mass << L"kg × (" << vf << L"m/s)²)/2\n\t= ";
+            thunder_physics_data << Ecf << L"J" << endl;
+        thunder_physics_data << L"P = ";
+            if (show_math) thunder_physics_data << force << L"N × " << vf << L"m/s\n\t= ";
+            thunder_physics_data << Pf << L"kgm/s" << endl;
 
         format(thunder_data);
         format(thunder_physics_data);
@@ -334,11 +351,11 @@ int main() {
         text.setString(thunder_data.str());
         physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
 
-        physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, physicsOutput.getPosition().y);
+        physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x - (show_math ? 0 : 50), physicsOutput.getPosition().y);
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
         
         dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
-        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 15));
+        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10 + (show_math ? 0 : 50), physicsOutput.getLocalBounds().getSize().y + 15));
     };
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
@@ -439,7 +456,7 @@ int main() {
             branch = defaultBranch * (environmental_factors[0])/(current_environmental_factor); // if more electrons, less branching
         }
 
-        if (envfactorSlider.updatePercentage(mousepos_update)) {
+        if (envfactorSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
             retypeInfo();
         }
         
