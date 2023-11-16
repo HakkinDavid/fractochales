@@ -23,7 +23,7 @@ float Physics :: Ep (float mass, float height) {
     return mass * gravity * height;
 }
 float Physics :: Ec (float mass, float velocity) {
-    return (mass * velocity * velocity) / 2;
+    return (mass * (velocity * velocity)) / 2;
 }
 float Physics :: T (float force, float distance) {
     return force * distance;

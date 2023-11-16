@@ -194,9 +194,9 @@ int main() {
 
     auto t0 = std::chrono::system_clock::now();
     long double time;
-    float acceleration;
     long double e_mass;
-    float force;
+    float vf = 100000000.0F;
+    float acceleration, force, delta_y, Ecf, work, Pf;
 
     float leeway = defaultLeeway;
     float branch = defaultBranch;
@@ -298,9 +298,13 @@ int main() {
     // por lo que se llama sin parámetros
 
     auto retypeInfo = [&] () {
-        acceleration = Physics::mean_a(0, 100000000, time);
+        acceleration = Physics::mean_a(0, vf, time);
         e_mass = storm.getElectronicMass(current_environmental_factor);
         force = Physics::F(e_mass, acceleration);
+        delta_y = Physics::delta_x(acceleration, time);
+        Ecf = Physics::Ec(e_mass, vf);
+        work = Physics::T(force, delta_y);
+        Pf = Physics::P(force, vf);
 
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
@@ -316,9 +320,13 @@ int main() {
 
         thunder_physics_data << L"W = " << scientific << setprecision(4) << e_mass << L"kg × 9.81 m/s² = " << Physics::W(e_mass) << L"N" << endl;
         thunder_physics_data << L"t = " << time << L"s" << endl;
-        thunder_physics_data << L"a = (10⁸m/s - 0) / " << time << L"s = " << acceleration << L"m/s²" << endl;
-        thunder_physics_data << L"F = " << force << L"N" << endl;
-        thunder_physics_data << L"Δy = " << Physics::delta_x(acceleration, time) << "m" << endl;
+        thunder_physics_data << L"v = " << vf << L"m/s" << endl;
+        thunder_physics_data << L"a = (" << vf << L"m/s - 0) / " << time << L"s = " << acceleration << L"m/s²" << endl;
+        thunder_physics_data << L"F = " << e_mass << L"kg × " << acceleration << L"m/s² = " << force << L"N" << endl;
+        thunder_physics_data << L"Δy = " << delta_y << L"m" << endl;
+        thunder_physics_data << L"T = " << force << L"N × " << delta_y << L"m = " << work << L"J" << endl;
+        thunder_physics_data << L"Ec₁ = " << Ecf << L"J" << endl;
+        thunder_physics_data << L"P = " << force << L"N × " << vf << L"m/s = " << Pf << L"kgm/s" << endl;
 
         format(thunder_data);
         format(thunder_physics_data);
@@ -359,7 +367,7 @@ int main() {
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
         storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
-        time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.1; // * 0.000000001 (ns -> s) * 0.1 ajuste manual (rayo >>> pc)
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         direction = storm.directionComp();
         storm.fractalComp();
         recalculateLightningVertex();
