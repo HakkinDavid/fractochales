@@ -7,7 +7,7 @@
 
 #include "button.h"
 
-Button::Button(bool &binded, float position_x, float position_y, sf::Font &font, wstring title, float size_x, float size_y, sf::Color color_shape, sf::Color color_shape_clicked, sf::Color color_text) {
+Button::Button(bool &binded, float position_x, float position_y, sf::Font &font, wstring title, float size_x, float size_y, sf::Color color_shape, sf::Color color_shape_clicked, sf::Color color_text, bool *hide) {
     this->x = &binded;
     this->colors[0] = color_shape;
     this->colors[1] = color_shape_clicked;
@@ -21,9 +21,11 @@ Button::Button(bool &binded, float position_x, float position_y, sf::Font &font,
     this->title.setStyle(sf::Text::Bold);
     this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2) - 4);
     this->isClicking = false;
+    this->hide = hide;
 }
 
 void Button::checkClicking (sf::Vector2i mouse) {
+    if (hide != nullptr && *hide) return;
     if (shape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse))) {
         isClicking = true;
     }
@@ -44,6 +46,7 @@ bool Button::updateState () {
 }
 
 void Button::draw(sf::RenderWindow &window) {
+    if (hide != nullptr && *hide) return;
     window.draw(shape);
     window.draw(title);
 }

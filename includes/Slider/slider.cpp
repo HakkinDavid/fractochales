@@ -19,7 +19,8 @@ Slider::Slider
         wstring title, // título del deslizador
         bool swapToUnits, // mostrar las unidades en lugar del porcentaje
         sf::Color color_shape, // color de la barra deslizable
-        sf::Color color_handle // color de la manija deslizable
+        sf::Color color_handle, // color de la manija deslizable
+        bool * hide
 ) {
     this->x = &binded;
     this->lowerBound = lowerBound;
@@ -44,9 +45,11 @@ Slider::Slider
     this->handle_percent.setPosition(handle.getPosition().x - (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
     this->isDragging = false;
     this->swapToUnits = swapToUnits;
+    this->hide = hide;
 }
 
 void Slider::checkDragging (sf::Vector2i mouse) {
+    if (hide != nullptr && *hide) return;
     if (handle.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse))) {
         isDragging = true;
     }
@@ -102,6 +105,7 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
 }
 
 void Slider::draw(sf::RenderWindow &window) {
+    if (hide != nullptr && *hide) return;
     window.draw(shape);
     window.draw(handle);
     if (omit != 1 && omit != 3) window.draw(title);

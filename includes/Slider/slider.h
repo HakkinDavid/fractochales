@@ -26,8 +26,9 @@ class Slider {
         bool isDragging;
         bool swapToUnits;
         int omit;
+        bool * hide;
     public:
-        Slider (float &binded, float lowerBound, float upperBound, float position_x, float position_y, int omit, sf::Font &font, wstring title = wstring(), bool swapToUnits = false, sf::Color color_shape = sf::Color::White, sf::Color color_handle = sf::Color::Black);
+        Slider (float &binded, float lowerBound, float upperBound, float position_x, float position_y, int omit, sf::Font &font, wstring title = wstring(), bool swapToUnits = false, sf::Color color_shape = sf::Color::White, sf::Color color_handle = sf::Color::Black, bool * hide = nullptr);
         void checkDragging (sf::Vector2i mouse);
         void setIsDragging (bool v);
         bool updatePercentage (sf::Vector2i mouse);

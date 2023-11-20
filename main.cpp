@@ -211,32 +211,35 @@ int main() {
     bool switchingBG = false;
     bool attemptClose = false;
     bool show_math = false;
+    bool hide_ui = false;
 
     int renderIndex = 0;
 
     // inicializar interfaz
     // deslizadores
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.47f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White);
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White);
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White);
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White);
-    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White);
-    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.47f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_ui);
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_ui);
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_ui);
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_ui);
+    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_ui);
+    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_ui);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_ui);
     // botones
-    Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224));
-    Button backgroundButton (switchingBG, window.getSize().x*0.95f - 220, window.getSize().y*0.92f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146));
-    Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red);
+    Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_ui);
+    Button backgroundButton (switchingBG, window.getSize().x*0.95f - 220, window.getSize().y*0.83f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_ui);
+    Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal");
-    Switch show_math_switch (show_math, window.getSize().x*0.95f - 150, window.getSize().y*0.88f, font, L"Mostrar cálculos");
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal", sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, sf::Color::White, &hide_ui);
+    Switch show_math_switch (show_math, window.getSize().x*0.95f - 150, window.getSize().y*0.80f, font, L"Mostrar cálculos", sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, sf::Color::White, &hide_ui);
+
+    Switch hide_ui_switch (hide_ui, window.getSize().x*0.95f - 150, window.getSize().y*0.92f, font, L"Ocultar interfaz", sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch};
+    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_ui_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -435,6 +438,20 @@ int main() {
             }
         }
 
+        if (attemptClose) {
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
+            if (elapsed < 1000) {
+                window.clear();
+                window.draw(background);
+                window.draw(splash_screen);
+                window.display();
+                continue;
+            }
+            else {
+                window.close();
+            }
+        }
+
         // renderizar un solo punto a la vez (hasta 120), para dar la ilusión de que el rayo "cae"
         if (renderIndex+1 <= thunder.size()) renderIndex++;
         if (renderIndex != thunder.size() && renderIndex >= 12) renderIndex = thunder.size();
@@ -460,6 +477,8 @@ int main() {
 
         sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
 
+        hide_ui_switch.updateState();
+
         if (backgroundButton.updateState() && switchingBG) {
             bgIndex++;
             if (bg[bgIndex] == nullptr) bgIndex = 0;
@@ -479,7 +498,10 @@ int main() {
         leewaySlider.updatePercentage(mousepos_update);
         branchSlider.updatePercentage(mousepos_update);
         
-        if (closeButton.updateState() && attemptClose) window.close();
+        if (closeButton.updateState() && attemptClose) {
+            start_time = std::chrono::system_clock::now();
+            background.setColor(sf::Color(115, 115, 115));
+        }
         
         if (zapping.updateState() && zap){
             generateLightning();
@@ -508,6 +530,9 @@ int main() {
         window.draw(dim_physicsOutput_bg);
         window.draw(text);
         window.draw(physicsOutput);
+        if (hide_ui) {
+            
+        }
         UI_events(3);
         window.display();
     }
