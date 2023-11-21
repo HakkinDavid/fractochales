@@ -427,7 +427,7 @@ int main() {
             if (elapsed < 1000) {
                 loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
                 loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
-                window.clear(sf::Color::White);
+                window.clear(sf::Color::Black);
                 window.draw(splash_screen);
                 window.draw(loading_percentage);
                 window.display();
