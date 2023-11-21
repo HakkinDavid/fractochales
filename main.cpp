@@ -454,7 +454,7 @@ int main() {
 
         // renderizar un solo punto a la vez (hasta 120), para dar la ilusión de que el rayo "cae"
         if (renderIndex+1 <= thunder.size()) renderIndex++;
-        if (renderIndex != thunder.size() && renderIndex >= 12) renderIndex = thunder.size();
+        if (renderIndex != thunder.size() && renderIndex >= 120) renderIndex = thunder.size();
 
         window.clear(); // CLEARS CONTENT OF WINDOW
         window.draw(background);
@@ -530,9 +530,6 @@ int main() {
         window.draw(dim_physicsOutput_bg);
         window.draw(text);
         window.draw(physicsOutput);
-        if (hide_ui) {
-            
-        }
         UI_events(3);
         window.display();
     }
