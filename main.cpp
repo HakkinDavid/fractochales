@@ -21,40 +21,6 @@
 #define WINDOW_W 1920
 #define WINDOW_H 1080
 
-// ¡¡¡¡FRACTALES!!!! - Nota de David Emmanuel Santana Romero
-// D = log(N) / log (S) | Fórmula de la dimensión fractal
-// D | Dimensión fractal
-// N | Número de piezas pequeñas final
-//    En sentido estricto, el número de piezas final es el número de líneas o rayos triviales
-//    ... es decir, el número de vértices entre dos.
-// S | Factor escala
-//    >> Tamaño de la pieza padre dividido por el tamaño de la pieza hija
-//    >> Por ejemplo, si la pieza hija tiene la mitad de tamaño, el factor escala es 2
-//    La pieza original es la rama del rayo más extensa
-//      ¡¡¡NO ES LO MISMO QUE LA QUE LLEGA MÁS LEJOS!!!
-//      La rama del rayo puede curvearse, enrollarse, ir en diagonal, etcétera
-//    La pieza hija inmediata sería la segunda rama más extensa
-//    Al tratar con líneas, nuestro factor de escala es la razón de longitudes (mayor sobre menor)
-
-// F r a  c t al e eeEEEes s s - Nota de Mauricio Putricio Alcántar Dueñas
-// He estado pensando en cómo chingados computar la mierda esta y me estoy volviendo chango
-// Hay algunos puntos que quiero tocar:
-//   1. No podemos tomar el factor escala en base a la segunda rama más extensa y luego
-//      tomar el número total de piezas pequeñas como el número de líneas, porque esas dos
-//      mediciones no son consistentes entre sí y nos podrían dar resultados como
-//      que la dimensión fractal de un rayo es 7.62. Which makes no sense.
-//   2. La manera en la que encontraríamos la segunda rama más extensa es algo complicada y
-//      me tomaría mil años explicarlo pero. La manera en la que lo haríamos también implicaría 
-//      encontrar el tamaño de las demás ramas así que En Teoría podríamos hacer el valor más
-//      exacto al tomar un promedio de la extensión de las ramas.
-//   3. Pero eso luego me lleva a lo complicado que es contar las ramas, verificar qué rama es 
-//      en realidad una subrama de otra, tomar las longitudes como la línea más extensa o el total 
-//      de líneas en el subárbol Man I Don't Fuckin Know. 
-// Por ahora el plan sería encontrar las ramas más largas que se desprendan de la rama principal,
-// hacer un promedio de sus longitudes y usar ESO (cantidad de subramas y promedio de longitudes)
-// para calcular la dimensión.
-//      tl;dr this shit sucks man i think i need an int matrix and a 12 pack of beer
-
 wstringstream console;
 
 wstring to_super (wstring num) {
@@ -126,20 +92,24 @@ int main() {
     sf::Text physicsOutput;
     text.setFont(font);
     physicsOutput.setFont(font);
-    text.setCharacterSize(20);
-    physicsOutput.setCharacterSize(20);
+    text.setCharacterSize(16);
+    physicsOutput.setCharacterSize(16);
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
-    text.setPosition(sf::Vector2f(window.getSize().x*0.01, window.getSize().y*0.01));
-    physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.01);
+    text.setPosition(window.getSize().x*0.99 - text.getLocalBounds().getSize().x, window.getSize().y*0.03);
+    physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
 
     sf::RectangleShape dim_text_bg;
     sf::RectangleShape dim_physicsOutput_bg;
     dim_text_bg.setFillColor(sf::Color(0, 0, 0, 50));
     dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
-    dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
+
+    sf::RectangleShape left_menu_bg;
+    left_menu_bg.setFillColor(sf::Color(120, 120, 120));
+    left_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
+    left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
 
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
@@ -211,35 +181,34 @@ int main() {
     bool switchingBG = false;
     bool attemptClose = false;
     bool show_math = false;
-    bool hide_ui = false;
+    bool hide_left = true;
 
     int renderIndex = 0;
 
     // inicializar interfaz
     // deslizadores
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.47f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_ui);
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_ui);
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_ui);
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_ui);
-    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_ui);
-    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_ui);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_ui);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.47f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left);
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left);
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left);
+    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
+    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // botones
-    Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_ui);
-    Button backgroundButton (switchingBG, window.getSize().x*0.95f - 220, window.getSize().y*0.83f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_ui);
+    Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+    Button backgroundButton (switchingBG, window.getSize().x*0.95f - 220, window.getSize().y*0.83f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.075f, window.getSize().y*0.40f, font, L"Ajuste lineal", sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, sf::Color::White, &hide_ui);
-    Switch show_math_switch (show_math, window.getSize().x*0.95f - 150, window.getSize().y*0.80f, font, L"Mostrar cálculos", sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, sf::Color::White, &hide_ui);
-
-    Switch hide_ui_switch (hide_ui, window.getSize().x*0.95f - 150, window.getSize().y*0.92f, font, L"Ocultar interfaz", sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, sf::Color::White);
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.05f, window.getSize().y*0.36f, font, L"Ajuste lineal", 200, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, &hide_left);
+    Switch show_math_switch (show_math, window.getSize().x*0.95f - 220, window.getSize().y*0.76f, font, L"Mostrar cálculos", 220, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White);
+    Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90), sf::Color(90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_ui_switch};
+    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_left_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -367,7 +336,9 @@ int main() {
         text.setString(thunder_data.str());
         physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
 
-        physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x - (show_math ? 0 : 50), physicsOutput.getPosition().y);
+        text.setPosition(window.getSize().x*0.99 - text.getLocalBounds().getSize().x, text.getPosition().y);
+        dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
+        physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x - (show_math ? 0 : 50), window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
         
         dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
@@ -477,8 +448,6 @@ int main() {
 
         sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
 
-        hide_ui_switch.updateState();
-
         if (backgroundButton.updateState() && switchingBG) {
             bgIndex++;
             if (bg[bgIndex] == nullptr) bgIndex = 0;
@@ -526,6 +495,21 @@ int main() {
         for (int i = 0; i < renderIndex; i++) {
             thunder.at(i).draw(window);
         }
+
+        window.draw(left_menu_bg);
+        if (hide_left_switch.updateState()) {
+            if (hide_left) {
+                left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y +1));
+                hide_left_switch.changePosition(0, window.getSize().y*0.375f);
+                hide_left_switch.changeTitle(L">");
+            }
+            else {
+                left_menu_bg.setPosition(sf::Vector2f(0, 0));
+                hide_left_switch.changePosition(window.getSize().x*0.2f, window.getSize().y*0.375f);
+                hide_left_switch.changeTitle(L"<");
+            }
+        }
+
         window.draw(dim_text_bg);
         window.draw(dim_physicsOutput_bg);
         window.draw(text);

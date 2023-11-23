@@ -16,7 +16,7 @@ Button::Button(bool &binded, float position_x, float position_y, sf::Font &font,
     this->shape.setFillColor (colors[0]);
     this->title.setFont(font);
     this->title.setString(title);
-    this->title.setCharacterSize(shape.getSize().y/2);
+    this->title.setCharacterSize((size_x < size_y ? shape.getSize().x/2 : shape.getSize().y/2));
     this->title.setFillColor(color_text);
     this->title.setStyle(sf::Text::Bold);
     this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2) - 4);
@@ -49,4 +49,13 @@ void Button::draw(sf::RenderWindow &window) {
     if (hide != nullptr && *hide) return;
     window.draw(shape);
     window.draw(title);
+}
+
+void Button::changePosition(float new_x, float new_y) {
+    shape.setPosition (new_x, new_y);
+    title.setPosition(shape.getPosition().x + ((shape.getSize().x - title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - title.getLocalBounds().height)/2) - 4);
+}
+
+void Button::changeTitle(wstring new_title) {
+    title.setString(new_title);
 }

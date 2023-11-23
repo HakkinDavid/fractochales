@@ -26,6 +26,8 @@ class Button {
         void setIsClicking (bool v);
         bool updateState ();
         void draw (sf::RenderWindow &window);
+        void changePosition (float new_x, float new_y);
+        void changeTitle (wstring new_title);
 };
 
 #endif
