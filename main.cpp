@@ -107,7 +107,7 @@ int main() {
     dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
 
     sf::RectangleShape left_menu_bg;
-    left_menu_bg.setFillColor(sf::Color(120, 120, 120));
+    left_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
     left_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
     left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
 
@@ -196,12 +196,12 @@ int main() {
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // botones
     Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.95f - 220, window.getSize().y*0.83f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White);
+    Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.24f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.05f, window.getSize().y*0.36f, font, L"Ajuste lineal", 200, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, &hide_left);
-    Switch show_math_switch (show_math, window.getSize().x*0.95f - 220, window.getSize().y*0.76f, font, L"Mostrar cálculos", 220, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White);
-    Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90), sf::Color(90, 90, 90), sf::Color::White);
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.05f, window.getSize().y*0.36f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, &hide_left);
+    Switch show_math_switch (show_math, window.getSize().x*0.05f, window.getSize().y*0.30f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+    Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider};
@@ -358,7 +358,7 @@ int main() {
             }
         }
         if (linear_adjustment_line) {
-            thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 1.f);
+            thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 2.f);
         }
         reverse(thunder.begin(), thunder.end());
         if (!skipRedraw) renderIndex = 0;
@@ -367,6 +367,12 @@ int main() {
 
     auto generateLightning = [&] () {
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
+        Point ** oldGrid = storm.getGrid();
+        for (int i = 0; i < storm.getHei(); i++) {
+            delete [] oldGrid[i];
+        }
+        delete [] oldGrid;
+        oldGrid = nullptr;
         storm = Lightning(lightning_height, lightning_width, leeway, branch);
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
@@ -501,12 +507,10 @@ int main() {
             if (hide_left) {
                 left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y +1));
                 hide_left_switch.changePosition(0, window.getSize().y*0.375f);
-                hide_left_switch.changeTitle(L">");
             }
             else {
                 left_menu_bg.setPosition(sf::Vector2f(0, 0));
                 hide_left_switch.changePosition(window.getSize().x*0.2f, window.getSize().y*0.375f);
-                hide_left_switch.changeTitle(L"<");
             }
         }
 

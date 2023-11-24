@@ -58,4 +58,5 @@ void Button::changePosition(float new_x, float new_y) {
 
 void Button::changeTitle(wstring new_title) {
     title.setString(new_title);
+    this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2) - 4);
 }
