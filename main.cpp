@@ -151,6 +151,16 @@ int main() {
         0.0f // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
     };
 
+    float weight_in_environment [] = {
+        0,
+        -0.4,
+        0.35,
+        -0.1,
+        0,
+        0,
+        0
+    };
+
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
@@ -158,6 +168,7 @@ int main() {
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data;
     vector<thickLine> thunder; // crear el vector de vértices a renderizar
+    Point ** grid = storm.getGrid();
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
@@ -170,6 +181,7 @@ int main() {
 
     float leeway = defaultLeeway;
     float branch = defaultBranch;
+    float downWeight = 0;
     float lightning_width = 257;
     float lightning_height = 181;
     float lightning_scale = 6;
@@ -187,8 +199,9 @@ int main() {
 
     // inicializar interfaz
     // deslizadores
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.47f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.38f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.44f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left);
+    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Cristalización", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left);
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left);
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
@@ -196,15 +209,15 @@ int main() {
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // botones
     Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.24f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+    Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.17f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.05f, window.getSize().y*0.36f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, &hide_left);
-    Switch show_math_switch (show_math, window.getSize().x*0.05f, window.getSize().y*0.30f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+    Switch show_math_switch (show_math, window.getSize().x*0.05f, window.getSize().y*0.23f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.05f, window.getSize().y*0.29f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, &hide_left);
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider};
+    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
@@ -367,13 +380,12 @@ int main() {
 
     auto generateLightning = [&] () {
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
-        Point ** oldGrid = storm.getGrid();
         for (int i = 0; i < storm.getHei(); i++) {
-            delete [] oldGrid[i];
+            delete [] grid[i]; // liberar memoria usada en el rayo anterior
         }
-        delete [] oldGrid;
-        oldGrid = nullptr;
-        storm = Lightning(lightning_height, lightning_width, leeway, branch);
+        delete [] grid;
+        storm = Lightning(lightning_height, lightning_width, leeway, branch, downWeight);
+        grid = storm.getGrid();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
         storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
@@ -402,9 +414,11 @@ int main() {
         if (yetToBoot) {
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
             if (elapsed < 1000) {
+                background.setColor(sf::Color((255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f)));
                 loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
                 loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
-                window.clear(sf::Color::Black);
+                window.clear();
+                window.draw(background);
                 window.draw(splash_screen);
                 window.draw(loading_percentage);
                 window.display();
@@ -417,7 +431,9 @@ int main() {
 
         if (attemptClose) {
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
-            if (elapsed < 1000) {
+            if (elapsed < 500) {
+                background.setColor(sf::Color(255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f)));
+                //splash_screen.setColor(sf::Color(255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f)));
                 window.clear();
                 window.draw(background);
                 window.draw(splash_screen);
@@ -461,6 +477,7 @@ int main() {
             current_environmental_factor = environmental_factors[bgIndex];
             leeway = defaultLeeway * (current_environmental_factor)/(environmental_factors[0]); // if more electrons, more leeway
             branch = defaultBranch * (environmental_factors[0])/(current_environmental_factor); // if more electrons, less branching
+            downWeight = weight_in_environment[bgIndex];
         }
 
         if (envfactorSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
@@ -470,12 +487,12 @@ int main() {
         if (linear_adjustment_switch.updateState() || alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
             recalculateLightningVertex(true);
         }
+        downWeightSlider.updatePercentage(mousepos_update);
         leewaySlider.updatePercentage(mousepos_update);
         branchSlider.updatePercentage(mousepos_update);
         
         if (closeButton.updateState() && attemptClose) {
             start_time = std::chrono::system_clock::now();
-            background.setColor(sf::Color(115, 115, 115));
         }
         
         if (zapping.updateState() && zap){

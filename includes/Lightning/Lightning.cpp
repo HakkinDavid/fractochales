@@ -26,7 +26,7 @@ int Point::getPrevX(void){ return prevX; }
 int Point::getPrevY(void){ return prevY; }
 
 // LIGHTNING CLASS
-Lightning::Lightning(int hei, int wid, float leeway, float branch, float gridHeightInMeters, float forcedHeight, float downWeight) {
+Lightning::Lightning(int hei, int wid, float leeway, float branch, float downWeight, float forcedHeight, float gridHeightInMeters) {
 
     //FUCK AROUND WITH THESE NUMBERS AND FIND OUT
     this->hei = hei;
