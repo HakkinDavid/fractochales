@@ -118,7 +118,7 @@ int main() {
 
     // inicializar fondos
     sf::Texture city;
-    city.loadFromFile("images/city.png");
+    city.loadFromFile("images/city.jpg");
 
     sf::Texture water;
     water.loadFromFile("images/water.jpg");
@@ -433,7 +433,6 @@ int main() {
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
             if (elapsed < 500) {
                 background.setColor(sf::Color(255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f)));
-                //splash_screen.setColor(sf::Color(255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f)));
                 window.clear();
                 window.draw(background);
                 window.draw(splash_screen);
