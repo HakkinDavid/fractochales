@@ -161,6 +161,16 @@ int main() {
         0
     };
 
+    float height_in_environment [] = {
+        0.75,
+        0.3,
+        0.95,
+        0.75,
+        0.5,
+        0.5,
+        0
+    };
+
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
@@ -181,7 +191,9 @@ int main() {
 
     float leeway = defaultLeeway;
     float branch = defaultBranch;
+    float forcedHeight = 0.75F;
     float downWeight = 0;
+    float fractalStep = 0;
     float lightning_width = 257;
     float lightning_height = 181;
     float lightning_scale = 6;
@@ -204,9 +216,10 @@ int main() {
     Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Cristalización", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left);
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left);
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left);
+    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.035f, window.getSize().y * 0.1f, 0, font, L"fractal cosa no se", true, sf::Color(0, 162, 232), sf::Color::White, &hide_left);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.03f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // botones
     Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
     Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.17f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
@@ -217,7 +230,7 @@ int main() {
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider};
+    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &fractalStepSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
@@ -302,7 +315,7 @@ int main() {
         thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
-        thunder_data << L"Dimensión fractal: " << fixed << setprecision(4) << storm.getFracs()->back() << endl;
+        thunder_data << L"Dimensión fractal: " << fixed << setprecision(6) << (*(storm.getFracs()))[floor(fractalStep+0.5) - 1] << endl;
 
         thunder_physics_data << scientific << setprecision(4);
         thunder_physics_data << L"W = ";
@@ -384,14 +397,16 @@ int main() {
             delete [] grid[i]; // liberar memoria usada en el rayo anterior
         }
         delete [] grid;
-        storm = Lightning(lightning_height, lightning_width, leeway, branch, downWeight);
+        storm = Lightning(lightning_height, lightning_width, leeway, branch, downWeight, forcedHeight);
         grid = storm.getGrid();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
-        storm.superTraverse(); // generar el trazo de luz con coordenada inicial (0, 0)
+        storm.superTraverse(); 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         direction = storm.directionComp();
         storm.fractalComp();
+        fractalStep = storm.getFracs()->size();
+        fractalStepSlider.changeUpperBound(fractalStep);
         recalculateLightningVertex();
         retypeInfo();
     };
@@ -477,9 +492,10 @@ int main() {
             leeway = defaultLeeway * (current_environmental_factor)/(environmental_factors[0]); // if more electrons, more leeway
             branch = defaultBranch * (environmental_factors[0])/(current_environmental_factor); // if more electrons, less branching
             downWeight = weight_in_environment[bgIndex];
+            forcedHeight = height_in_environment[bgIndex];
         }
 
-        if (envfactorSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
+        if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
             retypeInfo();
         }
         

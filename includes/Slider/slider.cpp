@@ -70,7 +70,7 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
         else if (mouse.x + (handle.getLocalBounds().width / 2) > shape.getPosition().x + shape.getSize().x) {
             handle.setPosition(shape.getPosition().x + shape.getSize().x - handle.getSize().x, handle.getPosition().y);
         }
-        // está adentro (nyaaaaa~)
+        // está adentro (killing you for that joke, david)
         else {
             handle.setPosition(mouse.x - handle.getSize().x/2, handle.getPosition().y);
         }
@@ -89,7 +89,7 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
             else if (x_based_pos > shape.getPosition().x + shape.getSize().x) {
                 handle.setPosition(shape.getPosition().x + shape.getSize().x - handle.getSize().x, handle.getPosition().y);
             }
-            // está adentro (nyaaaaa~)
+            // está adentro (shut UP)
             else {
                 handle.setPosition(x_based_pos, handle.getPosition().y);
             }
@@ -97,17 +97,21 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
     }
     handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
     handle_text_percentage.str(string());
-    if (swapToUnits) handle_text_percentage << fixed << setprecision(2) << *x;
+    if (swapToUnits) handle_text_percentage << fixed << setprecision(0) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
     handle_percent.setString(handle_text_percentage.str());
     if (percent != oldPercent) return true;
     else return false;
 }
 
-void Slider::draw(sf::RenderWindow &window) {
+void Slider::draw (sf::RenderWindow &window) {
     if (hide != nullptr && *hide) return;
     window.draw(shape);
     window.draw(handle);
     if (omit != 1 && omit != 3) window.draw(title);
     if (omit != 2 && omit != 3) window.draw(handle_percent);
+}
+
+void Slider::changeUpperBound (float newUpperBound) {
+    upperBound = newUpperBound;
 }
