@@ -227,7 +227,7 @@ int main() {
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // botones
     Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.045f, window.getSize().y*0.17f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+    Button backgroundButton (switchingBG, window.getSize().x*0.045f, window.getSize().y*0.23f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
     Switch show_math_switch (show_math, window.getSize().x*0.845f, window.getSize().y*0.85f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_right);
@@ -381,9 +381,9 @@ int main() {
         thunder.clear();
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
-                if (storm.getGrid()[i][j].getIsLight()) {
-                    int i0 = storm.getGrid()[i][j].getPrevX();
-                    int j0 = storm.getGrid()[i][j].getPrevY();
+                if (grid[i][j].getIsLight()) {
+                    int i0 = grid[i][j].getPrevX();
+                    int j0 = grid[i][j].getPrevY();
                     thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
                     thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(255, 255, 255), 4.f);
                 }
