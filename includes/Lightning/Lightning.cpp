@@ -359,12 +359,12 @@ void Lightning::fractalComp(void){
     int i = 1;
     N = (1.0/N) - 1;
     S = (1.0/S) - 1;
-    while(er > 0.000001){
+    while(er > 0.00001){
         logN += (pow(-1, i+1)) * (pow(N, i)/i);
         logS += (pow(-1, i+1)) * (pow(S, i)/i);
         fracs.emplace_back(logN/logS);
         if(i > 1){
-            er = (fracs[i-1] - fracs[i-2]) * 100 / fracs[i-1];
+            er = abs((fracs[i-1] - fracs[i-2]) * 100 / fracs[i-1]);
         }
         i++;
     }

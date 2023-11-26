@@ -107,9 +107,13 @@ int main() {
     dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
 
     sf::RectangleShape left_menu_bg;
+    sf::RectangleShape right_menu_bg;
     left_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
     left_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
     left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
+    right_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
+    right_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
+    right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y + 1));
 
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
@@ -206,35 +210,37 @@ int main() {
     bool attemptClose = false;
     bool show_math = false;
     bool hide_left = true;
+    bool hide_right = true;
 
     int renderIndex = 0;
 
     // inicializar interfaz
     // deslizadores
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.04f, window.getSize().y * 0.38f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.04f, window.getSize().y * 0.44f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left);
-    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x * 0.04f, window.getSize().y * 0.53f, 0, font, L"Cristalización", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left);
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left);
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.04f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left);
-    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.035f, window.getSize().y * 0.1f, 0, font, L"fractal cosa no se", true, sf::Color(0, 162, 232), sf::Color::White, &hide_left);
-    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
-    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.04f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.03f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.38f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.035f, window.getSize().y * 0.44f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left);
+    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x * 0.035f, window.getSize().y * 0.53f, 0, font, L"Cristalización", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left);
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left);
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left);
+    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.76f, 0, font, L"fractal cosa no se", true, sf::Color(0, 162, 232), sf::Color::White, &hide_right);
+    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
+    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // botones
-    Button zapping (zap, window.getSize().x*0.05f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.05f, window.getSize().y*0.17f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+    Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+    Button backgroundButton (switchingBG, window.getSize().x*0.045f, window.getSize().y*0.17f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch show_math_switch (show_math, window.getSize().x*0.05f, window.getSize().y*0.23f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.05f, window.getSize().y*0.29f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(84, 0, 14), sf::Color(0, 84, 46), sf::Color::White, &hide_left);
+    Switch show_math_switch (show_math, window.getSize().x*0.845f, window.getSize().y*0.85f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_right);
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.045f, window.getSize().y*0.29f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
+    Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &fractalStepSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_left_switch};
+    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_left_switch, &hide_right_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -310,9 +316,9 @@ int main() {
         thunder_physics_data.str(std::wstring());
         console.str(std::wstring());
         thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Electrones involucrados: " << storm.getInvolvedElectrons(current_environmental_factor) << endl;
-        thunder_data << L"Masa electrónica total: " << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl;
-        thunder_data << L"Ajuste de mínimos cuadrados: x = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
+        thunder_data << "Electrones involucrados:\n\t" << storm.getInvolvedElectrons(current_environmental_factor) << endl;
+        thunder_data << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl;
+        thunder_data << L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
         thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
         thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
         thunder_data << L"Dimensión fractal: " << fixed << setprecision(6) << (*(storm.getFracs()))[floor(fractalStep+0.5) - 1] << endl;
@@ -545,11 +551,24 @@ int main() {
                 hide_left_switch.changePosition(window.getSize().x*0.2f, window.getSize().y*0.375f);
             }
         }
+        window.draw(right_menu_bg);
+        if (hide_right_switch.updateState()) {
+            if (hide_right) {
+                right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y +1));
+                hide_right_switch.changePosition(window.getSize().x - 50, window.getSize().y*0.375f);
+            }
+            else {
+                right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, 0));
+                hide_right_switch.changePosition(window.getSize().x*0.8f - 50, window.getSize().y*0.375f);
+            }
+        }
 
-        window.draw(dim_text_bg);
-        window.draw(dim_physicsOutput_bg);
-        window.draw(text);
-        window.draw(physicsOutput);
+        if(!hide_right){
+            window.draw(dim_text_bg);
+            window.draw(dim_physicsOutput_bg);
+            window.draw(text);
+            window.draw(physicsOutput);
+        }
         UI_events(3);
         window.display();
     }

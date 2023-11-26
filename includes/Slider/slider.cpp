@@ -41,7 +41,7 @@ Slider::Slider
     this->title.setFillColor(sf::Color::White);
     this->handle_percent.setFillColor(sf::Color::White);
     this->title.setStyle(sf::Text::Bold);
-    this->title.setPosition(shape.getPosition().x/2+35, shape.getPosition().y - (this->title.getCharacterSize()*2));
+    this->title.setPosition(shape.getPosition().x, shape.getPosition().y - (this->title.getCharacterSize()*2));
     this->handle_percent.setPosition(handle.getPosition().x - (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
     this->isDragging = false;
     this->swapToUnits = swapToUnits;
