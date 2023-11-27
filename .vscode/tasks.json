@@ -125,7 +125,7 @@
           "type": "command",
           "command": "shellCommand.execute",
           "args":{
-            "command": "git rev-list --count main",
+            "command": "git rev-list --count HEAD",
             "cwd": "${workspaceFolder}",
             "useFirstResult": true
           }
