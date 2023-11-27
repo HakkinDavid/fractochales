@@ -70,8 +70,8 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
         handle.setFillColor(color_handle);
     }
     else if (!isEnabled() && shape.getFillColor() == color_shape) {
-        shape.setFillColor(sf::Color(color_shape.r, color_shape.g, color_shape.b, color_shape.a / 2));
-        handle.setFillColor(sf::Color(color_handle.r, color_handle.g, color_handle.b, color_handle.a / 2));
+        shape.setFillColor(sf::Color(color_shape.r, color_shape.g, color_shape.b, color_shape.a / 4));
+        handle.setFillColor(sf::Color(color_handle.r, color_handle.g, color_handle.b, color_handle.a / 4));
     }
 
     float oldPercent = percent;
