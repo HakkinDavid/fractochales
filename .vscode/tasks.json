@@ -60,6 +60,7 @@
             "detail": "(Mac) SFML Build",
             "command": "g++",
             "args": [
+                "-DVERSION=${input:version}",
                 "-DSFML_STATIC",
                 "-std=c++11",
                 "-stdlib=libc++",
