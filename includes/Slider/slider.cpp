@@ -111,7 +111,7 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
     }
     handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
     handle_text_percentage.str(string());
-    if (swapToUnits) handle_text_percentage << fixed << setprecision(0) << *x;
+    if (swapToUnits) handle_text_percentage << fixed << setprecision(2) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
     handle_percent.setString(handle_text_percentage.str());
     if (percent != oldPercent) return true;
@@ -126,6 +126,10 @@ void Slider::draw (sf::RenderWindow &window) {
     if (omit != 2 && omit != 3) window.draw(handle_percent);
 }
 
-void Slider::changeUpperBound (float newUpperBound) {
+void Slider::setUpperBound (float newUpperBound) {
     upperBound = newUpperBound;
+}
+
+void Slider::setLowerBound (float newLowerBound) {
+    lowerBound = newLowerBound;
 }

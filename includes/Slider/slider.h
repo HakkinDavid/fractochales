@@ -37,7 +37,8 @@ class Slider {
         void setIsDragging (bool v);
         bool updatePercentage (sf::Vector2i mouse);
         void draw (sf::RenderWindow &window);
-        void changeUpperBound (float newUpperBound);
+        void setUpperBound (float newUpperBound);
+        void setLowerBound (float newLowerBound);
 };
 
 #endif

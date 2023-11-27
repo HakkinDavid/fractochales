@@ -208,6 +208,8 @@ int main() {
         0
     };
 
+    const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
+
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
@@ -219,6 +221,7 @@ int main() {
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
+    const float downWeightBounds [2] = {-0.4, 0.4};
 
     auto t0 = std::chrono::system_clock::now();
     long double time;
@@ -250,10 +253,10 @@ int main() {
     // inicializar interfaz
     // deslizadores
     Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.38f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.035f, window.getSize().y * 0.44f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == 5; });
-    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x * 0.035f, window.getSize().y * 0.53f, 0, font, L"Cristalización", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == 0 || bgIndex == 5; });
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == 5; });
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == 5; });
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.035f, window.getSize().y * 0.44f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider downWeightSlider (downWeight, downWeightBounds[0], downWeightBounds[1], window.getSize().x * 0.035f, window.getSize().y * 0.53f, 0, font, L"Cristalización (σ)", true, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == 0 || bgIndex == voidIndex; });
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.84f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
@@ -446,7 +449,7 @@ int main() {
         direction = storm.directionComp();
         storm.fractalComp();
         fractalStep = storm.getFracs()->size();
-        fractalStepSlider.changeUpperBound(fractalStep);
+        fractalStepSlider.setUpperBound(fractalStep);
         recalculateLightningVertex();
         retypeInfo();
     };
@@ -531,6 +534,14 @@ int main() {
             current_environmental_factor = environmental_factors[bgIndex];
             downWeight = weight_in_environment[bgIndex];
             forcedHeight = height_in_environment[bgIndex];
+            if (bgIndex == voidIndex) {
+                downWeightSlider.setLowerBound(-1.f);
+                downWeightSlider.setUpperBound(1.f);
+            }
+            else {
+                downWeightSlider.setLowerBound(downWeightBounds[0]);
+                downWeightSlider.setUpperBound(downWeightBounds[1]);
+            }
         }
 
         if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
