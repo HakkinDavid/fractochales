@@ -5,6 +5,7 @@
             "label": "(Windows) SFML Build",
             "command": "g++",
             "args": [
+                "-DVERSION=${input:version}",
                 "includes/Lightning/Lightning.cpp",
                 "includes/Slider/slider.cpp",
                 "includes/Button/button.cpp",
@@ -115,6 +116,18 @@
                 "kind": "build",
                 "isDefault": false
             }
+        }
+    ],
+    "inputs": [
+        {
+          "id": "version",
+          "type": "command",
+          "command": "shellCommand.execute",
+          "args":{
+            "command": "git rev-list --count main",
+            "cwd": "${workspaceFolder}",
+            "useFirstResult": true
+          }
         }
     ],
     "version": "2.0.0"
