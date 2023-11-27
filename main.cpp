@@ -178,7 +178,7 @@ int main() {
 
     // valores de entorno para el rayo
     // el primero se toma como el valor PREDETERMINADO o EJE
-    float environmental_factors [] = {
+    const float environmental_factors [] = {
         3107424876.30374896651003593080636010231246734962391002, // ciudad / aire [cbrt(26521541178535914242048000)*(0.79*2*5 + 0.21*2*6)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (79%) y oxígeno (21%) para obtener los electrones en un metro lineal
         25746383589.4834602095982075849351178030077195309528665478627, // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
         81206048428.74334182814399729120705789177218382976918208, // madera [cbrt(2042797000000000000000000000)*(64)] : 2042797000000000000000000000 moléculas en un metro cúbico de madera ( 550 [kg/m^3] / 12.011*6+1.00784*10+15.999*5 [g/mol] * Número de Avogadro ), obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" de la celulosa C6H10O5 (4*6+10+6*5) como molécula para obtener los electrones en un metro lineal
@@ -188,7 +188,7 @@ int main() {
         0.0f // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
     };
 
-    float weight_in_environment [] = {
+    const float weight_in_environment [] = {
         0,
         -0.4,
         0.35,
@@ -198,7 +198,7 @@ int main() {
         0
     };
 
-    float height_in_environment [] = {
+    const float height_in_environment [] = {
         0.75,
         0.3,
         0.95,
@@ -528,8 +528,6 @@ int main() {
             if (bg[bgIndex] == nullptr) bgIndex = 0;
             background.setTexture(*bg[bgIndex]);
             current_environmental_factor = environmental_factors[bgIndex];
-            leeway = defaultLeeway * (current_environmental_factor)/(environmental_factors[0]); // if more electrons, more leeway
-            branch = defaultBranch * (environmental_factors[0])/(current_environmental_factor); // if more electrons, less branching
             downWeight = weight_in_environment[bgIndex];
             forcedHeight = height_in_environment[bgIndex];
         }
