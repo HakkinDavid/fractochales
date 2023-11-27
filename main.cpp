@@ -28,6 +28,10 @@
     #define VERSION_KIND L"Unknown"
 #endif
 
+#ifndef VERSION
+    #define VERSION 100
+#endif
+
 #define WINDOW_W 1920
 #define WINDOW_H 1080
 
@@ -114,7 +118,17 @@ int main() {
     physicsOutput.setStyle(sf::Text::Bold);
     watermarkText.setStyle(sf::Text::Bold);
     
-    watermarkText.setString(L"Fractochales (" + wstring(VERSION_KIND) + L")\nMauricio Alcántar Dueñas\nDavid Emmanuel Santana Romero\nDiego Emilio Casta Valle");
+    wstringstream watermarkTextStream;
+
+    watermarkTextStream
+        << L"Fractochales ("
+        << wstring(VERSION_KIND)
+        << L" v"
+        << fixed
+        << setprecision(2)
+        << (float) VERSION / 100
+        << L")\nMauricio Alcántar Dueñas\nDavid Emmanuel Santana Romero\nDiego Emilio Casta Valle";
+    watermarkText.setString(watermarkTextStream.str());
 
     text.setPosition(window.getSize().x*0.99 - text.getLocalBounds().getSize().x, window.getSize().y*0.03);
     physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
@@ -334,48 +348,48 @@ int main() {
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
         console.str(std::wstring());
-        thunder_data << "Ramas: " << storm.getN() << endl;
-        thunder_data << "Electrones involucrados:\n\t" << storm.getInvolvedElectrons(current_environmental_factor) << endl;
-        thunder_data << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl;
-        thunder_data << L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl;
-        thunder_data << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl;
-        thunder_data << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl;
-        thunder_data << L"Dimensión fractal: " << fixed << setprecision(6) << (*(storm.getFracs()))[floor(fractalStep+0.5) - 1] << endl;
+        thunder_data << "Ramas: " << storm.getN() << endl
+        << "Electrones involucrados:\n\t" << storm.getInvolvedElectrons(current_environmental_factor) << endl
+        << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl
+        << L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl
+        << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl
+        << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl
+        << L"Dimensión fractal: " << fixed << setprecision(6) << (*(storm.getFracs()))[floor(fractalStep+0.5) - 1] << endl;
 
-        thunder_physics_data << scientific << setprecision(4);
-        thunder_physics_data << L"W = ";
+        thunder_physics_data << scientific << setprecision(4)
+        << L"W = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << e_mass << L"kg·9.81 m/s²\n\t= ";
             // resultado
-            thunder_physics_data << Physics::W(e_mass) << L"N" << endl;
-        thunder_physics_data << L"t = " << time << L"s" << endl;
-        thunder_physics_data << L"v = " << vf << L"m/s" << endl;
-        thunder_physics_data << L"a = ";
+            thunder_physics_data << Physics::W(e_mass) << L"N" << endl
+        << L"t = " << time << L"s" << endl
+        << L"v = " << vf << L"m/s" << endl
+        << L"a = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << L"(" << vf << L"m/s - 0) / " << time << L"s\n\t= ";
             // resultado
-            thunder_physics_data << acceleration << L"m/s²" << endl;
-        thunder_physics_data << L"F = ";
+            thunder_physics_data << acceleration << L"m/s²" << endl
+        << L"F = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << e_mass << L"kg·" << acceleration << L"m/s²\n\t= ";
             // resultado
-            thunder_physics_data << force << L"N" << endl;
-        thunder_physics_data << L"Δy = ";
+            thunder_physics_data << force << L"N" << endl
+        << L"Δy = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << L"(" << acceleration << L"m/s²·(" << time << L"s)²)/2\n\t\t+ 0m/s·(" << time << L"s) + 0m\n\t= ";
             // resultado
-            thunder_physics_data << delta_y << L"m" << endl;
-        thunder_physics_data << L"T = ";
+            thunder_physics_data << delta_y << L"m" << endl
+        << L"T = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << force << L"N·" << delta_y << L"m\n\t= ";
             // resultado
-            thunder_physics_data << work << L"J" << endl;
-        thunder_physics_data << L"Ec₁ = ";
+            thunder_physics_data << work << L"J" << endl
+        << L"Ec₁ = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << L"(" << e_mass << L"kg·(" << vf << L"m/s)²)/2\n\t= ";
             // resultado
-            thunder_physics_data << Ecf << L"J" << endl;
-        thunder_physics_data << L"P = ";
+            thunder_physics_data << Ecf << L"J" << endl
+        << L"P = ";
                 // cálculos (se pueden ocultar)
                 if (show_math) thunder_physics_data << force << L"N·" << vf << L"m/s\n\t= ";
             // resultado
