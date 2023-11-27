@@ -15,8 +15,18 @@
 #include "includes/Slider/slider.h"
 #include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
-#include "includes/ThickLine/thickline.h"
+#include "includes/ThickLine/thickline.cpp"
 #include "includes/Physics/physics.h"
+
+#if defined(WIN32)
+    #define VERSION_KIND L"Windows"
+#elif __APPLE__
+    #define VERSION_KIND L"OS X"
+#elif __linux__
+    #define VERSION_KIND L"GNU/Linux"
+#else
+    #define VERSION_KIND L"Unknown"
+#endif
 
 #define WINDOW_W 1920
 #define WINDOW_H 1080
@@ -90,16 +100,25 @@ int main() {
 
     sf::Text text;
     sf::Text physicsOutput;
+    sf::Text watermarkText;
     text.setFont(font);
     physicsOutput.setFont(font);
+    watermarkText.setFont(font);
     text.setCharacterSize(16);
     physicsOutput.setCharacterSize(16);
+    watermarkText.setCharacterSize(16);
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
+    watermarkText.setFillColor(sf::Color(255, 255, 255, 122));
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
+    watermarkText.setStyle(sf::Text::Bold);
+    
+    watermarkText.setString(L"Fractochales (" + wstring(VERSION_KIND) + L")\nMauricio Alcántar Dueñas\nDavid Emmanuel Santana Romero\nDiego Emilio Casta Valle");
+
     text.setPosition(window.getSize().x*0.99 - text.getLocalBounds().getSize().x, window.getSize().y*0.03);
     physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
+    watermarkText.setPosition(10, window.getSize().y - (watermarkText.getLocalBounds().getSize().y + 10));
 
     sf::RectangleShape dim_text_bg;
     sf::RectangleShape dim_physicsOutput_bg;
@@ -221,7 +240,7 @@ int main() {
     Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x * 0.035f, window.getSize().y * 0.53f, 0, font, L"Cristalización", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left);
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left);
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left);
-    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.76f, 0, font, L"fractal cosa no se", true, sf::Color(0, 162, 232), sf::Color::White, &hide_right);
+    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.84f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
@@ -230,7 +249,7 @@ int main() {
     Button backgroundButton (switchingBG, window.getSize().x*0.045f, window.getSize().y*0.23f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch show_math_switch (show_math, window.getSize().x*0.845f, window.getSize().y*0.85f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_right);
+    Switch show_math_switch (show_math, window.getSize().x*0.845f, window.getSize().y*0.92f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_right);
     Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.045f, window.getSize().y*0.29f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
     Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
@@ -238,7 +257,7 @@ int main() {
     // colocar los deslizadores que recibirán eventos en grupo
     Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &fractalStepSlider};
     // colocar los botones que recibirán eventos en grupo
-    Button * all_buttons [] = {&zapping, &closeButton, &backgroundButton};
+    Button * all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
     Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_left_switch, &hide_right_switch};
 
@@ -568,6 +587,10 @@ int main() {
             window.draw(dim_physicsOutput_bg);
             window.draw(text);
             window.draw(physicsOutput);
+        }
+
+        if (hide_left) {
+            window.draw(watermarkText);
         }
         UI_events(3);
         window.display();
