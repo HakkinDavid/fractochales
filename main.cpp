@@ -418,7 +418,8 @@ int main() {
                     int i0 = grid[i][j].getPrevX();
                     int j0 = grid[i][j].getPrevY();
                     thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(255, 255, 255), 4.f);
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale + (j-j0)*2, i*lightning_scale + (i-i0)*2 + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 4.f);
+                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale + (j-j0), i*lightning_scale + (i-i0) + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 6.f);
                 }
             }
         }
