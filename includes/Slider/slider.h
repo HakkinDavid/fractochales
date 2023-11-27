@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <sstream>
 #include "../SFML/Graphics.hpp"
+#include <functional>
 using namespace std;
 
 #ifndef SLIDER_H
@@ -23,12 +24,15 @@ class Slider {
         sf::RectangleShape handle;
         sf::Text title; // su posición depende del slider
         sf::Text handle_percent; // se desliza con el deslizador ; muestra cuánto %
+        sf::Color color_shape;
+        sf::Color color_handle;
         bool isDragging;
         bool swapToUnits;
         int omit;
         bool * hide;
+        std::function<bool()> isEnabled;
     public:
-        Slider (float &binded, float lowerBound, float upperBound, float position_x, float position_y, int omit, sf::Font &font, wstring title = wstring(), bool swapToUnits = false, sf::Color color_shape = sf::Color::White, sf::Color color_handle = sf::Color::Black, bool * hide = nullptr);
+        Slider (float &binded, float lowerBound, float upperBound, float position_x, float position_y, int omit, sf::Font &font, wstring title = wstring(), bool swapToUnits = false, sf::Color color_shape = sf::Color::White, sf::Color color_handle = sf::Color::Black, bool * hide = nullptr, std::function<bool()> isEnabled = []() { return true; });
         void checkDragging (sf::Vector2i mouse);
         void setIsDragging (bool v);
         bool updatePercentage (sf::Vector2i mouse);

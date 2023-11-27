@@ -20,7 +20,8 @@ Slider::Slider
         bool swapToUnits, // mostrar las unidades en lugar del porcentaje
         sf::Color color_shape, // color de la barra deslizable
         sf::Color color_handle, // color de la manija deslizable
-        bool * hide
+        bool * hide,
+        std::function<bool()> isEnabled
 ) {
     this->x = &binded;
     this->lowerBound = lowerBound;
@@ -28,6 +29,8 @@ Slider::Slider
     this->shape = sf::RectangleShape (sf::Vector2f(250, 15));
     this->shape.setPosition (position_x, position_y);
     this->omit = omit;
+    this->color_shape = color_shape;
+    this->color_handle = color_handle;
     this->shape.setFillColor (color_shape);
     this->handle = sf::RectangleShape (sf::Vector2f(20, 35));
     this->handle.setPosition(shape.getPosition().x + ((shape.getSize().x - handle.getLocalBounds().width)/100) * ((*(this->x) - lowerBound)/((upperBound - lowerBound)/100)), shape.getPosition().y + ((shape.getSize().y - handle.getLocalBounds().height)/2));
@@ -46,10 +49,11 @@ Slider::Slider
     this->isDragging = false;
     this->swapToUnits = swapToUnits;
     this->hide = hide;
+    this->isEnabled = isEnabled;
 }
 
 void Slider::checkDragging (sf::Vector2i mouse) {
-    if (hide != nullptr && *hide) return;
+    if ((hide != nullptr && *hide) || !isEnabled()) return;
     if (handle.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse))) {
         isDragging = true;
     }
@@ -60,6 +64,16 @@ void Slider::setIsDragging (bool v) {
 }
 
 bool Slider::updatePercentage (sf::Vector2i mouse) {
+
+    if (isEnabled() && shape.getFillColor() != color_shape) {
+        shape.setFillColor(color_shape);
+        handle.setFillColor(color_handle);
+    }
+    else if (!isEnabled() && shape.getFillColor() == color_shape) {
+        shape.setFillColor(sf::Color(color_shape.r, color_shape.g, color_shape.b, color_shape.a / 2));
+        handle.setFillColor(sf::Color(color_handle.r, color_handle.g, color_handle.b, color_handle.a / 2));
+    }
+
     float oldPercent = percent;
     if (isDragging) {
         // fuera del límite (bajo 0; muy a la izquierda)
