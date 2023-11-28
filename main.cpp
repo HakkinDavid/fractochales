@@ -87,7 +87,7 @@ int main() {
 
     sf::Sprite watermark_logo(watermark_texture);
     watermark_logo.setScale(0.15, 0.15);
-    watermark_logo.setColor(sf::Color(255, 255, 255, 122));
+    watermark_logo.setColor(sf::Color(255, 255, 255, 80));
     watermark_logo.setPosition(window.getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + 10), window.getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + 10));
 
     sf::SoundBuffer buffer1;
@@ -226,7 +226,7 @@ int main() {
 
     // mismo orden: aire, agua, madera, pantano, espacio, vacio, cero al final
     const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.24, 0.24, 0 }; // valores de pantano y espacio subject to change
-    const float branch_in_environment [] = { 0.12, 0.06, 0.07, 0.1, 0.12, 0.12, 0 }; // valores de pantano y putricio subject to change
+    const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.12, 0.12, 0 }; // valores de pantano y putricio subject to change
     const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
     const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
 
@@ -256,8 +256,8 @@ int main() {
     float downWeight = 0;
     float fractalStep = 0;
     float crystallizate = 0;
-    float humidity = 0;
-    float temperature = 0;
+    float humidity = 0.9F;
+    float temperature = 15.0F;
 
     float lightning_width = 257;
     float lightning_height = 181;
@@ -277,21 +277,21 @@ int main() {
     // inicializar interfaz
     // para los deslizadores, estamos usando de posición (window.getSize().x * 0.035f, window.getSize().y * [-0.06 respecto al que está por debajo]f)
     // deslizadores constantes
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.46f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.24f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
     Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.92f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.81f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.83f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.85f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // deslizadores de aire
-    //      Slider crystallizateSlider L"Cristalización (σ)"
-    //      Slider humiditySlider
+    Slider crystallizateSlider (crystallizate, 0.0f, 0.16f, window.getSize().x*0.035f, window.getSize().y*0.33f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
+    Slider humiditySlider (humidity, 0.6f, 1.2f, window.getSize().x*0.035f, window.getSize().y*0.39f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
     // deslizadores de agua
-    //      Slider temperatureSlider
+    Slider temperatureSlider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.45f, 0, font, L"Temperatura", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
     // deslizadores de vacio
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.51f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.57f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.63f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider forcedHeightSlider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.69f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.63f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider forcedHeightSlider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.69f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x*0.035f, window.getSize().y*0.75f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     // botones
     Button zapping (zap, window.getSize().x*0.01f + 225, window.getSize().y*0.92f, font, L"Generar", 125, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
@@ -303,7 +303,7 @@ int main() {
     Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &fractalStepSlider};
+    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
@@ -443,7 +443,7 @@ int main() {
             delete [] grid[i]; // liberar memoria usada en el rayo anterior
         }
         delete [] grid;
-        storm = Lightning(lightning_height, lightning_width, leeway, branch, downWeight, forcedHeight);
+        storm = Lightning(lightning_height, lightning_width, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), forcedHeight+((temperature-15)*0.02f));
         grid = storm.getGrid();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
@@ -541,6 +541,9 @@ int main() {
             branch = branch_in_environment[bgIndex];
             downWeight = weight_in_environment[bgIndex];
             forcedHeight = height_in_environment[bgIndex];
+            crystallizate = 0;
+            humidity = 0.9F;
+            temperature = 15.0F;
         }
 
         if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update)) {
@@ -554,6 +557,9 @@ int main() {
         branchSlider.updatePercentage(mousepos_update);
         downWeightSlider.updatePercentage(mousepos_update);
         forcedHeightSlider.updatePercentage(mousepos_update);
+        crystallizateSlider.updatePercentage(mousepos_update);
+        humiditySlider.updatePercentage(mousepos_update);
+        temperatureSlider.updatePercentage(mousepos_update);
         
         if (closeButton.updateState() && attemptClose) {
             start_time = std::chrono::system_clock::now();
