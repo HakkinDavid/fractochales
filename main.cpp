@@ -526,7 +526,7 @@ int main() {
 
         // renderizar un solo punto a la vez (hasta 120), para dar la ilusión de que el rayo "cae"
         if (renderIndex+1 <= thunder.size()) renderIndex++;
-        if (renderIndex != thunder.size() && renderIndex >= 120) renderIndex = thunder.size();
+        if (renderIndex != thunder.size() && renderIndex >= 30) renderIndex = thunder.size();
 
         window.clear(); // CLEARS CONTENT OF WINDOW
         window.draw(background);
