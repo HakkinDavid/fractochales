@@ -90,6 +90,11 @@ int main() {
     watermark_logo.setColor(sf::Color(255, 255, 255, 80));
     watermark_logo.setPosition(window.getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + 10), window.getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + 10));
 
+    sf::SoundBuffer buffer0;
+    buffer0.loadFromFile("sfx/startup.wav");
+    sf::Sound startup;
+    startup.setBuffer(buffer0);
+
     sf::SoundBuffer buffer1;
     buffer1.loadFromFile("sfx/thunder1.wav");
     sf::Sound sound1;
@@ -471,6 +476,8 @@ int main() {
 
     auto start_time = std::chrono::system_clock::now();
     bool yetToBoot = true;
+
+    startup.play();
 
     while (window.isOpen())
     {
