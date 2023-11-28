@@ -129,9 +129,6 @@ int main() {
         << (float) VERSION / 100
         << L")\nMauricio Alcántar Dueñas\nDavid Emmanuel Santana Romero\nDiego Emilio Casta Valle";
     watermarkText.setString(watermarkTextStream.str());
-
-    text.setPosition(window.getSize().x*0.99 - text.getLocalBounds().getSize().x, window.getSize().y*0.03);
-    physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x, window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
     watermarkText.setPosition(10, window.getSize().y - (watermarkText.getLocalBounds().getSize().y + 10));
 
     sf::RectangleShape dim_text_bg;
@@ -233,7 +230,6 @@ int main() {
     bool linear_adjustment_line = false;
     bool switchingBG = false;
     bool attemptClose = false;
-    bool show_math = false;
     bool hide_left = true;
     bool hide_right = true;
 
@@ -243,7 +239,7 @@ int main() {
     // para los deslizadores, estamos usando de posición (window.getSize().x * 0.035f, window.getSize().y * [-0.06 respecto al que está por debajo]f)
     // deslizadores constantes
     Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.46f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.87f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
+    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.92f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
     Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.81f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
     Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.83f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
     Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.85f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
@@ -263,7 +259,6 @@ int main() {
     Button backgroundButton (switchingBG, window.getSize().x*0.01f, window.getSize().y*0.92f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch show_math_switch (show_math, window.getSize().x*0.845f, window.getSize().y*0.92f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_right);
     Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.01f, window.getSize().y*0.87f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", 350, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
     Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
@@ -273,7 +268,7 @@ int main() {
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch * all_switches [] = {&linear_adjustment_switch, &show_math_switch, &hide_left_switch, &hide_right_switch};
+    Switch * all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -357,43 +352,15 @@ int main() {
         << L"Dimensión fractal: " << fixed << setprecision(6) << (*(storm.getFracs()))[floor(fractalStep+0.5) - 1] << endl;
 
         thunder_physics_data << scientific << setprecision(4)
-        << L"W = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << e_mass << L"kg·9.81 m/s²\n\t= ";
-            // resultado
-            thunder_physics_data << Physics::W(e_mass) << L"N" << endl
+        << L"W = " << e_mass << L"kg·9.81 m/s²\n\t= " << Physics::W(e_mass) << L"N" << endl
         << L"t = " << time << L"s" << endl
         << L"v = " << vf << L"m/s" << endl
-        << L"a = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << L"(" << vf << L"m/s - 0) / " << time << L"s\n\t= ";
-            // resultado
-            thunder_physics_data << acceleration << L"m/s²" << endl
-        << L"F = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << e_mass << L"kg·" << acceleration << L"m/s²\n\t= ";
-            // resultado
-            thunder_physics_data << force << L"N" << endl
-        << L"Δy = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << L"(" << acceleration << L"m/s²·(" << time << L"s)²)/2\n\t\t+ 0m/s·(" << time << L"s) + 0m\n\t= ";
-            // resultado
-            thunder_physics_data << delta_y << L"m" << endl
-        << L"T = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << force << L"N·" << delta_y << L"m\n\t= ";
-            // resultado
-            thunder_physics_data << work << L"J" << endl
-        << L"Ec₁ = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << L"(" << e_mass << L"kg·(" << vf << L"m/s)²)/2\n\t= ";
-            // resultado
-            thunder_physics_data << Ecf << L"J" << endl
-        << L"P = ";
-                // cálculos (se pueden ocultar)
-                if (show_math) thunder_physics_data << force << L"N·" << vf << L"m/s\n\t= ";
-            // resultado
-            thunder_physics_data << Pf << L"kgm/s" << endl;
+        << L"a = " << L"(" << vf << L"m/s - 0) / " << time << L"s\n\t= " << acceleration << L"m/s²" << endl
+        << L"F = " << e_mass << L"kg·" << acceleration << L"m/s²\n\t= " << force << L"N" << endl
+        << L"Δy = " << L"(" << acceleration << L"m/s²·(" << time << L"s)²)/2\n\t\t+ 0m/s·(" << time << L"s) + 0m\n\t= " << delta_y << L"m" << endl
+        << L"T = " << force << L"N·" << delta_y << L"m\n\t= " << work << L"J" << endl
+        << L"Ec₁ = " << L"(" << e_mass << L"kg·(" << vf << L"m/s)²)/2\n\t= " << Ecf << L"J" << endl
+        << L"P = " << force << L"N·" << vf << L"m/s\n\t= " << Pf << L"kgm/s" << endl;
 
         format(thunder_data);
         format(thunder_physics_data);
@@ -401,13 +368,13 @@ int main() {
         text.setString(thunder_data.str());
         physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
 
-        text.setPosition(window.getSize().x*0.99 - text.getLocalBounds().getSize().x, text.getPosition().y);
+        physicsOutput.setPosition(window.getSize().x - physicsOutput.getLocalBounds().getSize().x - (window.getSize().x*0.2-physicsOutput.getLocalBounds().getSize().x)/2, window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
+        text.setPosition(physicsOutput.getPosition().x, window.getSize().y * 0.03);
         dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
-        physicsOutput.setPosition(window.getSize().x*0.99 - physicsOutput.getLocalBounds().getSize().x - (show_math ? 0 : 50), window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
         
-        dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
-        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10 + (show_math ? 0 : 50), physicsOutput.getLocalBounds().getSize().y + 15));
+        dim_text_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
+        dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 15));
     };
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
@@ -535,7 +502,7 @@ int main() {
             forcedHeight = height_in_environment[bgIndex];
         }
 
-        if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
+        if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update)) {
             retypeInfo();
         }
         
