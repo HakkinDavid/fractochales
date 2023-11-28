@@ -113,18 +113,49 @@ int main() {
     sf::Text text;
     sf::Text physicsOutput;
     sf::Text watermarkText;
+    sf::Text loading_text;
+
     text.setFont(font);
     physicsOutput.setFont(font);
     watermarkText.setFont(font);
+    loading_text.setFont(font);
+
     text.setCharacterSize(16);
     physicsOutput.setCharacterSize(16);
     watermarkText.setCharacterSize(16);
+    loading_text.setCharacterSize(16);
+
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
     watermarkText.setFillColor(sf::Color(255, 255, 255, 122));
+    loading_text.setFillColor(sf::Color::White);
+
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
     watermarkText.setStyle(sf::Text::Bold);
+    loading_text.setStyle(sf::Text::Bold);
+
+    wstring advice_text[] = {
+        L"Cargando las nubes",
+        L"Sintonizando a Fimbres",
+        L"Esperando el convivio",
+        L"Quitando el tercer nombre de Casta",
+        L"Picando a Putricio",
+        L"Comprobando los pararrayos",
+        L"Everybody gangsta until the project lets you down",
+        L"Never gonna give you up",
+        L"Mi mamá es una figura fractal",
+        L"La velocidad máxima de un relámpago es de 100,000 km/s",
+        L"Un espectador percibe primero el relámpago y luego el trueno",
+        L"Realizamos cálculos estequiométricos para obtener las masas de los rayos",
+        L"Una figura fractal se encuentra entre dos dimensiones enteras",
+        L"¿Sabías que tenemos " + to_wstring(VERSION) + L" contribuciones de código en este programa?",
+        L"En la práctica, ningún rayo es idéntico"
+    };
+
+    int advice_max_num = sizeof(advice_text) / sizeof(wstring);
+
+    loading_text.setString(advice_text[rand() % advice_max_num]);
     
     wstringstream watermarkTextStream;
 
@@ -445,12 +476,14 @@ int main() {
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
             if (elapsed < 1000) {
                 background.setColor(sf::Color((255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f)));
-                loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
                 loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
+                loading_percentage.setPosition(sf::Vector2f((window.getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window.getSize().y - splash_screen.getLocalBounds().height)/2));
+                loading_text.setPosition(sf::Vector2f((window.getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
                 window.clear();
                 window.draw(background);
                 window.draw(splash_screen);
                 window.draw(loading_percentage);
+                window.draw(loading_text);
                 window.display();
                 continue;
             }
