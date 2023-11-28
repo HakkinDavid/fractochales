@@ -79,8 +79,16 @@ int main() {
     sf::Texture splash;
     splash.loadFromFile("images/fractochales.png");
 
+    sf::Texture watermark_texture;
+    watermark_texture.loadFromFile("images/waterchales.png");
+
     sf::Sprite splash_screen(splash);
     splash_screen.setPosition(sf::Vector2f((window.getSize().x - splash_screen.getLocalBounds().width)/2, (window.getSize().y - splash_screen.getLocalBounds().height)/2));
+
+    sf::Sprite watermark_logo(watermark_texture);
+    watermark_logo.setScale(0.15, 0.15);
+    watermark_logo.setColor(sf::Color(255, 255, 255, 122));
+    watermark_logo.setPosition(window.getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + 10), window.getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + 10));
 
     sf::SoundBuffer buffer1;
     buffer1.loadFromFile("sfx/thunder1.wav");
@@ -570,6 +578,9 @@ int main() {
             window.draw(dim_physicsOutput_bg);
             window.draw(text);
             window.draw(physicsOutput);
+        }
+        else {
+            window.draw(watermark_logo);
         }
 
         if (hide_left) {
