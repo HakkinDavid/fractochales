@@ -26,26 +26,26 @@ Slider::Slider
     this->x = &binded;
     this->lowerBound = lowerBound;
     this->upperBound = upperBound;
-    this->shape = sf::RectangleShape (sf::Vector2f(250, 15));
+    this->shape = sf::RectangleShape (sf::Vector2f(250, 8));
     this->shape.setPosition (position_x, position_y);
     this->omit = omit;
     this->color_shape = color_shape;
     this->color_handle = color_handle;
     this->shape.setFillColor (color_shape);
-    this->handle = sf::RectangleShape (sf::Vector2f(20, 35));
+    this->handle = sf::RectangleShape (sf::Vector2f(10, 20));
     this->handle.setPosition(shape.getPosition().x + ((shape.getSize().x - handle.getLocalBounds().width)/100) * ((*(this->x) - lowerBound)/((upperBound - lowerBound)/100)), shape.getPosition().y + ((shape.getSize().y - handle.getLocalBounds().height)/2));
     this->handle.setFillColor(color_handle);
     this->title.setFont(font);
     this->handle_percent.setFont(font);
     this->title.setString(title);
     this->handle_percent.setString(handle_text_percentage.str());
-    this->title.setCharacterSize(18);
-    this->handle_percent.setCharacterSize(16);
+    this->title.setCharacterSize(16);
+    this->handle_percent.setCharacterSize(14);
     this->title.setFillColor(sf::Color::White);
     this->handle_percent.setFillColor(sf::Color::White);
     this->title.setStyle(sf::Text::Bold);
-    this->title.setPosition(shape.getPosition().x, shape.getPosition().y - (this->title.getCharacterSize()*2));
-    this->handle_percent.setPosition(handle.getPosition().x - (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
+    this->title.setPosition(shape.getPosition().x, shape.getPosition().y - (this->title.getCharacterSize() + 10));
+    this->handle_percent.setPosition(handle.getPosition().x - (handle.getSize().x - handle_percent.getLocalBounds().width)/2, shape.getPosition().y + (this->handle_percent.getCharacterSize() + 2.5));
     this->isDragging = false;
     this->swapToUnits = swapToUnits;
     this->hide = hide;
@@ -109,7 +109,7 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
             }
         }
     }
-    handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
+    handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2, shape.getPosition().y + (this->handle_percent.getCharacterSize() + 2.5));
     handle_text_percentage.str(string());
     if (swapToUnits) handle_text_percentage << fixed << setprecision(0) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
