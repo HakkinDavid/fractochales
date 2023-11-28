@@ -112,26 +112,31 @@ int main() {
 
     sf::Text text;
     sf::Text physicsOutput;
+    sf::Text currentTitle;
     sf::Text watermarkText;
     sf::Text loading_text;
 
     text.setFont(font);
     physicsOutput.setFont(font);
+    currentTitle.setFont(font);
     watermarkText.setFont(font);
     loading_text.setFont(font);
 
     text.setCharacterSize(16);
     physicsOutput.setCharacterSize(16);
+    currentTitle.setCharacterSize(32);
     watermarkText.setCharacterSize(16);
     loading_text.setCharacterSize(16);
 
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
+    currentTitle.setFillColor(sf::Color(255, 255, 255, 150));
     watermarkText.setFillColor(sf::Color(255, 255, 255, 122));
     loading_text.setFillColor(sf::Color::White);
 
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
+    currentTitle.setStyle(sf::Text::Bold);
     watermarkText.setStyle(sf::Text::Bold);
     loading_text.setStyle(sf::Text::Bold);
 
@@ -140,10 +145,7 @@ int main() {
         L"Sintonizando a Fimbres",
         L"Esperando el convivio",
         L"Quitando el tercer nombre de Casta",
-        L"Picando a Putricio",
         L"Comprobando los pararrayos",
-        L"Everybody gangsta until the project lets you down",
-        L"Never gonna give you up",
         L"Mi mamá es una figura fractal",
         L"La velocidad máxima de un relámpago es de 100,000 km/s",
         L"Un espectador percibe primero el relámpago y luego el trueno",
@@ -211,6 +213,8 @@ int main() {
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
+    // nombres a mostrar
+    const wstring bgTitle [] = {L"Aire", L"Agua", L"Madera", L"Pantano", L"Espacio", L"Libre", L""};
 
     // valores de entorno para el rayo
     // el primero se toma como el valor PREDETERMINADO o EJE
@@ -225,8 +229,8 @@ int main() {
     };
 
     // mismo orden: aire, agua, madera, pantano, espacio, vacio, cero al final
-    const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.24, 0.24, 0 }; // valores de pantano y espacio subject to change
-    const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.12, 0.12, 0 }; // valores de pantano y putricio subject to change
+    const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.025, 0.24, 0 }; // valores de pantano y espacio subject to change
+    const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
     const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
     const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
 
@@ -237,7 +241,7 @@ int main() {
     sf::Sprite background (*bg[bgIndex]);
 
     Lightning storm;
-    wstringstream thunder_data, thunder_physics_data;
+    wstringstream thunder_data, thunder_physics_data, title_data;
     vector<thickLine> thunder; // crear el vector de vértices a renderizar
     Point ** grid = storm.getGrid();
 
@@ -277,28 +281,28 @@ int main() {
     // inicializar interfaz
     // para los deslizadores, estamos usando de posición (window.getSize().x * 0.035f, window.getSize().y * [-0.06 respecto al que está por debajo]f)
     // deslizadores constantes
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.24f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.92f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
-    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.81f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
-    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.83f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.85f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.83f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
+    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.39f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
+    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
+    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
     // deslizadores de aire
-    Slider crystallizateSlider (crystallizate, 0.0f, 0.16f, window.getSize().x*0.035f, window.getSize().y*0.33f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
-    Slider humiditySlider (humidity, 0.6f, 1.2f, window.getSize().x*0.035f, window.getSize().y*0.39f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
+    Slider crystallizateSlider (crystallizate, 0.0f, 0.16f, window.getSize().x*0.035f, window.getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
+    Slider humiditySlider (humidity, 0.6f, 1.2f, window.getSize().x*0.035f, window.getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
     // deslizadores de agua
-    Slider temperatureSlider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.45f, 0, font, L"Temperatura", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
+    Slider temperatureSlider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.36f, 0, font, L"Temperatura", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
     // deslizadores de vacio
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.51f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.57f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.63f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider forcedHeightSlider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.69f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x*0.035f, window.getSize().y*0.75f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider forcedHeightSlider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x*0.035f, window.getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     // botones
-    Button zapping (zap, window.getSize().x*0.01f + 225, window.getSize().y*0.92f, font, L"Generar", 125, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.01f, window.getSize().y*0.92f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+    Button zapping (zap, window.getSize().x*0.01f + 225, window.getSize().y*0.91f, font, L"Generar", 125, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+    Button backgroundButton (switchingBG, window.getSize().x*0.01f, window.getSize().y*0.91f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.01f, window.getSize().y*0.87f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", 350, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.01f, window.getSize().y*0.86f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", 350, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
     Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
@@ -381,6 +385,7 @@ int main() {
 
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
+        title_data.str(std::wstring());
         console.str(std::wstring());
         thunder_data << "Ramas: " << storm.getN() << endl
         << "Electrones involucrados:\n\t" << storm.getInvolvedElectrons(current_environmental_factor) << endl
@@ -401,14 +406,19 @@ int main() {
         << L"Ec₁ = " << L"(" << e_mass << L"kg·(" << vf << L"m/s)²)/2\n\t= " << Ecf << L"J" << endl
         << L"P = " << force << L"N·" << vf << L"m/s\n\t= " << Pf << L"kgm/s" << endl;
 
+        title_data << bgTitle[bgIndex];
+
         format(thunder_data);
         format(thunder_physics_data);
+        format(title_data);
         
         text.setString(thunder_data.str());
+        currentTitle.setString(title_data.str());
         physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
 
-        physicsOutput.setPosition(window.getSize().x - physicsOutput.getLocalBounds().getSize().x - (window.getSize().x*0.2-physicsOutput.getLocalBounds().getSize().x)/2, window.getSize().y*0.03 + text.getLocalBounds().getSize().y + 20);
-        text.setPosition(physicsOutput.getPosition().x, window.getSize().y * 0.03);
+        physicsOutput.setPosition(window.getSize().x - physicsOutput.getLocalBounds().getSize().x - (window.getSize().x*0.2-physicsOutput.getLocalBounds().getSize().x)/2, window.getSize().y*0.45);
+        text.setPosition(physicsOutput.getPosition().x, window.getSize().y * 0.15);
+        currentTitle.setPosition(window.getSize().x*0.2 + 20, window.getSize().y*0.01);
         dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
         
@@ -612,7 +622,7 @@ int main() {
             }
         }
 
-        if(!hide_right){
+        if (!hide_right) {
             window.draw(dim_text_bg);
             window.draw(dim_physicsOutput_bg);
             window.draw(text);
@@ -622,7 +632,10 @@ int main() {
             window.draw(watermark_logo);
         }
 
-        if (hide_left) {
+        if (!hide_left) {
+            window.draw(currentTitle);
+        }
+        else {
             window.draw(watermarkText);
         }
         UI_events(3);
