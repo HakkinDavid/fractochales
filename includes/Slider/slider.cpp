@@ -102,7 +102,7 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
     }
     handle_percent.setPosition(handle.getPosition().x + (handle.getSize().x - handle_percent.getLocalBounds().width)/2,shape.getPosition().y + (this->handle_percent.getCharacterSize()*2.15));
     handle_text_percentage.str(string());
-    if (swapToUnits) handle_text_percentage << fixed << setprecision(2) << *x;
+    if (swapToUnits) handle_text_percentage << fixed << setprecision(0) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
     handle_percent.setString(handle_text_percentage.str());
     if (percent != oldPercent) return true;

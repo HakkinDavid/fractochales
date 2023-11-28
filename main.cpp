@@ -188,25 +188,11 @@ int main() {
         0.0f // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
     };
 
-    const float weight_in_environment [] = {
-        0,
-        -0.4,
-        0.35,
-        -0.1,
-        0,
-        0,
-        0
-    };
-
-    const float height_in_environment [] = {
-        0.75,
-        0.3,
-        0.95,
-        0.75,
-        0.5,
-        0.5,
-        0
-    };
+    // mismo orden: aire, agua, madera, pantano, espacio, vacio, cero al final
+    const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.24, 0.24, 0 }; // valores de pantano y espacio subject to change
+    const float branch_in_environment [] = { 0.12, 0.06, 0.07, 0.1, 0.12, 0.12, 0 }; // valores de pantano y putricio subject to change
+    const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
+    const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
 
     const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
 
@@ -221,7 +207,6 @@ int main() {
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
-    const float downWeightBounds [2] = {-0.4, 0.4};
 
     auto t0 = std::chrono::system_clock::now();
     long double time;
@@ -234,6 +219,10 @@ int main() {
     float forcedHeight = 0.75F;
     float downWeight = 0;
     float fractalStep = 0;
+    float crystallizate = 0;
+    float humidity = 0;
+    float temperature = 0;
+
     float lightning_width = 257;
     float lightning_height = 181;
     float lightning_scale = 6;
@@ -251,28 +240,35 @@ int main() {
     int renderIndex = 0;
 
     // inicializar interfaz
-    // deslizadores
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.38f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x * 0.035f, window.getSize().y * 0.44f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider downWeightSlider (downWeight, downWeightBounds[0], downWeightBounds[1], window.getSize().x * 0.035f, window.getSize().y * 0.53f, 0, font, L"Cristalización (σ)", true, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == 0 || bgIndex == voidIndex; });
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.62f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x * 0.035f, window.getSize().y * 0.71f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    // deslizadores constantes
+    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.14f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
     Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.84f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
-    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.80f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
-    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.84f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.88f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
+    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.86f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
+    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.9f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
+    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.94f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
+    // deslizadores de aire
+    //      Slider crystallizateSlider L"Cristalización (σ)"
+    //      Slider humiditySlider
+    // deslizadores de agua
+    //      Slider temperatureSlider
+    // deslizadores de vacio
+    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.4f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.49f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.58f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider forcedHeightSlider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.67f, 0, font, L"Altura mínima", false, sf::Color(104, 139, 204, 120), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x*0.035f, window.getSize().y*0.76f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     // botones
-    Button zapping (zap, window.getSize().x*0.045f, window.getSize().y*0.92f, font, L"Generar", 200, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.045f, window.getSize().y*0.23f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+    Button zapping (zap, window.getSize().x*0.045f + 10, window.getSize().y*0.27f, font, L"Generar", 200, 65, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+    Button backgroundButton (switchingBG, window.getSize().x*0.045f, window.getSize().y*0.18f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
     Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
     // interruptores
     Switch show_math_switch (show_math, window.getSize().x*0.845f, window.getSize().y*0.92f, font, L"Mostrar cálculos", L"Ocultar cálculos", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_right);
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.045f, window.getSize().y*0.29f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.045f, window.getSize().y*0.05f, font, L"Ajuste lineal", L"Ajuste lineal", 220, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
     Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
     Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &fractalStepSlider};
+    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &fractalStepSlider};
     // colocar los botones que recibirán eventos en grupo
     Button * all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
@@ -532,16 +528,10 @@ int main() {
             if (bg[bgIndex] == nullptr) bgIndex = 0;
             background.setTexture(*bg[bgIndex]);
             current_environmental_factor = environmental_factors[bgIndex];
+            leeway = leeway_in_environment[bgIndex];
+            branch = branch_in_environment[bgIndex];
             downWeight = weight_in_environment[bgIndex];
             forcedHeight = height_in_environment[bgIndex];
-            if (bgIndex == voidIndex) {
-                downWeightSlider.setLowerBound(-1.f);
-                downWeightSlider.setUpperBound(1.f);
-            }
-            else {
-                downWeightSlider.setLowerBound(downWeightBounds[0]);
-                downWeightSlider.setUpperBound(downWeightBounds[1]);
-            }
         }
 
         if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update) || show_math_switch.updateState()) {
@@ -551,9 +541,10 @@ int main() {
         if (linear_adjustment_switch.updateState() || alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
             recalculateLightningVertex(true);
         }
-        downWeightSlider.updatePercentage(mousepos_update);
         leewaySlider.updatePercentage(mousepos_update);
         branchSlider.updatePercentage(mousepos_update);
+        downWeightSlider.updatePercentage(mousepos_update);
+        forcedHeightSlider.updatePercentage(mousepos_update);
         
         if (closeButton.updateState() && attemptClose) {
             start_time = std::chrono::system_clock::now();

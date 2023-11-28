@@ -140,8 +140,11 @@ void Lightning::traverse(int x, int y){
                 neighborVal[i] = grid[x][y].getPotential() + leeway;
                 neighborVal[i] -= grid[get<0>(neighbors[i])][get<1>(neighbors[i])].getPotential();
                 // Interesting question: should we add the downWeight bonus before or after the next test? we may never knoe....
-                if(get<0>(neighbors[i]) - x == 1){
+                if(downWeight > 0 && get<0>(neighbors[i]) - x == 1){
                     neighborVal[i] += downWeight;
+                }
+                else if(downWeight < 0 && get<0>(neighbors[i]) - x == -1){
+                    neighborVal[i] -= downWeight;
                 }
                 if(neighborVal[i] > 0){
                     if(min == 3 || neighborVal[i] > neighborVal[min]){ min = i; }
