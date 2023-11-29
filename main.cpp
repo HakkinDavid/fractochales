@@ -249,6 +249,7 @@ int main() {
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<thickLine> thunder; // crear el vector de vértices a renderizar
     Point ** grid = storm.getGrid();
+    vector<float> * fracs = storm.getFracs();
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
@@ -295,7 +296,7 @@ int main() {
     Slider crystallizateSlider (crystallizate, 0.0f, 0.16f, window.getSize().x*0.035f, window.getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
     Slider humiditySlider (humidity, 0.6f, 1.2f, window.getSize().x*0.035f, window.getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
     // deslizadores de agua
-    Slider temperatureSlider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.36f, 0, font, L"Temperatura", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
+    Slider temperatureSlider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.36f, 0, font, L"Temperatura (C°)", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
     // deslizadores de vacio
     Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
     Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
@@ -398,7 +399,7 @@ int main() {
         << L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl
         << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl
         << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl
-        << L"Dimensión fractal: " << fixed << setprecision(6) << (*(storm.getFracs()))[floor(fractalStep+0.5) - 1] << endl;
+        << L"Dimensión fractal: " << fixed << setprecision(6) << (*(fracs))[floor(fractalStep+0.5) - 1] << endl;
 
         thunder_physics_data << scientific << setprecision(4)
         << L"W = " << e_mass << L"kg·9.81 m/s²\n\t= " << Physics::W(e_mass) << L"N" << endl
@@ -458,15 +459,17 @@ int main() {
             delete [] grid[i]; // liberar memoria usada en el rayo anterior
         }
         delete [] grid;
+        fracs->clear();
         storm = Lightning(lightning_height, lightning_width, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), forcedHeight+((temperature-15)*0.02f));
         grid = storm.getGrid();
+        fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
         storm.superTraverse(); 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         direction = storm.directionComp();
         storm.fractalComp();
-        fractalStep = storm.getFracs()->size();
+        fractalStep = fracs->size();
         fractalStepSlider.setUpperBound(fractalStep);
         recalculateLightningVertex();
         retypeInfo();
