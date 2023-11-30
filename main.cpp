@@ -70,7 +70,7 @@ int main() {
     sf::Image icon;
     icon.loadFromFile("images/fractochales.png");
 
-    sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), "Fractochales");
+    sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), "Fractochales", sf::Style::Fullscreen);
     if (icon.loadFromFile("images/fractochales.png")) {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
