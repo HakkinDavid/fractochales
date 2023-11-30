@@ -34,9 +34,6 @@
     #define VERSION 100
 #endif
 
-#define WINDOW_W 1920
-#define WINDOW_H 1080
-
 wstringstream console;
 
 wstring to_super (wstring num) {
@@ -73,7 +70,7 @@ int main() {
     sf::Image icon;
     icon.loadFromFile("images/fractochales.png");
 
-    sf::RenderWindow window(sf::VideoMode(WINDOW_W, WINDOW_H), "Fractochales", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), "Fractochales");
     if (icon.loadFromFile("images/fractochales.png")) {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
@@ -246,6 +243,19 @@ int main() {
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
+
+    float bg_scale;
+
+    auto scaleBG = [&] () {
+        bg_scale = window.getSize().x / (*bg[bgIndex]).getSize().x;
+        if (VERSION_KIND == L"Android" && bg_scale == 1.f) bg_scale *= 1.15f;
+        if (bg_scale != 1.f) {
+            background.setScale(bg_scale, bg_scale);
+        }
+        background.setPosition((window.getSize().x - ((*bg[bgIndex]).getSize().x * bg_scale))/2, 0);
+    };
+
+    scaleBG();
 
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
@@ -559,6 +569,9 @@ int main() {
             bgIndex++;
             if (bg[bgIndex] == nullptr) bgIndex = 0;
             background.setTexture(*bg[bgIndex]);
+
+            scaleBG();
+
             current_environmental_factor = environmental_factors[bgIndex];
             leeway = leeway_in_environment[bgIndex];
             branch = branch_in_environment[bgIndex];
