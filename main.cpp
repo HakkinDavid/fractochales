@@ -22,6 +22,8 @@
     #define VERSION_KIND L"Windows"
 #elif __APPLE__
     #define VERSION_KIND L"OS X"
+#elif __ANDROID__
+    #define VERSION_KIND L"Android"
 #elif __linux__
     #define VERSION_KIND L"GNU/Linux"
 #else
@@ -534,23 +536,24 @@ int main() {
         window.clear(); // CLEARS CONTENT OF WINDOW
         window.draw(background);
 
-        // si el usuario está haciendo click izquierdo
-        if(event.type == sf::Event::MouseButtonPressed){
-            if(event.mouseButton.button == sf::Mouse::Left){
-                sf::Vector2i mousepos = sf::Mouse::getPosition(window);
-                UI_events(0, &mousepos);
-            }
-            
+        sf::Vector2i mousepos_update;
+
+        if (sf::Touch::isDown(0)) {
+            mousepos_update = sf::Touch::getPosition(0, window);
+        }
+        else {
+            mousepos_update = sf::Mouse::getPosition(window);
         }
 
-        // si el usuario deja de mantener click izquierdo
-        else if(event.type == sf::Event::MouseButtonReleased){
-            if(event.mouseButton.button == sf::Mouse::Left){
-                UI_events(1);
-            }
+        // si el usuario está haciendo click izquierdo o tocando (😳)
+        if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchBegan){
+            UI_events(0, &mousepos_update);            
         }
 
-        sf::Vector2i mousepos_update = sf::Mouse::getPosition(window);
+        // si el usuario deja de mantener click izquierdo o de tocar (😳😳😳)
+        else if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchEnded){
+            UI_events(1);
+        }
 
         if (backgroundButton.updateState() && switchingBG) {
             bgIndex++;

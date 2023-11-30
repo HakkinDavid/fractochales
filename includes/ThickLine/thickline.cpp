@@ -13,10 +13,10 @@ class thickLine {
 
             sf::Vector2f offset = (thickness/2.f)*unitPerpendicular;
 
-            vertices[0].position = point1 + offset;
-            vertices[1].position = point2 + offset;
-            vertices[2].position = point2 - offset;
-            vertices[3].position = point1 - offset;
+            vertices[0].position = point1 - offset;
+            vertices[1].position = point2 - offset;
+            vertices[2].position = point1 + offset;
+            vertices[3].position = point2 + offset;
 
             for (int i=0; i<4; ++i) {
                 vertices[i].color = color;
@@ -24,7 +24,7 @@ class thickLine {
         }
 
         void draw(sf::RenderTarget &target) {
-            target.draw(vertices, 4, sf::Quads);
+            target.draw(vertices, 4, sf::TriangleStrip);
         }
 
         void setColor (int r, int b, int g, int a = 255) {
