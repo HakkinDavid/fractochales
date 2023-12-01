@@ -18,12 +18,20 @@
 #include "includes/ThickLine/thickline.cpp"
 #include "includes/Physics/physics.h"
 
+#define MOBILE false
 #if defined(WIN32)
     #define VERSION_KIND L"Windows"
 #elif __APPLE__
-    #define VERSION_KIND L"OS X"
+    #include <TargetConditionals.h>
+    #if TARGET_OS_IPHONE
+        #define VERSION_KIND L"iOS"
+        #define MOBILE true
+    #else
+        #define VERSION_KIND L"macOS"
+    #endif
 #elif __ANDROID__
     #define VERSION_KIND L"Android"
+    #define MOBILE true
 #elif __linux__
     #define VERSION_KIND L"GNU/Linux"
 #else
@@ -70,7 +78,7 @@ int main() {
     sf::Image icon;
     icon.loadFromFile("images/fractochales.png");
 
-    sf::RenderWindow window(sf::VideoMode::getFullscreenModes().at(0), "Fractochales", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Fractochales", sf::Style::Fullscreen);
     if (icon.loadFromFile("images/fractochales.png")) {
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
@@ -82,12 +90,10 @@ int main() {
     watermark_texture.loadFromFile("images/waterchales.png");
 
     sf::Sprite splash_screen(splash);
-    splash_screen.setPosition(sf::Vector2f((window.getSize().x - splash_screen.getLocalBounds().width)/2, (window.getSize().y - splash_screen.getLocalBounds().height)/2));
 
     sf::Sprite watermark_logo(watermark_texture);
     watermark_logo.setScale(0.15, 0.15);
     watermark_logo.setColor(sf::Color(255, 255, 255, 80));
-    watermark_logo.setPosition(window.getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + 10), window.getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + 10));
 
     sf::SoundBuffer buffer0;
     buffer0.loadFromFile("sfx/startup.wav");
@@ -174,7 +180,6 @@ int main() {
         << (float) VERSION / 100
         << L")\nMauricio Alcántar Dueñas\nDavid Emmanuel Santana Romero\nDiego Emilio Casta Valle";
     watermarkText.setString(watermarkTextStream.str());
-    watermarkText.setPosition(10, window.getSize().y - (watermarkText.getLocalBounds().getSize().y + 10));
 
     sf::RectangleShape dim_text_bg;
     sf::RectangleShape dim_physicsOutput_bg;
@@ -184,11 +189,7 @@ int main() {
     sf::RectangleShape left_menu_bg;
     sf::RectangleShape right_menu_bg;
     left_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
-    left_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
-    left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
     right_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
-    right_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
-    right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y + 1));
 
     sf::RectangleShape loading_percentage;
     loading_percentage.setFillColor(sf::Color::Cyan);
@@ -247,12 +248,13 @@ int main() {
     float bg_scale;
 
     auto scaleBG = [&] () {
-        bg_scale = window.getSize().x / (*bg[bgIndex]).getSize().x;
-        if (VERSION_KIND == L"Android" && bg_scale == 1.f) bg_scale *= 1.15f;
+        background.setScale(1.f, 1.f);
+        bg_scale = (window.getSize().x > window.getSize().y ? window.getSize().x / (*bg[bgIndex]).getSize().x : window.getSize().y / (*bg[bgIndex]).getSize().y);
+        bg_scale *= (MOBILE ? 1.5 : 1);
         if (bg_scale != 1.f) {
             background.setScale(bg_scale, bg_scale);
         }
-        background.setPosition((window.getSize().x - ((*bg[bgIndex]).getSize().x * bg_scale))/2, 0);
+        background.setPosition((window.getSize().x - ((*bg[bgIndex]).getSize().x * bg_scale))/2, (window.getSize().y - ((*bg[bgIndex]).getSize().y * bg_scale))/2);
     };
 
     scaleBG();
@@ -283,9 +285,9 @@ int main() {
 
     float lightning_width = 257;
     float lightning_height = 181;
-    float lightning_scale = 6;
+    float lightning_scale;
     float lightning_color [3] = {245, 230, 83};
-    float alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
+    float alignmentOffset;
     float* direction = nullptr;
     bool zap = false;
     bool linear_adjustment_line = false;
@@ -296,56 +298,54 @@ int main() {
 
     int renderIndex = 0;
 
-    // inicializar interfaz
-    // para los deslizadores, estamos usando de posición (window.getSize().x * 0.035f, window.getSize().y * [-0.06 respecto al que está por debajo]f)
-    // deslizadores constantes
-    Slider alignmentSlider (alignmentOffset, 0, window.getSize().x - lightning_width*lightning_scale, window.getSize().x * 0.035f, window.getSize().y * 0.83f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
-    Slider fractalStepSlider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.39f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
-    Slider redSlider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
-    Slider greenSlider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
-    Slider blueSlider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
-    // deslizadores de aire
-    Slider crystallizateSlider (crystallizate, 0.0f, 0.16f, window.getSize().x*0.035f, window.getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
-    Slider humiditySlider (humidity, 0.6f, 1.2f, window.getSize().x*0.035f, window.getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
-    // deslizadores de agua
-    Slider temperatureSlider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.36f, 0, font, L"Temperatura (C°)", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
-    // deslizadores de vacio
-    Slider leewaySlider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider branchSlider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider downWeightSlider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider forcedHeightSlider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    Slider envfactorSlider (current_environmental_factor, 1, 10000000000, window.getSize().x*0.035f, window.getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
-    // botones
-    Button zapping (zap, window.getSize().x*0.01f + 225, window.getSize().y*0.91f, font, L"Generar", 125, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-    Button backgroundButton (switchingBG, window.getSize().x*0.01f, window.getSize().y*0.91f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
-    Button closeButton (attemptClose, window.getSize().x-75, 0, font, L"X", 75, 50, sf::Color::Red, sf::Color::Red, sf::Color::White);
-    // interruptores
-    Switch linear_adjustment_switch (linear_adjustment_line, window.getSize().x*0.01f, window.getSize().y*0.86f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", 350, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
-    Switch hide_left_switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
-    Switch hide_right_switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
-
+    Slider
+        * alignmentSlider = nullptr, 
+        * fractalStepSlider = nullptr, 
+        * redSlider = nullptr, 
+        * greenSlider = nullptr, 
+        * blueSlider = nullptr, 
+        * crystallizateSlider = nullptr, 
+        * humiditySlider = nullptr, 
+        * temperatureSlider = nullptr, 
+        * leewaySlider = nullptr, 
+        * branchSlider = nullptr, 
+        * downWeightSlider = nullptr, 
+        * forcedHeightSlider = nullptr, 
+        * envfactorSlider = nullptr;
+    Button
+        * zapping = nullptr,
+        * backgroundButton = nullptr,
+        * closeButton = nullptr;
+    Switch
+        * linear_adjustment_switch = nullptr,
+        * hide_left_switch = nullptr,
+        * hide_right_switch = nullptr;
+    
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider * all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider};
+    Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider};
     // colocar los botones que recibirán eventos en grupo
-    Button * all_buttons [] = {&zapping, &backgroundButton, &closeButton};
+    Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch * all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch};
+    Switch ** all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
         for (auto &i : all_sliders) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    i->checkDragging(*mouse);
+                    (*i)->checkDragging(*mouse);
                 break;
                 case 1: // cuando usuario desclickea
-                    i->setIsDragging(false);
+                    (*i)->setIsDragging(false);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    i->updatePercentage(*mouse);
+                    (*i)->updatePercentage(*mouse);
                 break;
                 case 3: // dibujar
-                    i->draw(window);
+                    (*i)->draw(window);
+                break;
+                case -999:
+                    delete (*i);
                 break;
                 default:
                 break;
@@ -354,16 +354,19 @@ int main() {
         for (auto &i : all_buttons) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    i->checkClicking(*mouse);
+                    (*i)->checkClicking(*mouse);
                 break;
                 case 1: // cuando usuario desclickea
-                    i->setIsClicking(false);
+                    (*i)->setIsClicking(false);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    i->updateState();
+                    (*i)->updateState();
                 break;
                 case 3: // dibujar
-                    i->draw(window);
+                    (*i)->draw(window);
+                break;
+                case -999:
+                    delete (*i);
                 break;
                 default:
                 break;
@@ -372,22 +375,93 @@ int main() {
         for (auto &i : all_switches) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    i->checkClicking(*mouse);
+                    (*i)->checkClicking(*mouse);
                 break;
                 case 1: // cuando usuario desclickea
-                    i->setIsClicking(false);
+                    (*i)->setIsClicking(false);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    i->updateState();
+                    (*i)->updateState();
                 break;
                 case 3: // dibujar
-                    i->draw(window);
+                    (*i)->draw(window);
+                break;
+                case -999:
+                    delete (*i);
                 break;
                 default:
                 break;
             }
         }
     };
+
+    auto leftMenuState = [&] () {
+        if (hide_left) {
+                left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y +1));
+                hide_left_switch->changePosition(0, window.getSize().y*0.375f);
+        }
+        else {
+            left_menu_bg.setPosition(sf::Vector2f(0, 0));
+            hide_left_switch->changePosition(window.getSize().x*0.2f, window.getSize().y*0.375f);
+        }
+    };
+
+    auto rightMenuState = [&] () {
+        if (hide_right) {
+                right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y +1));
+                hide_right_switch->changePosition(window.getSize().x - 50, window.getSize().y*0.375f);
+        }
+        else {
+            right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, 0));
+            hide_right_switch->changePosition(window.getSize().x*0.8f - 50, window.getSize().y*0.375f);
+        }
+    };
+
+    auto init_ui = [&] () {
+        splash_screen.setPosition(sf::Vector2f((window.getSize().x - splash_screen.getLocalBounds().width)/2, (window.getSize().y - splash_screen.getLocalBounds().height)/2));
+        watermark_logo.setPosition(window.getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window.getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
+        watermarkText.setPosition((MOBILE ? 40 : 10), window.getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
+        left_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
+        left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
+        right_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
+        right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y + 1));
+        UI_events(-999); // delete all elements
+        lightning_scale = window.getSize().y/lightning_height;
+        alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
+        // inicializar interfaz
+        // para los deslizadores, estamos usando de posición (window.getSize().x * 0.035f, window.getSize().y * [-0.06 respecto al que está por debajo]f)
+        // deslizadores constantes
+        bool shouldInvertAlignment = alignmentOffset < 0;
+        alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window.getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window.getSize().x - lightning_width*lightning_scale), window.getSize().x * 0.035f, window.getSize().y * 0.83f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, &hide_left);
+        fractalStepSlider = new Slider (fractalStep, 1.0f, 2.0f, window.getSize().x * 0.835f, window.getSize().y * 0.39f, 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, &hide_right);
+        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, &hide_left);
+        greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, &hide_left);
+        blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, window.getSize().x * 0.035f, window.getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, &hide_left);
+        // deslizadores de aire
+        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, window.getSize().x*0.035f, window.getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
+        humiditySlider = new Slider (humidity, 0.6f, 1.2f, window.getSize().x*0.035f, window.getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, &hide_left, [&] () { return bgIndex == 0; });
+        // deslizadores de agua
+        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, window.getSize().x*0.035f, window.getSize().y*0.36f, 0, font, L"Temperatura (C°)", true, sf::Color(255, 142, 56), sf::Color::White, &hide_left, [&] () { return bgIndex == 1; });
+        // deslizadores de vacio
+        leewaySlider = new Slider (leeway, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+        branchSlider = new Slider (branch, 0.0f, 0.5f, window.getSize().x*0.035f, window.getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, window.getSize().x*0.035f, window.getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, window.getSize().x*0.035f, window.getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, window.getSize().x*0.035f, window.getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, &hide_left, [&] () { return bgIndex == voidIndex; });
+        // botones
+        zapping = new Button (zap, window.getSize().x*0.01f + 225, window.getSize().y*0.91f, font, L"Generar", 125, 50, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+        backgroundButton = new Button (switchingBG, window.getSize().x*0.01f, window.getSize().y*0.91f, font, L"Cambiar entorno", 220, 50, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+        closeButton = new Button (attemptClose, window.getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
+        // interruptores
+        linear_adjustment_switch = new Switch (linear_adjustment_line, window.getSize().x*0.01f, window.getSize().y*0.86f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", 350, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+        hide_left_switch = new Switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
+        hide_right_switch = new Switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
+
+        leftMenuState();
+        rightMenuState();
+    };
+    
+    init_ui();
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
@@ -482,7 +556,7 @@ int main() {
         direction = storm.directionComp();
         storm.fractalComp();
         fractalStep = fracs->size();
-        fractalStepSlider.setUpperBound(fractalStep);
+        fractalStepSlider->setUpperBound(fractalStep);
         recalculateLightningVertex();
         retypeInfo();
     };
@@ -502,6 +576,15 @@ int main() {
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (event.type == sf::Event::Resized)
+            {
+                // la ventana se reajustó (probablemente cambió de orientación en Android/iOS)
+                window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+                scaleBG();
+                init_ui();
+                recalculateLightningVertex();
+                retypeInfo();
+            }
         }
 
         if (yetToBoot) {
@@ -543,9 +626,6 @@ int main() {
         if (renderIndex+1 <= thunder.size()) renderIndex++;
         if (renderIndex != thunder.size() && renderIndex >= 30) renderIndex = thunder.size();
 
-        window.clear(); // CLEARS CONTENT OF WINDOW
-        window.draw(background);
-
         sf::Vector2i mousepos_update;
 
         if (sf::Touch::isDown(0)) {
@@ -565,7 +645,7 @@ int main() {
             UI_events(1);
         }
 
-        if (backgroundButton.updateState() && switchingBG) {
+        if (backgroundButton->updateState() && switchingBG) {
             bgIndex++;
             if (bg[bgIndex] == nullptr) bgIndex = 0;
             background.setTexture(*bg[bgIndex]);
@@ -582,26 +662,34 @@ int main() {
             temperature = 15.0F;
         }
 
-        if (envfactorSlider.updatePercentage(mousepos_update) || fractalStepSlider.updatePercentage(mousepos_update)) {
+        if (envfactorSlider->updatePercentage(mousepos_update) || fractalStepSlider->updatePercentage(mousepos_update)) {
             retypeInfo();
         }
         
-        if (linear_adjustment_switch.updateState() || alignmentSlider.updatePercentage(mousepos_update) || redSlider.updatePercentage(mousepos_update) || greenSlider.updatePercentage(mousepos_update) || blueSlider.updatePercentage(mousepos_update)) {
+        if (linear_adjustment_switch->updateState() || alignmentSlider->updatePercentage(mousepos_update) || redSlider->updatePercentage(mousepos_update) || greenSlider->updatePercentage(mousepos_update) || blueSlider->updatePercentage(mousepos_update)) {
             recalculateLightningVertex(true);
         }
-        leewaySlider.updatePercentage(mousepos_update);
-        branchSlider.updatePercentage(mousepos_update);
-        downWeightSlider.updatePercentage(mousepos_update);
-        forcedHeightSlider.updatePercentage(mousepos_update);
-        crystallizateSlider.updatePercentage(mousepos_update);
-        humiditySlider.updatePercentage(mousepos_update);
-        temperatureSlider.updatePercentage(mousepos_update);
-        
-        if (closeButton.updateState() && attemptClose) {
+        leewaySlider->updatePercentage(mousepos_update);
+        branchSlider->updatePercentage(mousepos_update);
+        downWeightSlider->updatePercentage(mousepos_update);
+        forcedHeightSlider->updatePercentage(mousepos_update);
+        crystallizateSlider->updatePercentage(mousepos_update);
+        humiditySlider->updatePercentage(mousepos_update);
+        temperatureSlider->updatePercentage(mousepos_update);
+
+        if (hide_left_switch->updateState()) {
+            leftMenuState();
+        }
+
+        if (hide_right_switch->updateState()) {
+            rightMenuState();
+        }
+
+        if (closeButton->updateState() && attemptClose) {
             start_time = std::chrono::system_clock::now();
         }
         
-        if (zapping.updateState() && zap){
+        if (zapping->updateState() && zap){
             generateLightning();
             window.clear(sf::Color::White);
             switch (1 + sfx_i % 3) {
@@ -621,32 +709,16 @@ int main() {
                     break;
             }
         }
+
+        window.clear();
+        window.draw(background);
+
         for (int i = 0; i < renderIndex; i++) {
             thunder.at(i).draw(window);
         }
 
         window.draw(left_menu_bg);
-        if (hide_left_switch.updateState()) {
-            if (hide_left) {
-                left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y +1));
-                hide_left_switch.changePosition(0, window.getSize().y*0.375f);
-            }
-            else {
-                left_menu_bg.setPosition(sf::Vector2f(0, 0));
-                hide_left_switch.changePosition(window.getSize().x*0.2f, window.getSize().y*0.375f);
-            }
-        }
         window.draw(right_menu_bg);
-        if (hide_right_switch.updateState()) {
-            if (hide_right) {
-                right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y +1));
-                hide_right_switch.changePosition(window.getSize().x - 50, window.getSize().y*0.375f);
-            }
-            else {
-                right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, 0));
-                hide_right_switch.changePosition(window.getSize().x*0.8f - 50, window.getSize().y*0.375f);
-            }
-        }
 
         if (!hide_right) {
             window.draw(dim_text_bg);
