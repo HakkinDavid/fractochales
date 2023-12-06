@@ -132,11 +132,11 @@ int main() {
     watermarkText.setFont(font);
     loading_text.setFont(font);
 
-    text.setCharacterSize(16);
-    physicsOutput.setCharacterSize(16);
-    currentTitle.setCharacterSize(32);
-    watermarkText.setCharacterSize(16);
-    loading_text.setCharacterSize(16);
+    text.setCharacterSize(16 * (MOBILE ? 2 : 1));
+    physicsOutput.setCharacterSize(16 * (MOBILE ? 2 : 1));
+    currentTitle.setCharacterSize(32 * (MOBILE ? 2 : 1));
+    watermarkText.setCharacterSize(16 * (MOBILE ? 2 : 1));
+    loading_text.setCharacterSize(16 * (MOBILE ? 2 : 1));
 
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
@@ -162,7 +162,8 @@ int main() {
         L"Realizamos cálculos estequiométricos para obtener las masas de los rayos",
         L"Una figura fractal se encuentra entre dos dimensiones enteras",
         L"¿Sabías que tenemos " + to_wstring(VERSION) + L" contribuciones de código en este programa?",
-        L"En la práctica, ningún rayo es idéntico"
+        L"En la práctica, ningún rayo es idéntico",
+        L"Fractochales funciona en Windows, Mac, Linux, Android y iOS"
     };
 
     int advice_max_num = sizeof(advice_text) / sizeof(wstring);
@@ -397,23 +398,35 @@ int main() {
 
     auto leftMenuState = [&] () {
         if (hide_left) {
-                left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y +1));
-                hide_left_switch->changePosition(0, window.getSize().y*0.375f);
+            if (MOBILE) {
+                hide_right_switch->changePosition(window.getSize().x-hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
+            }
+            left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
+            hide_left_switch->changePosition(0, window.getSize().y*0.375f);
         }
         else {
+            if (MOBILE) {
+                hide_right_switch->changePosition(window.getSize().x, hide_right_switch->getPosition().y);
+            }
             left_menu_bg.setPosition(sf::Vector2f(0, 0));
-            hide_left_switch->changePosition(window.getSize().x*0.2f, window.getSize().y*0.375f);
+            hide_left_switch->changePosition(window.getSize().x + right_menu_bg.getSize().x, window.getSize().y*0.375f);
         }
     };
 
     auto rightMenuState = [&] () {
         if (hide_right) {
-                right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y +1));
-                hide_right_switch->changePosition(window.getSize().x - 50, window.getSize().y*0.375f);
+            if (MOBILE) {
+                hide_left_switch->changePosition(0, hide_left_switch->getPosition().y);
+            }
+            right_menu_bg.setPosition(sf::Vector2f(window.getSize().x-right_menu_bg.getSize().x, window.getSize().y + 1));
+            hide_right_switch->changePosition(window.getSize().x - hide_right_switch->getSize().x, window.getSize().y*0.375f);
         }
         else {
-            right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, 0));
-            hide_right_switch->changePosition(window.getSize().x*0.8f - 50, window.getSize().y*0.375f);
+            if (MOBILE) {
+                hide_left_switch->changePosition(0-hide_left_switch->getSize().x, hide_left_switch->getPosition().y);
+            }
+            right_menu_bg.setPosition(sf::Vector2f(window.getSize().x-right_menu_bg.getSize().x, 0));
+            hide_right_switch->changePosition(window.getSize().x + right_menu_bg.getSize().x - 50, window.getSize().y*0.375f);
         }
     };
 
@@ -421,10 +434,8 @@ int main() {
         splash_screen.setPosition(sf::Vector2f((window.getSize().x - splash_screen.getLocalBounds().width)/2, (window.getSize().y - splash_screen.getLocalBounds().height)/2));
         watermark_logo.setPosition(window.getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window.getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
         watermarkText.setPosition((MOBILE ? 40 : 10), window.getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
-        left_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
-        left_menu_bg.setPosition(sf::Vector2f(0, window.getSize().y + 1));
-        right_menu_bg.setSize(sf::Vector2f(window.getSize().x*0.2f, window.getSize().y));
-        right_menu_bg.setPosition(sf::Vector2f(window.getSize().x*0.8f, window.getSize().y + 1));
+        left_menu_bg.setSize(sf::Vector2f(window.getSize().x * (MOBILE ? 1.f : 0.2f), window.getSize().y));
+        right_menu_bg.setSize(sf::Vector2f(window.getSize().x * (MOBILE ? 1.f : 0.2f), window.getSize().y));
         UI_events(-999); // delete all elements
         lightning_scale = window.getSize().y/lightning_height;
         alignmentOffset = (window.getSize().x - lightning_width*lightning_scale)/2;
@@ -454,8 +465,8 @@ int main() {
         closeButton = new Button (attemptClose, window.getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
         // interruptores
         linear_adjustment_switch = new Switch (linear_adjustment_line, window.getSize().x*0.01f, window.getSize().y*0.86f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", 350, 50, sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
-        hide_left_switch = new Switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
-        hide_right_switch = new Switch (hide_right, window.getSize().x - 50, window.getSize().y*0.375f, font, L">", L"<", 50, window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
+        hide_left_switch = new Switch (hide_left, 0, window.getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
+        hide_right_switch = new Switch (hide_right, window.getSize().x - (MOBILE ? 100 : 50), window.getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window.getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
         leftMenuState();
         rightMenuState();
@@ -686,6 +697,16 @@ int main() {
         }
 
         if (closeButton->updateState() && attemptClose) {
+            if (MOBILE && (hide_left || hide_right)) {
+                if (!hide_left) hide_left_switch->setIsClicking(true);
+                if (!hide_right) hide_right_switch->setIsClicking(true);
+                hide_left_switch->updateState();
+                leftMenuState();
+                hide_right_switch->updateState();
+                rightMenuState();
+                attemptClose = false;
+                continue;
+            }
             start_time = std::chrono::system_clock::now();
         }
         
@@ -726,14 +747,14 @@ int main() {
             window.draw(text);
             window.draw(physicsOutput);
         }
-        else {
+        else if (!MOBILE || hide_left) {
             window.draw(watermark_logo);
         }
 
         if (!hide_left) {
             window.draw(currentTitle);
         }
-        else {
+        else if (!MOBILE || hide_right) {
             window.draw(watermarkText);
         }
         UI_events(3);

@@ -28,6 +28,8 @@ class Button {
         void draw (sf::RenderWindow &window);
         void changePosition (float new_x, float new_y);
         void changeTitle (wstring new_title);
+        sf::Vector2f getSize();
+        sf::Vector2f getPosition();
 };
 
 #endif

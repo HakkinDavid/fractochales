@@ -60,3 +60,11 @@ void Button::changeTitle(wstring new_title) {
     title.setString(new_title);
     this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2) - 4);
 }
+
+sf::Vector2f Button::getSize() {
+    return shape.getSize();
+}
+
+sf::Vector2f Button::getPosition() {
+    return shape.getPosition();
+}
