@@ -434,7 +434,7 @@ int main() {
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
         left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.2f), window->getSize().y));
         right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.2f), window->getSize().y));
-        UI_events(-999); // delete all elements
+        UI_events(-999); // delete all UI elements
         lightning_scale = window->getSize().y/lightning_height;
         alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2;
         // inicializar interfaz
@@ -755,6 +755,7 @@ int main() {
         window->display();
     }
     // liberar memoria
+    UI_events(-999); // delete all UI elements
     delete [] direction;
     delete window;
     return 0;
