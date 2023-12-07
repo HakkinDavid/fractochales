@@ -7,7 +7,19 @@
 
 #include "button.h"
 
-Button::Button(bool &binded, float position_x, float position_y, sf::Font &font, wstring title, float size_x, float size_y, sf::Color color_shape, sf::Color color_shape_clicked, sf::Color color_text, bool *hide) {
+Button::Button
+(
+    bool &binded,
+    float position_x,
+    float position_y,
+    sf::Font &font,
+    wstring title,
+    float size_x, float size_y,
+    sf::Color color_shape,
+    sf::Color color_shape_clicked,
+    sf::Color color_text,
+    bool *hide
+) {
     this->x = &binded;
     this->colors[0] = color_shape;
     this->colors[1] = color_shape_clicked;
