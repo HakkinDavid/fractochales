@@ -17,6 +17,7 @@
 #include "includes/Button/button.h"
 #include "includes/ThickLine/thickline.cpp"
 #include "includes/Physics/physics.h"
+#include "includes/Achieve/achieve.h"
 
 #define MOBILE false
 #if defined(WIN32)
@@ -301,6 +302,7 @@ int main() {
     bool isMobileLandscape = false;
 
     int renderIndex = 0;
+    int drawPile = 0;
 
     Slider
         * alignmentSlider = nullptr, 
@@ -324,6 +326,9 @@ int main() {
         * linear_adjustment_switch = nullptr,
         * hide_left_switch = nullptr,
         * hide_right_switch = nullptr;
+    Achieve
+        * chievo1 = nullptr,
+        * chievo2 = nullptr;
     
     // colocar los deslizadores que recibirán eventos en grupo
     Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider};
@@ -331,6 +336,11 @@ int main() {
     Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
     Switch ** all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch};
+    // colocar los logros que recibirán eventos en grupo
+    Achieve ** all_chievos [] = {&chievo1, &chievo2};
+
+    bool achieve_vars [2] = {false};
+    int old_timers [2] = {0};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -391,6 +401,20 @@ int main() {
                     (*i)->draw(*window);
                 break;
                 case -999:
+                    delete (*i);
+                break;
+                default:
+                break;
+            }
+        }
+        int j = 0;
+        for (auto &i : all_chievos) {
+            switch (type) {
+                case 3: // dibujar
+                    (*i)->draw(*window);
+                break;
+                case -999:
+                    if (*i != nullptr) old_timers[j++] = (*i)->getTimer();
                     delete (*i);
                 break;
                 default:
@@ -465,6 +489,10 @@ int main() {
         linear_adjustment_switch = new Switch (linear_adjustment_line, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.86f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/21.6f), sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
+
+        // logros
+        chievo1 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, old_timers[0], [&] () { return achieve_vars[0]; });
+        chievo2 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, old_timers[1], [&] () { return achieve_vars[1]; });
 
         leftMenuState();
         rightMenuState();
@@ -583,6 +611,7 @@ int main() {
 
     auto start_time = std::chrono::system_clock::now();
     bool yetToBoot = true;
+    int zapCount = 0;
 
     startup.play();
 
@@ -653,12 +682,12 @@ int main() {
             mousepos_update = sf::Mouse::getPosition(*window);
         }
 
-        // si el usuario está haciendo click izquierdo o tocando (😳)
+        // si el usuario está haciendo click izquierdo o tocando
         if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchBegan){
             UI_events(0, &mousepos_update);            
         }
 
-        // si el usuario deja de mantener click izquierdo o de tocar (😳😳😳)
+        // si el usuario deja de mantener click izquierdo o de tocar 
         else if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchEnded){
             UI_events(1);
         }
@@ -706,6 +735,9 @@ int main() {
         
         if (zapping->updateState() && zap){
             generateLightning();
+            zapCount++;
+            if (zapCount == 1) achieve_vars[0] = true;
+            if (zapCount == 2) achieve_vars[1] = true; // the actual numbers should be more like 1, 15, 50, 100, or something. this is just a test
             window->clear(sf::Color::White);
             switch (1 + sfx_i % 3) {
                 case 1:
@@ -757,6 +789,7 @@ int main() {
     // liberar memoria
     UI_events(-999); // delete all UI elements
     delete [] direction;
+    // delete fracs somehow
     delete window;
     return 0;
 }
