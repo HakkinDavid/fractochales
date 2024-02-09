@@ -5,8 +5,19 @@
 class thickLine {
     private:
         sf::Vertex vertices[4];
+        sf::Vector3f start, end;
+        sf::Color color;
+        float thickness;
     public:
-        thickLine (sf::Vector2f point1, sf::Vector2f point2, sf::Color color = sf::Color::White, float thickness = 1.f) {
+        thickLine (const sf::Vector3f start, const sf::Vector3f end, const sf::Color color = sf::Color::White, const float thickness = 1.f) {
+            this->start = start;
+            this->end = end;
+            this->color = color;
+            this->thickness = thickness;
+        }
+
+        void recalculate () {
+            sf::Vector2f point1(start.x, start.y), point2(end.x, end.y);
             sf::Vector2f direction = point2 - point1;
             sf::Vector2f unitDirection = direction/std::sqrt(direction.x*direction.x+direction.y*direction.y);
             sf::Vector2f unitPerpendicular(-unitDirection.y,unitDirection.x);
@@ -23,7 +34,8 @@ class thickLine {
             }
         }
 
-        void draw(sf::RenderTarget &target) {
+        void draw (sf::RenderTarget &target) {
+            recalculate ();
             target.draw(vertices, 4, sf::TriangleStrip);
         }
 

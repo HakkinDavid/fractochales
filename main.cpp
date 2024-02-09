@@ -340,7 +340,6 @@ int main() {
     Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
     bool achieve_vars [2] = {false};
-    int old_timers [2] = {0};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
     auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
@@ -414,7 +413,6 @@ int main() {
                     (*i)->draw(*window);
                 break;
                 case -999:
-                    if (*i != nullptr) old_timers[j++] = (*i)->getTimer();
                     delete (*i);
                 break;
                 default:
@@ -491,8 +489,8 @@ int main() {
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
         // logros
-        chievo1 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, old_timers[0], [&] () { return achieve_vars[0]; });
-        chievo2 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, old_timers[1], [&] () { return achieve_vars[1]; });
+        chievo1 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[0]; });
+        chievo2 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[1]; });
 
         leftMenuState();
         rightMenuState();
@@ -566,19 +564,24 @@ int main() {
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
         thunder.clear();
+        const int z_index = 0;
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
                 if (grid[i][j].getIsLight()) {
-                    int i0 = grid[i][j].getPrevX();
-                    int j0 = grid[i][j].getPrevY();
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale, i*lightning_scale + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale + (j-j0)*2, i*lightning_scale + (i-i0)*2 + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 4.f);
-                    thunder.emplace_back(sf::Vector2f(alignmentOffset + j*lightning_scale + (j-j0), i*lightning_scale + (i-i0) + 1), sf::Vector2f(alignmentOffset + j0*lightning_scale, i0*lightning_scale + 1), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 6.f);
+                    const int i0 = grid[i][j].getPrevX();
+                    const int j0 = grid[i][j].getPrevY();
+                    const float start_x = alignmentOffset + j*lightning_scale;
+                    const float start_y = i*lightning_scale + 1;
+                    const float end_x = alignmentOffset + j0*lightning_scale;
+                    const float end_y = i0*lightning_scale + 1;
+                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
+                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0)*2, start_y + (i-i0)*2, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 4.f);
+                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0), start_y + (i-i0), z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 6.f);
                 }
             }
         }
         if (linear_adjustment_line) {
-            thunder.emplace_back(sf::Vector2f(alignmentOffset + direction[1]*lightning_scale, 1), sf::Vector2f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 2.f);
+            thunder.emplace_back(sf::Vector3f(alignmentOffset + direction[1]*lightning_scale, 1, z_index), sf::Vector3f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1, z_index), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 2.f);
         }
         reverse(thunder.begin(), thunder.end());
         if (!skipRedraw) renderIndex = 0;
