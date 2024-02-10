@@ -166,7 +166,13 @@ int main() {
         L"Una figura fractal se encuentra entre dos dimensiones enteras",
         L"¿Sabías que tenemos " + to_wstring(VERSION) + L" contribuciones de código en este programa?",
         L"En la práctica, ningún rayo es idéntico",
-        L"Fractochales funciona en Windows, Mac, Linux, Android y iOS"
+        L"Fractochales funciona en Windows, Mac, Linux, Android y iOS",
+        L"El motor 3D es enteramente de nuestra autoría",
+        L"Hirales estaría orgulloso de nuestras proyecciones 3D sobre un plano 2D",
+        L"Técnicamente emulamos el trazado de rayos",
+        L"Mi mamá es un vector ortogonal",
+        L"Fractochales es la contracción de Fractales Tochos",
+        L"En cada relámpago simulamos cerca de 3 billones de electrones, a escala macroscópica y en 3D"
     };
 
     int advice_max_num = sizeof(advice_text) / sizeof(wstring);
