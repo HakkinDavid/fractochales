@@ -89,12 +89,17 @@ int main() {
     sf::Texture splash;
     splash.loadFromFile("images/fractochales.png");
 
+    sf::Texture nowin3d;
+    nowin3d.loadFromFile("images/3d.png");
+
     sf::Texture watermark_texture;
     watermark_texture.loadFromFile("images/waterchales.png");
 
     sf::Sprite splash_screen(splash);
+    sf::Sprite splash_3d(nowin3d);
 
     sf::Sprite watermark_logo(watermark_texture);
+    splash_3d.setScale(0.125, 0.125);
     watermark_logo.setScale(0.15, 0.15);
     watermark_logo.setColor(sf::Color(255, 255, 255, 80));
 
@@ -468,6 +473,7 @@ int main() {
     auto init_ui = [&] () {
         isMobileLandscape = MOBILE && (window->getSize().x > window->getSize().y);
         splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+        splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
         watermark_logo.setPosition(window->getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window->getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
         left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.2f), window->getSize().y));
@@ -686,9 +692,11 @@ int main() {
                 loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
                 loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
                 loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
+                elapsed >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (elapsed - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
                 window->clear();
                 window->draw(background);
                 window->draw(splash_screen);
+                window->draw(splash_3d);
                 window->draw(loading_percentage);
                 window->draw(loading_text);
                 window->display();
