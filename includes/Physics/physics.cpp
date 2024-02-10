@@ -32,22 +32,30 @@ float Physics :: P (float force, float velocity) {
     return force * velocity;
 }
 
-void Physics :: rotate (sf::Vector3f &point, sf::Vector3f &centroid, float x_rad, float y_rad, float z_rad) {
-    point -= centroid;
+float Physics :: deg_to_rad (float deg) {
+    return deg * (PI / 180);
+}
+
+void Physics :: rotate (sf::Vector3f *point, sf::Vector3f *centroid, float x_rad, float y_rad, float z_rad) {
+    (*point) -= (*centroid);
 
     float rad = 0.0f;
 
     rad = x_rad;
-    point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
-    point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+    (*point).y = std::cos(rad) * (*point).y - std::sin(rad) * (*point).z;
+    (*point).z = std::sin(rad) * (*point).y + std::cos(rad) * (*point).z;
 
     rad = y_rad;
-    point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
-    point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
+    (*point).x = std::cos(rad) * (*point).x + std::sin(rad) * (*point).z;
+    (*point).z = -std::sin(rad) * (*point).x + std::cos(rad) * (*point).z;
 
     rad = z_rad;
-    point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
-    point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+    (*point).x = std::cos(rad) * (*point).x - std::sin(rad) * (*point).y;
+    (*point).y = std::sin(rad) * (*point).x + std::cos(rad) * (*point).y;
 
-    point += centroid;
+    (*point) += (*centroid);
+}
+
+void Physics :: rotate_deg (sf::Vector3f *point, sf::Vector3f *centroid, float x_deg, float y_deg, float z_deg) {
+    rotate(point, centroid, deg_to_rad(x_deg), deg_to_rad(y_deg), deg_to_rad(z_deg));
 }

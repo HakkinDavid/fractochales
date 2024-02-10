@@ -294,6 +294,10 @@ int main() {
     float lightning_color [3] = {245, 230, 83};
     float alignmentOffset;
     float* direction = nullptr;
+    float x_rotation = 0.f;
+    float y_rotation = 0.f;
+    float z_rotation = 0.f;
+    float spin_rads = 0.f;
     bool zap = false;
     bool linear_adjustment_line = false;
     bool switchingBG = false;
@@ -301,6 +305,7 @@ int main() {
     bool hide_left = true;
     bool hide_right = true;
     bool isMobileLandscape = false;
+    bool do_spin = false;
 
     int renderIndex = 0;
     int drawPile = 0;
@@ -318,7 +323,10 @@ int main() {
         * branchSlider = nullptr, 
         * downWeightSlider = nullptr, 
         * forcedHeightSlider = nullptr, 
-        * envfactorSlider = nullptr;
+        * envfactorSlider = nullptr,
+        * xRotationSlider = nullptr,
+        * yRotationSlider = nullptr,
+        * zRotationSlider = nullptr;
     Button
         * zapping = nullptr,
         * backgroundButton = nullptr,
@@ -326,17 +334,18 @@ int main() {
     Switch
         * linear_adjustment_switch = nullptr,
         * hide_left_switch = nullptr,
-        * hide_right_switch = nullptr;
+        * hide_right_switch = nullptr,
+        * spin_switch = nullptr;
     Achieve
         * chievo1 = nullptr,
         * chievo2 = nullptr;
     
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider};
+    Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
     // colocar los botones que recibirán eventos en grupo
     Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch ** all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch};
+    Switch ** all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch, &spin_switch};
     // colocar los logros que recibirán eventos en grupo
     Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
@@ -461,31 +470,40 @@ int main() {
         lightning_scale = window->getSize().y/lightning_height;
         alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2;
         // inicializar interfaz
-        // para los deslizadores, estamos usando de posición (left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y * [-0.06 respecto al que está por debajo]f)
+        const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
+        const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);
+        const float left_slider_y_size = left_menu_bg.getSize().y*(1.f/135.f);
+        const float handle_x_size = (MOBILE ? 120 : 10);
+        const float handle_y_size = (MOBILE ? 40 : 20);
+        // para los deslizadores, estamos usando de posición (left_slider_x_pos, window->getSize().y * [-0.06 respecto al que está por debajo]f)
         // deslizadores constantes
         bool shouldInvertAlignment = alignmentOffset < 0;
-        alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window->getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window->getSize().x - lightning_width*lightning_scale), left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y * 0.83f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left);
-        fractalStepSlider = new Slider (fractalStep, 1.0f, 2.0f, window->getSize().x - right_menu_bg.getSize().x*(5.f/6.f), (isMobileLandscape ? right_menu_bg.getPosition().y + right_menu_bg.getSize().y*(1.f/6.f) : window->getSize().y * 0.39f), 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, right_menu_bg.getSize().x*(2.f/3.f), right_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_right);
-        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left);
-        greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left);
-        blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left);
+        alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window->getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window->getSize().x - lightning_width*lightning_scale), left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
+        fractalStepSlider = new Slider (fractalStep, 1.0f, 2.0f, window->getSize().x - right_menu_bg.getSize().x*(5.f/6.f), (isMobileLandscape ? right_menu_bg.getPosition().y + right_menu_bg.getSize().y*(1.f/6.f) : window->getSize().y * 0.39f), 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, right_menu_bg.getSize().x*(2.f/3.f), right_menu_bg.getSize().y*(1.f/135.f), handle_x_size, handle_y_size, &hide_right);
+        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
+        greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
+        blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
+        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size/2, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
+        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size/2, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
+        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size/2, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
         // deslizadores de aire
-        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == 0; });
-        humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == 0; });
+        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 0; });
+        humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 0; });
         // deslizadores de agua
-        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.36f, 0, font, L"Temperatura (C°)", true, sf::Color(255, 142, 56), sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == 1; });
-        // deslizadores de vacio
-        leewaySlider = new Slider (leeway, 0.0f, 0.5f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == voidIndex; });
-        branchSlider = new Slider (branch, 0.0f, 0.5f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == voidIndex; });
-        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == voidIndex; });
-        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == voidIndex; });
-        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/135.f), (MOBILE ? 120 : 10), (MOBILE ? 40 : 20), &hide_left, [&] () { return bgIndex == voidIndex; });
+        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, left_slider_x_pos, window->getSize().y*0.36f, 0, font, L"Temperatura (°C)", true, sf::Color(255, 142, 56), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 1; });
+        // deslizadores de vacío
+        leewaySlider = new Slider (leeway, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
+        branchSlider = new Slider (branch, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
+        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, left_slider_x_pos, window->getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
+        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
+        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
         // botones
-        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.91f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.91f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
         // interruptores
-        linear_adjustment_switch = new Switch (linear_adjustment_line, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.86f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", left_menu_bg.getSize().x*(2.f/3.f), left_menu_bg.getSize().y*(1.f/21.6f), sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+        linear_adjustment_switch = new Switch (linear_adjustment_line, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", left_slider_x_size, left_menu_bg.getSize().y*(1.f/21.6f), sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
+        spin_switch = new Switch (do_spin, left_slider_x_pos + left_slider_x_size/2, window->getSize().y*0.825f, font, L"Giro automático", L"Giro manual", left_slider_x_size/2, left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
@@ -626,6 +644,9 @@ int main() {
     generateLightning();
 
     auto start_time = std::chrono::system_clock::now();
+    auto start_fps = start_time;
+    auto current_timestamp = start_time;
+    int64_t elapsed = 0;
     bool yetToBoot = true;
     int zapCount = 0;
 
@@ -633,6 +654,7 @@ int main() {
 
     while (window->isOpen())
     {
+
         sf::Event event;
         
         while (window->pollEvent(event))
@@ -651,7 +673,8 @@ int main() {
         }
 
         if (yetToBoot) {
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
+            current_timestamp = std::chrono::system_clock::now();
+            elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - start_time).count();
             if (elapsed < 1000) {
                 background.setColor(sf::Color((255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f)));
                 loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
@@ -671,7 +694,8 @@ int main() {
         }
 
         if (attemptClose) {
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count();
+            current_timestamp = std::chrono::system_clock::now();
+            elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - start_time).count();
             if (elapsed < 500) {
                 background.setColor(sf::Color(255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f), 255-(255.f * ((float) elapsed)/500.f)));
                 window->clear();
@@ -685,9 +709,15 @@ int main() {
             }
         }
 
-        // renderizar un solo punto a la vez (hasta 120), para dar la ilusión de que el rayo "cae"
+        // renderizar un solo punto a la vez (hasta 120)
         if (renderIndex+1 <= thunder.size()) renderIndex++;
-        if (renderIndex != thunder.size() && renderIndex >= 30) renderIndex = thunder.size();
+        if (renderIndex > 120 && renderIndex < thunder.size()) renderIndex = thunder.size();
+        if (do_spin) {
+            if (spin_rads < 2*Physics::PI && spin_rads >= 0) spin_rads += Physics::PI/720;
+            else {
+                spin_rads = 0;
+            }
+        }
 
         sf::Vector2i mousepos_update;
 
@@ -739,6 +769,16 @@ int main() {
         crystallizateSlider->updatePercentage(mousepos_update);
         humiditySlider->updatePercentage(mousepos_update);
         temperatureSlider->updatePercentage(mousepos_update);
+        xRotationSlider->updatePercentage(mousepos_update);
+        yRotationSlider->updatePercentage(mousepos_update);
+        zRotationSlider->updatePercentage(mousepos_update);
+
+        if (spin_switch->updateState() && do_spin) {
+            x_rotation = 0.f;
+            y_rotation = 0.f;
+            z_rotation = 0.f;
+            spin_rads = 0.f;
+        }
 
         if (hide_left_switch->updateState() || hide_right_switch->updateState()) {
             leftMenuState();
@@ -777,9 +817,7 @@ int main() {
         window->draw(background);
 
         for (int i = 0; i < renderIndex; i++) {
-            Physics::rotate(thunder.at(i).accessStart(), centroid, 0.000, 0.008, 0.000);
-            Physics::rotate(thunder.at(i).accessEnd(), centroid, 0.000, 0.008, 0.000);
-            thunder.at(i).draw(*window);
+            thunder.at(i).draw(*window, &centroid, (do_spin ? 0 : x_rotation), (do_spin ? spin_rads : y_rotation), (do_spin ? 0 : z_rotation));
         }
 
         window->draw(left_menu_bg);
