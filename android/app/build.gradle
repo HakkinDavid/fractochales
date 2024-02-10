@@ -43,7 +43,7 @@ android {
     }
     namespace 'com.fractochales.android'
     applicationVariants.all { variant ->
-        variant.mergeResources.doLast {
+        variant.mergeResourcesProvider.configure{ doLast {
             copy {
                 from (["../../fonts"])
                 into ("src/main/assets/fonts")
@@ -56,7 +56,7 @@ android {
                 from (["../../sfx"])
                 into ("src/main/assets/sfx")
             }
-        }
+        }}
     }
 }
 
