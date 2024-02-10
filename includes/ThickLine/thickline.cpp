@@ -45,4 +45,12 @@ class thickLine {
                 vertices[i].color = color;
             }
         }
+
+        sf::Vector3f& accessStart () {
+            return start;
+        }
+
+        sf::Vector3f& accessEnd () {
+            return end;
+        }
 };

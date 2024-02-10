@@ -1,6 +1,9 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
+#include "../SFML/Graphics.hpp"
+#include <cmath>
+
 namespace Physics {
     float mean_a (float initial_v, float final_v, float time);
     float F (float mass, float acceleration = 0);
@@ -12,6 +15,7 @@ namespace Physics {
     float Ec (float mass, float velocity = 0);
     float T (float force = 0, float distance = 0);
     float P (float force = 0, float velocity = 0);
+    void rotate (sf::Vector3f &point, sf::Vector3f &centroid, float x_rad = 1, float y_rad = 1, float z_rad = 1);
 
     const float gravity = 9.81;
 }

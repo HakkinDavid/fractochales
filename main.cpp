@@ -272,6 +272,7 @@ int main() {
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
 
+    sf::Vector3f centroid;
     auto t0 = std::chrono::system_clock::now();
     long double time;
     long double e_mass;
@@ -564,6 +565,10 @@ int main() {
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
         thunder.clear();
+        centroid.x = 0.0f;
+        centroid.y = 0.0f;
+        centroid.z = 0.0f;
+        int n_points = 0;
         const int z_index = 0;
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
@@ -574,14 +579,22 @@ int main() {
                     const float start_y = i*lightning_scale + 1;
                     const float end_x = alignmentOffset + j0*lightning_scale;
                     const float end_y = i0*lightning_scale + 1;
+                    centroid.x += start_x + end_x;
+                    centroid.y += start_y + end_y;
+                    centroid.z += z_index;
+                    n_points += 2;
                     thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
                     thunder.emplace_back(sf::Vector3f(start_x + (j-j0)*2, start_y + (i-i0)*2, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 4.f);
                     thunder.emplace_back(sf::Vector3f(start_x + (j-j0), start_y + (i-i0), z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 6.f);
                 }
             }
         }
+        centroid.x /= n_points;
+        centroid.y /= n_points;
+        centroid.z /= n_points;
         if (linear_adjustment_line) {
             thunder.emplace_back(sf::Vector3f(alignmentOffset + direction[1]*lightning_scale, 1, z_index), sf::Vector3f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1, z_index), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 2.f);
+            thunder.emplace_back(centroid - sf::Vector3f(0, 5, 0), centroid + sf::Vector3f(0, 5, 0), sf::Color::Red, 32.f); // centro geométrico del rayo
         }
         reverse(thunder.begin(), thunder.end());
         if (!skipRedraw) renderIndex = 0;
@@ -764,6 +777,8 @@ int main() {
         window->draw(background);
 
         for (int i = 0; i < renderIndex; i++) {
+            Physics::rotate(thunder.at(i).accessStart(), centroid, 0.000, 0.008, 0.000);
+            Physics::rotate(thunder.at(i).accessEnd(), centroid, 0.000, 0.008, 0.000);
             thunder.at(i).draw(*window);
         }
 
