@@ -844,6 +844,7 @@ int main() {
         for (int i = 0; i < renderIndex; i++) {
             thunder.at(i).pre_draw(&centroid, x_rotation, y_rotation, z_rotation);
         }
+        // ordenar los thickline en pantalla
         sort(thunder.begin(), thunder.end(), compareZOrder);
         for (int i = 0; i < renderIndex; i++) {
             thunder.at(i).draw(*window);
