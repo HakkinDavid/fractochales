@@ -48,12 +48,13 @@ class thickLine {
             }
         }
 
-        void draw (sf::RenderTarget &target, sf::Vector3f *centroid = nullptr, float x_rad = 0.f, float y_rad = 0.f, float z_rad = 0.f) {
+        void pre_draw (sf::Vector3f *centroid = nullptr, float x_rad = 0.f, float y_rad = 0.f, float z_rad = 0.f) {
             start = original[0];
             end = original[1];
             color_factor = 0.8f;
             if (centroid != nullptr && (x_rad != 0.f || y_rad != 0.f || z_rad != 0.f)) {
-                // oscurecer
+                // esto es contraintuitivo pero tl;dr: -z es hacia la pantalla (según la profe)
+                // iluminar más
                 if (
                         (centroid->z > start.z || centroid->z > end.z) // si está detrás del centroide
                         || ((centroid->x > start.x || centroid->x > end.x) && y_rad > 0 && y_rad < Physics::PI) // si pertenece a la izquierda y se rotó entre 0 y 180 grados respecto al eje y
@@ -61,10 +62,11 @@ class thickLine {
                         || ((centroid->y > start.y || centroid->y > end.y) && x_rad > 0 && x_rad < Physics::PI) // si pertenece a la mitad superior y se rotó entre 0 y 180 grados respecto al eje x
                         || ((centroid->y < start.y || centroid->y < end.y) && x_rad > Physics::PI && x_rad < 2*Physics::PI) // si pertenece a la mitad inferior y se rotó entre 180 y 360 grados respecto al eje x
                 ) {
-                    color_factor = 100.f/(std::sqrt(pow(centroid->x - (start.x + end.x)/2, 2) + pow(centroid->y - (start.y + end.y)/2, 2) + pow(centroid->z - (start.z + end.z)/2, 2)));
-                    if (color_factor > 0.75f) color_factor = 0.75f;
+                    color_factor = (std::sqrt(pow(centroid->x - (start.x + end.x)/2, 2) + pow(centroid->y - (start.y + end.y)/2, 2) + pow(centroid->z - (start.z + end.z)/2, 2)))/500.f;
+                    if (color_factor < 0.85f) color_factor = 0.85f;
+                    else if (color_factor > 1.05f) color_factor = 1.05f;
                 }
-                // iluminar más
+                // oscurecer
                 else if (
                         (centroid->z < start.z || centroid->z < end.z) // si está detrás del centroide
                         || ((centroid->x < start.x || centroid->x < end.x) && y_rad > 0 && y_rad < Physics::PI) // si pertenece a la derecha y se rotó entre 0 y 180 grados respecto al eje y
@@ -72,14 +74,16 @@ class thickLine {
                         || ((centroid->y < start.y || centroid->y < end.y) && x_rad > 0 && x_rad < Physics::PI) // si pertenece a la mitad inferior y se rotó entre 0 y 180 grados respecto al eje x
                         || ((centroid->y > start.y || centroid->y > end.y) && x_rad > Physics::PI && x_rad < 2*Physics::PI) // si pertenece a la mitad superior y se rotó entre 180 y 360 grados respecto al eje x
                 ) {
-                    color_factor = (std::sqrt(pow(centroid->x - (start.x + end.x)/2, 2) + pow(centroid->y - (start.y + end.y)/2, 2) + pow(centroid->z - (start.z + end.z)/2, 2)))/500.f;
-                    if (color_factor < 0.85f) color_factor = 0.85f;
-                    else if (color_factor > 1.05f) color_factor = 1.05f;
+                    color_factor = 100.f/(std::sqrt(pow(centroid->x - (start.x + end.x)/2, 2) + pow(centroid->y - (start.y + end.y)/2, 2) + pow(centroid->z - (start.z + end.z)/2, 2)));
+                    if (color_factor > 0.75f) color_factor = 0.75f;
                 }
                 Physics::rotate(&start, centroid, x_rad, y_rad, z_rad);
                 Physics::rotate(&end, centroid, x_rad, y_rad, z_rad);
             }
             recalculate ();
+        }
+
+        void draw (sf::RenderTarget &target) {
             target.draw(vertices, 4, sf::TriangleStrip);
         }
 
@@ -88,5 +92,9 @@ class thickLine {
             for (int i=0; i<4; ++i) {
                 vertices[i].color = color;
             }
+        }
+
+        int getZOrder () {
+            return (start.z + end.z)/2.f;
         }
 };

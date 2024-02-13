@@ -76,6 +76,11 @@ void format (wstringstream & s) {
     s.str(temporal);
 }
 
+bool compareZOrder(thickLine tl1, thickLine tl2) 
+{ 
+    return tl1.getZOrder() < tl2.getZOrder();
+} 
+
 int main() {
     window = new sf::RenderWindow (sf::VideoMode::getDesktopMode(), "Fractochales", sf::Style::Fullscreen);
 
@@ -609,13 +614,21 @@ int main() {
                     const float start_y = i*lightning_scale + 1;
                     const float end_x = alignmentOffset + j0*lightning_scale;
                     const float end_y = i0*lightning_scale + 1;
+                    const float thickness = 2.f;
                     centroid.x += start_x + end_x;
                     centroid.y += start_y + end_y;
                     centroid.z += z_index;
                     n_points += 2;
-                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), 2.f);
-                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0)*2, start_y + (i-i0)*2, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 4.f);
-                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0), start_y + (i-i0), z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), 6.f);
+                    // main lightning
+                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), thickness);
+                    // volumen
+                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index + thickness), sf::Vector3f(end_x, end_y, z_index + thickness), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), thickness);
+                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index + thickness * 2), sf::Vector3f(end_x, end_y, z_index + thickness * 2), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), thickness);
+                    // proof of concept: give lightning a backface so it looks more 3dish
+                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index - thickness * 2), sf::Vector3f(end_x, end_y, z_index - thickness * 2), sf::Color(lightning_color[0] * 0.10f, lightning_color[1] * 0.10f, lightning_color[2] * 0.10f), thickness);
+                    // lightning of lightning (?)
+                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0)*2, start_y + (i-i0)*2, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), thickness * 2);
+                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0), start_y + (i-i0), z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), thickness * 3);
                 }
             }
         }
@@ -627,8 +640,6 @@ int main() {
             thunder.emplace_back(centroid - sf::Vector3f(0, 5, 0), centroid + sf::Vector3f(0, 5, 0), sf::Color::Red, 32.f); // centro geométrico del rayo
         }
         reverse(thunder.begin(), thunder.end());
-        //if (!skipRedraw) renderIndex = 0;
-        //else renderIndex = thunder.size();
         renderIndex = thunder.size();
     };
 
@@ -831,7 +842,11 @@ int main() {
         window->draw(background);
 
         for (int i = 0; i < renderIndex; i++) {
-            thunder.at(i).draw(*window, &centroid, x_rotation, y_rotation, z_rotation);
+            thunder.at(i).pre_draw(&centroid, x_rotation, y_rotation, z_rotation);
+        }
+        sort(thunder.begin(), thunder.end(), compareZOrder);
+        for (int i = 0; i < renderIndex; i++) {
+            thunder.at(i).draw(*window);
         }
 
         window->draw(left_menu_bg);
