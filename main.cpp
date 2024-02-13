@@ -265,7 +265,7 @@ int main() {
     auto scaleBG = [&] () {
         background.setScale(1.f, 1.f);
         bg_scale = (window->getSize().x > window->getSize().y ? window->getSize().x / (*bg[bgIndex]).getSize().x : window->getSize().y / (*bg[bgIndex]).getSize().y);
-        bg_scale *= (MOBILE ? 1.5 : 2);
+        bg_scale *= (MOBILE ? 1.5 : 1.f);
         if (bg_scale != 1.f) {
             background.setScale(bg_scale, bg_scale);
         }
