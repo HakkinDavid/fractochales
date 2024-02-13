@@ -265,7 +265,7 @@ int main() {
     auto scaleBG = [&] () {
         background.setScale(1.f, 1.f);
         bg_scale = (window->getSize().x > window->getSize().y ? window->getSize().x / (*bg[bgIndex]).getSize().x : window->getSize().y / (*bg[bgIndex]).getSize().y);
-        bg_scale *= (MOBILE ? 1.5 : 1);
+        bg_scale *= (MOBILE ? 1.5 : 2);
         if (bg_scale != 1.f) {
             background.setScale(bg_scale, bg_scale);
         }
@@ -308,7 +308,6 @@ int main() {
     float x_rotation = 0.f;
     float y_rotation = 0.f;
     float z_rotation = 0.f;
-    float spin_rads = 0.f;
     bool zap = false;
     bool linear_adjustment_line = false;
     bool switchingBG = false;
@@ -487,6 +486,7 @@ int main() {
         const float left_slider_y_size = left_menu_bg.getSize().y*(1.f/135.f);
         const float handle_x_size = (MOBILE ? 120 : 10);
         const float handle_y_size = (MOBILE ? 40 : 20);
+        const float left_button_y_size = left_menu_bg.getSize().y*(0.75f/21.6f);
         // para los deslizadores, estamos usando de posición (left_slider_x_pos, window->getSize().y * [-0.06 respecto al que está por debajo]f)
         // deslizadores constantes
         bool shouldInvertAlignment = alignmentOffset < 0;
@@ -510,12 +510,12 @@ int main() {
         forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
         envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
         // botones
-        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
+        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
         // interruptores
         linear_adjustment_switch = new Switch (linear_adjustment_line, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", left_slider_x_size, left_menu_bg.getSize().y*(1.f/21.6f), sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
-        spin_switch = new Switch (do_spin, left_slider_x_pos + left_slider_x_size/2, window->getSize().y*0.825f, font, L"Giro automático", L"Giro manual", left_slider_x_size/2, left_menu_bg.getSize().y*(0.75f/21.6f), sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
+        spin_switch = new Switch (do_spin, left_slider_x_pos + left_slider_x_size/1.75f, window->getSize().y*0.825f + left_slider_y_size/1.5f, font, L"Giro automático", L"Giro manual", left_slider_x_size/1.75f, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
@@ -627,8 +627,9 @@ int main() {
             thunder.emplace_back(centroid - sf::Vector3f(0, 5, 0), centroid + sf::Vector3f(0, 5, 0), sf::Color::Red, 32.f); // centro geométrico del rayo
         }
         reverse(thunder.begin(), thunder.end());
-        if (!skipRedraw) renderIndex = 0;
-        else renderIndex = thunder.size();
+        //if (!skipRedraw) renderIndex = 0;
+        //else renderIndex = thunder.size();
+        renderIndex = thunder.size();
     };
 
     auto generateLightning = [&] () {
@@ -723,13 +724,13 @@ int main() {
             }
         }
 
-        // renderizar un solo punto a la vez (hasta 120)
-        if (renderIndex+1 <= thunder.size()) renderIndex++;
-        if (renderIndex > 120 && renderIndex < thunder.size()) renderIndex = thunder.size();
+        // renderizar un solo punto a la vez
+        //if (renderIndex+1 <= thunder.size()) renderIndex++;
+        //if (renderIndex > 120 && renderIndex < thunder.size()) renderIndex = thunder.size();
         if (do_spin) {
-            if (spin_rads < 2*Physics::PI && spin_rads >= 0) spin_rads += Physics::PI/720;
+            if (y_rotation < 2*Physics::PI && y_rotation >= 0) y_rotation += Physics::PI/720;
             else {
-                spin_rads = 0;
+                y_rotation = 0;
             }
         }
 
@@ -787,11 +788,10 @@ int main() {
         yRotationSlider->updatePercentage(mousepos_update);
         zRotationSlider->updatePercentage(mousepos_update);
 
-        if (spin_switch->updateState() && do_spin) {
+        if (spin_switch->updateState()) {
             x_rotation = 0.f;
             y_rotation = 0.f;
             z_rotation = 0.f;
-            spin_rads = 0.f;
         }
 
         if (hide_left_switch->updateState() || hide_right_switch->updateState()) {
@@ -831,7 +831,7 @@ int main() {
         window->draw(background);
 
         for (int i = 0; i < renderIndex; i++) {
-            thunder.at(i).draw(*window, &centroid, (do_spin ? 0 : x_rotation), (do_spin ? spin_rads : y_rotation), (do_spin ? 0 : z_rotation));
+            thunder.at(i).draw(*window, &centroid, x_rotation, y_rotation, z_rotation);
         }
 
         window->draw(left_menu_bg);
