@@ -79,7 +79,7 @@ void format (wstringstream & s) {
 bool compareZOrder(thickLine tl1, thickLine tl2) 
 { 
     return tl1.getZOrder() < tl2.getZOrder();
-} 
+}
 
 int main() {
     window = new sf::RenderWindow (sf::VideoMode::getDesktopMode(), "Fractochales", sf::Style::Fullscreen);
