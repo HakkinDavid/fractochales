@@ -76,8 +76,7 @@ void format (wstringstream & s) {
     s.str(temporal);
 }
 
-bool compareZOrder(thickLine tl1, thickLine tl2) 
-{ 
+bool compareZOrder(thickLine tl1, thickLine tl2) {
     return tl1.getZOrder() < tl2.getZOrder();
 }
 
