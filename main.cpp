@@ -84,7 +84,6 @@ int main() {
     window = new sf::RenderWindow (sf::VideoMode::getDesktopMode(), "Fractochales", sf::Style::Fullscreen);
 
     sf::Image icon;
-    icon.loadFromFile("images/fractochales.png");
 
     if (icon.loadFromFile("images/fractochales.png")) {
         window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
