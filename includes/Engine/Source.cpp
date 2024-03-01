@@ -44,12 +44,15 @@ class tri3
 {
     public:
 	vec3 p[3];
-	int color;
-    tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), int color = 0) {
+	float color[4];
+    tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), float red = 255.f, float green = 255.f, float blue = 255.f, float alpha = 255.f) {
         this->p[0] = p1;
         this->p[1] = p2;
         this->p[2] = p3;
-        this->color = color;
+        this->color[0] = red;
+        this->color[1] = green;
+        this->color[2] = blue;
+        this->color[3] = alpha;
     }
 };
 
@@ -203,7 +206,10 @@ int ClipTriangleAgainstPlane(vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out
 
 	if (nInsidePointCount == 1 && nOutsidePointCount == 2)
 	{
-		out_tri1.color = in_tri.color;
+		out_tri1.color[0] = in_tri.color[0];
+        out_tri1.color[1] = in_tri.color[1];
+        out_tri1.color[2] = in_tri.color[2];
+        out_tri1.color[3] = in_tri.color[3];
 
 		out_tri1.p[0] = *inside_points[0];
 
@@ -216,9 +222,15 @@ int ClipTriangleAgainstPlane(vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out
 	if (nInsidePointCount == 2 && nOutsidePointCount == 1)
 	{
 
-		out_tri1.color = in_tri.color;
+		out_tri1.color[0] = in_tri.color[0];
+        out_tri1.color[1] = in_tri.color[1];
+        out_tri1.color[2] = in_tri.color[2];
+        out_tri1.color[3] = in_tri.color[3];
 
-		out_tri2.color = in_tri.color;
+		out_tri2.color[0] = in_tri.color[0];
+        out_tri2.color[1] = in_tri.color[1];
+        out_tri2.color[2] = in_tri.color[2];
+        out_tri2.color[3] = in_tri.color[3];
 
 		out_tri1.p[0] = *inside_points[0];
 		out_tri1.p[1] = *inside_points[1];
