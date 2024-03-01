@@ -18,6 +18,7 @@
 #include "includes/ThickLine/thickline.cpp"
 #include "includes/Physics/physics.h"
 #include "includes/Achieve/achieve.h"
+#include "includes/Engine/Source.cpp"
 
 #define MOBILE false
 #if defined(WIN32)
@@ -44,6 +45,7 @@
 #endif
 
 sf::RenderWindow * window = nullptr;
+RenderSettings WindowSettings;
 wstringstream console;
 
 wstring to_super (wstring num) {
@@ -81,7 +83,21 @@ bool compareZOrder(thickLine tl1, thickLine tl2) {
 }
 
 int main() {
-    window = new sf::RenderWindow (sf::VideoMode::getDesktopMode(), "Fractochales", sf::Style::Fullscreen);
+    sf::VideoMode video_mode = sf::VideoMode::getDesktopMode();
+    WindowSettings.x_res = video_mode.width;
+    WindowSettings.y_res = video_mode.height;
+    WindowSettings.depth = 32;
+    WindowSettings.FOV = 105.0f;
+    WindowSettings.x_sens = 1.0f;
+    WindowSettings.y_sens = 1.0f;
+    vec3 Camera = { 1,0,0 };
+	float Yaw = 0.0f;
+	float Pitch = 0.0f;
+	vec3 lookdir;
+	mat4 Projection = ProjectionMatrix(WindowSettings.FOV, float(WindowSettings.y_res) / float(WindowSettings.x_res), 0.1f, 1000.0f);
+	float Theta = 0.1f;
+    
+    window = new sf::RenderWindow (sf::VideoMode(WindowSettings.x_res, WindowSettings.y_res), "Fractochales", sf::Style::Fullscreen);
 
     sf::Image icon;
 
@@ -279,7 +295,7 @@ int main() {
 
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
-    vector<thickLine> thunder; // crear el vector de vértices a renderizar
+    vector<tri3> thunder; // crear el vector de vértices a renderizar
     Point ** grid = storm.getGrid();
     vector<float> * fracs = storm.getFracs();
 
@@ -608,37 +624,42 @@ int main() {
                 if (grid[i][j].getIsLight()) {
                     const int i0 = grid[i][j].getPrevX();
                     const int j0 = grid[i][j].getPrevY();
-                    const float start_x = alignmentOffset + j*lightning_scale;
-                    const float start_y = i*lightning_scale + 1;
-                    const float end_x = alignmentOffset + j0*lightning_scale;
-                    const float end_y = i0*lightning_scale + 1;
-                    const float thickness = 2.f;
+                    const float start_x = (alignmentOffset + j*lightning_scale);
+                    const float start_y = (i*lightning_scale + 1);
+                    const float end_x = (alignmentOffset + j0*lightning_scale);
+                    const float end_y = (i0*lightning_scale + 1);
+                    const float thickness = (2.f);
                     centroid.x += start_x + end_x;
                     centroid.y += start_y + end_y;
                     centroid.z += z_index;
                     n_points += 2;
                     // main lightning
-                    thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), thickness);
+                    thunder.emplace_back(vec3(start_x, z_index, start_y), vec3(end_x, z_index, end_y), vec3(start_x + thickness, z_index, start_y));
+                    thunder.emplace_back(vec3(start_x + thickness, z_index, start_y), vec3(end_x, z_index, end_y), vec3(end_x + thickness, z_index, end_y));
+                    thunder.emplace_back(vec3(start_x, z_index - 10.f, start_y), vec3(end_x, z_index, end_y), vec3(start_x + thickness, z_index - 10.f, start_y));
+                    thunder.emplace_back(vec3(start_x + thickness, z_index - 10.f, start_y), vec3(end_x, z_index - 10.f, end_y), vec3(end_x + thickness, z_index - 10.f, end_y));
+                    /*
                     // volumen
                     thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index + thickness), sf::Vector3f(end_x, end_y, z_index + thickness), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), thickness);
                     thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index + thickness * 2), sf::Vector3f(end_x, end_y, z_index + thickness * 2), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2]), thickness);
                     // proof of concept: give lightning a backface so it looks more 3dish
                     thunder.emplace_back(sf::Vector3f(start_x, start_y, z_index - thickness * 2), sf::Vector3f(end_x, end_y, z_index - thickness * 2), sf::Color(lightning_color[0] * 0.10f, lightning_color[1] * 0.10f, lightning_color[2] * 0.10f), thickness);
                     // lightning of lightning (?)
-                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0)*2, start_y + (i-i0)*2, z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), thickness * 2);
-                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0), start_y + (i-i0), z_index), sf::Vector3f(end_x, end_y, z_index), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), thickness * 3);
+                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0)*2, start_y + (i-i0)*2, z_index), sf::Vector3f(end_x, z_index, end_y), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), thickness * 2);
+                    thunder.emplace_back(sf::Vector3f(start_x + (j-j0), start_y + (i-i0), z_index), sf::Vector3f(end_x, z_index, end_y), sf::Color(lightning_color[0], lightning_color[1], lightning_color[2], 64), thickness * 3);
+                    */
                 }
             }
         }
         centroid.x /= n_points;
         centroid.y /= n_points;
         centroid.z /= n_points;
+        /*
         if (linear_adjustment_line) {
             thunder.emplace_back(sf::Vector3f(alignmentOffset + direction[1]*lightning_scale, 1, z_index), sf::Vector3f(alignmentOffset + (lightning_height*direction[0] + direction[1])*lightning_scale, lightning_height*lightning_scale + 1, z_index), sf::Color(255 - lightning_color[0], 255 - lightning_color[1], 255 - lightning_color[2]), 2.f);
             thunder.emplace_back(centroid - sf::Vector3f(0, 5, 0), centroid + sf::Vector3f(0, 5, 0), sf::Color::Red, 32.f); // centro geométrico del rayo
         }
-        reverse(thunder.begin(), thunder.end());
-        renderIndex = thunder.size();
+        */
     };
 
     auto generateLightning = [&] () {
@@ -672,11 +693,13 @@ int main() {
     bool yetToBoot = true;
     int zapCount = 0;
 
+    sf::Clock clock;
     startup.play();
 
     while (window->isOpen())
     {
 
+        sf::Time delta = clock.restart();
         sf::Event event;
         
         while (window->pollEvent(event))
@@ -836,17 +859,235 @@ int main() {
             }
         }
 
-        window->clear();
-        window->draw(background);
+        // controles de movimiento... no sabemos si serán realmente implementados
 
-        for (int i = 0; i < renderIndex; i++) {
-            thunder.at(i).pre_draw(&centroid, x_rotation, y_rotation, z_rotation);
-        }
-        // ordenar los thickline en pantalla
-        sort(thunder.begin(), thunder.end(), compareZOrder);
-        for (int i = 0; i < renderIndex; i++) {
-            thunder.at(i).draw(*window);
-        }
+        vec3 Forward = VecxScalar(lookdir, 20.0f*delta.asSeconds());
+		vec3 Up = { 0,0,1 };
+		vec3 Right = Cross(lookdir, Up);
+		vec3 CameraUp = Cross(Right, lookdir);
+		Right = VecxScalar(Right, 20.0f*delta.asSeconds());
+		CameraUp = VecxScalar(CameraUp, 20.0f*delta.asSeconds());
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		{
+			Camera = AddVec(Camera, CameraUp);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+		{
+			Camera = SubVec(Camera, CameraUp);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+		{
+			Camera = AddVec(Camera, Forward);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		{
+			Camera = SubVec(Camera, Right);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		{
+			Camera = SubVec(Camera, Forward);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		{
+			Camera = AddVec(Camera, Right);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			Yaw -= 2.0f * delta.asSeconds();
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+			Yaw += 2.0f * delta.asSeconds();
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		{
+			Pitch += 2.0f * delta.asSeconds();
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		{
+			Pitch -= 2.0f * delta.asSeconds();
+		}
+
+		if (Yaw >= 2.0f * 3.14159f)
+		{
+			Yaw -= 2.0f * 3.14159f;
+		}
+		if (Yaw <= 0.0f)
+		{
+			Yaw += 2.0f * 3.14159f;
+		}
+		if (Pitch >= 3.14159f / 2.0f)
+		{
+			Pitch = 3.14100f / 2.0f;
+		}
+		if (Pitch <= -3.14159f / 2.0f)
+		{
+			Pitch = -3.14100f / 2.0f;
+		}
+
+		mat4 RotZ, RotY, RotX;
+		//Theta += 1.0f * delta.asSeconds();
+
+		//Define Camera Rotation Matrices
+		RotZ = ZRotationMatrix(Theta*0.2f);
+		RotY = YRotationMatrix(Theta*0.1f);
+		RotX = XRotationMatrix(Theta*1.0f);
+
+		//Move Triangles Away from Camera
+		mat4 Translation;
+		Translation = TranslationMatrix(5.0f, 0.0f, 0.0f);
+
+		mat4 World;
+		World = IdentityMatrix();
+		World = MatrixMultiply(RotZ, RotX);
+		World = MatrixMultiply(World, Translation);
+		vec3 Target = { 1,0,0 };
+		mat4 CameraRotation = ZRotationMatrix(-Yaw);
+		mat4 PitchRotation = YRotationMatrix(Pitch);
+		CameraRotation = MatrixMultiply(PitchRotation, CameraRotation);
+		lookdir = MatxVec(CameraRotation, Target);
+		Target = AddVec(Camera, lookdir);
+		mat4 CameraMatrix = PointingMatrix(Camera, Target, Up);
+		mat4 ViewMatrix = MatrixQuickInverse(CameraMatrix);
+
+        window->clear();
+        //window->draw(background);
+
+        vector<tri3> TriVector;
+
+		// Draw Mesh
+		for (auto tri : thunder)
+		{
+			tri3 Projected, Transformed, Viewed;
+
+			Transformed.p[0] = MatxVec(World, tri.p[0]);
+			Transformed.p[1] = MatxVec(World, tri.p[1]);
+			Transformed.p[2] = MatxVec(World, tri.p[2]);
+
+			//Get Normal
+			vec3 normal, line1, line2;
+
+			line1 = SubVec(Transformed.p[1], Transformed.p[0]);
+			line2 = SubVec(Transformed.p[2], Transformed.p[0]);
+			normal = Cross(line1, line2);
+			normal = Norm(normal);
+
+			vec3 CameraRay = SubVec(Transformed.p[0], Camera);
+			if (Dot(normal, CameraRay) < 0.0f)
+			{
+				//Light Triangle
+				vec3 light = { -0.5f, -0.5f, -0.5f };
+				light = Norm(light);
+				float dotproduct = Dot(light, normal);
+
+				//Move from World Frame to Camera Frame
+				Viewed.p[0] = MatxVec(ViewMatrix, Transformed.p[0]);
+				Viewed.p[1] = MatxVec(ViewMatrix, Transformed.p[1]);
+				Viewed.p[2] = MatxVec(ViewMatrix, Transformed.p[2]);
+
+				// Clip Viewed Triangle against near plane, this could form two additional triangles. 
+				int nClippedTriangles = 0;
+				tri3 Clipped[2];
+				nClippedTriangles = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, Viewed, Clipped[0], Clipped[1]);
+
+				// We may end up with multiple triangles form the clip, so project as required
+				for (int n = 0; n < nClippedTriangles; n++)
+				{
+
+					//Project Triangles onto 2D
+					Projected.p[0] = MatxVec(Projection, Clipped[n].p[0]);
+					Projected.p[1] = MatxVec(Projection, Clipped[n].p[1]);
+					Projected.p[2] = MatxVec(Projection, Clipped[n].p[2]);
+
+					Projected.p[0] = VecdScalar(Projected.p[0], Projected.p[0].w);
+					Projected.p[1] = VecdScalar(Projected.p[1], Projected.p[1].w);
+					Projected.p[2] = VecdScalar(Projected.p[2], Projected.p[2].w);
+
+					//Unfuck perspective
+					Projected.p[0].x *= -1.0f;
+					Projected.p[1].x *= -1.0f;
+					Projected.p[2].x *= -1.0f;
+					Projected.p[0].y *= -1.0f;
+					Projected.p[1].y *= -1.0f;
+					Projected.p[2].y *= -1.0f;
+
+					//Scale Triangles to Screen Size
+					vec3 Offset = { 1, 1, 0 };
+					Projected.p[0] = AddVec(Projected.p[0], Offset);
+					Projected.p[1] = AddVec(Projected.p[1], Offset);
+					Projected.p[2] = AddVec(Projected.p[2], Offset);
+
+					Projected.p[0].x *= 0.5f * 1920.0f;
+					Projected.p[0].y *= 0.5f * 1080.0f;
+					Projected.p[1].x *= 0.5f * 1920.0f;
+					Projected.p[1].y *= 0.5f * 1080.0f;
+					Projected.p[2].x *= 0.5f * 1920.0f;
+					Projected.p[2].y *= 0.5f * 1080.0f;
+
+					Projected.color = 101 - dotproduct * 50;
+
+					//Store Triangles For Sorting
+					TriVector.push_back(Projected);
+
+				}
+			}
+		}
+
+		sort(TriVector.begin(), TriVector.end(), [](tri3 &t1, tri3 &t2)
+		{
+			float z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f;
+			float z2 = (t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f;
+			return z1 > z2;
+		});
+
+		for (auto &triToRaster : TriVector)
+		{
+			tri3 clipped[2];
+			list<tri3> listTriangles;
+
+			listTriangles.push_back(triToRaster);
+			int nNewTriangles = 1;
+
+			for (int p = 0; p < 4; p++)
+			{
+				int nTrisToAdd = 0;
+				while (nNewTriangles > 0)
+				{
+					tri3 test = listTriangles.front();
+					listTriangles.pop_front();
+					nNewTriangles--;
+
+					switch (p)
+					{
+					case 0:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+					case 1:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, float(WindowSettings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+					case 2:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+					case 3:	nTrisToAdd = ClipTriangleAgainstPlane({ float(WindowSettings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+					}
+
+					for (int w = 0; w < nTrisToAdd; w++)
+						listTriangles.push_back(clipped[w]);
+				}
+				nNewTriangles = listTriangles.size();
+			}
+
+
+			for (auto &Final : listTriangles)
+			{
+				//Draw Triangles to Window
+				sf::VertexArray poly(sf::Triangles, 3);
+
+				poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
+				poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
+				poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
+				poly[0].color = sf::Color(Final.color + 100, Final.color, Final.color);
+				poly[1].color = sf::Color(Final.color, Final.color + 100, Final.color);
+				poly[2].color = sf::Color(Final.color, Final.color, Final.color + 100);
+
+				window->draw(poly);
+			}
+		}
 
         window->draw(left_menu_bg);
         window->draw(right_menu_bg);
