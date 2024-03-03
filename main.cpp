@@ -44,7 +44,7 @@
 #endif
 
 sf::RenderWindow * window = nullptr;
-RenderSettings WindowSettings;
+RenderSettings window_settings;
 wstringstream console;
 
 wstring to_super (wstring num) {
@@ -77,15 +77,19 @@ void format (wstringstream & s) {
     s.str(temporal);
 }
 
+bool compareZOrder (tri3 &t1, tri3 &t2) {
+    return ((t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f) > ((t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f);
+}
+
 int main() {
     sf::VideoMode video_mode = sf::VideoMode::getDesktopMode();
-    WindowSettings.x_res = video_mode.width;
-    WindowSettings.y_res = video_mode.height;
-    WindowSettings.depth = 32;
-    WindowSettings.FOV = 105.0f;
-    WindowSettings.x_sens = 1.0f;
-    WindowSettings.y_sens = 1.0f;
-    window = new sf::RenderWindow (sf::VideoMode(WindowSettings.x_res, WindowSettings.y_res), "Fractochales", sf::Style::Fullscreen);    
+    window_settings.x_res = video_mode.width;
+    window_settings.y_res = video_mode.height;
+    window_settings.depth = 32;
+    window_settings.FOV = 105.0f;
+    window_settings.x_sens = 1.0f;
+    window_settings.y_sens = 1.0f;
+    window = new sf::RenderWindow (sf::VideoMode(window_settings.x_res, window_settings.y_res), "Fractochales", sf::Style::Fullscreen);    
 
     sf::Image icon;
 
@@ -584,7 +588,7 @@ int main() {
         dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
         dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 15));
 
-        // this shit is cluttering itself because fuck i know -- fixed by adding a boolean flag isMobileLandscape
+        // esto arregla el problema de visualización en los menús al tener el teléfono en horizontal
         if (isMobileLandscape) {
             const float offset_x = right_menu_bg.getPosition().x + ((right_menu_bg.getSize().x - (dim_text_bg.getSize().x + dim_physicsOutput_bg.getSize().x + 10))/2.f);
             const float offset_y = right_menu_bg.getPosition().y + right_menu_bg.getSize().y*(1.f/6.f) + right_menu_bg.getSize().y*(1.f/135.f) + 50;
@@ -604,10 +608,10 @@ int main() {
                 if (grid[i][j].getIsLight()) {
                     const int i0 = grid[i][j].getPrevX();
                     const int j0 = grid[i][j].getPrevY();
-                    const float start_x = (alignmentOffset + j*lightning_scale) - WindowSettings.x_res/2.f;
-                    const float start_y = WindowSettings.y_res/2.f - (i*lightning_scale + 1);
-                    const float end_x = (alignmentOffset + j0*lightning_scale) - WindowSettings.x_res/2.f;
-                    const float end_y = WindowSettings.y_res/2.f - (i0*lightning_scale + 1);
+                    const float start_x = (alignmentOffset + j*lightning_scale) - window_settings.x_res/2.f;
+                    const float start_y = window_settings.y_res/2.f - (i*lightning_scale + 1);
+                    const float end_x = (alignmentOffset + j0*lightning_scale) - window_settings.x_res/2.f;
+                    const float end_y = window_settings.y_res/2.f - (i0*lightning_scale + 1);
                     const float thickness = (2.f);
                     const vec3  vA (z_index, start_x, start_y),
                                 vB (z_index, end_x, end_y + thickness),
@@ -665,38 +669,221 @@ int main() {
 
     generateLightning();
 
+    // cosas así bien tridimensionales
+	float camera_x_rotation = 0.0f, camera_y_rotation = 0.0f;
+    sf::Time cycle_time_diff;
+    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-100,0,0}, Offset = {1,1,0};
+    mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
+            screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
+    vector<tri3> raster_pipeline;
+
+    auto calculateMotion = [&] () {
+        forward_direction = VecxScalar(look_direction, 20.0f*cycle_time_diff.asSeconds());
+		up_direction = { 0,0,1 };
+		right_direction = Cross(look_direction, up_direction);
+		fly_up_direction = Cross(right_direction, look_direction);
+		right_direction = VecxScalar(right_direction, 20.0f*cycle_time_diff.asSeconds());
+		fly_up_direction = VecxScalar(fly_up_direction, 20.0f*cycle_time_diff.asSeconds());
+    };
+
+    auto handleMovement = [&] () {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			camera_position = AddVec(camera_position, fly_up_direction);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+			camera_position = SubVec(camera_position, fly_up_direction);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+			camera_position = AddVec(camera_position, forward_direction);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+			camera_position = SubVec(camera_position, right_direction);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+			camera_position = SubVec(camera_position, forward_direction);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+			camera_position = AddVec(camera_position, right_direction);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
+		}
+
+		if (camera_x_rotation >= 2.0f * 3.14159f) {
+			camera_x_rotation -= 2.0f * 3.14159f;
+		}
+		if (camera_x_rotation <= 0.0f) {
+			camera_x_rotation += 2.0f * 3.14159f;
+		}
+		if (camera_y_rotation >= 3.14159f / 2.0f) {
+			camera_y_rotation = 3.14100f / 2.0f;
+		}
+		if (camera_y_rotation <= -3.14159f / 2.0f) {
+			camera_y_rotation = -3.14100f / 2.0f;
+		}
+    };
+
+    auto calculateCameraView = [&] {
+        y_rotation_matrix = ZRotationMatrix(y_rotation);
+		x_rotation_matrix = YRotationMatrix(x_rotation);
+		z_rotation_matrix = XRotationMatrix(z_rotation);
+		movement_matrix = TranslationMatrix(5.0f, 0.0f, 0.0f);
+		world_bounds = IdentityMatrix();
+		world_bounds = MatrixMultiply(y_rotation_matrix, z_rotation_matrix);
+		world_bounds = MatrixMultiply(world_bounds, movement_matrix);
+        crosshair = { 1,0,0 };
+		camera_x_rotation_matrix = ZRotationMatrix(-camera_x_rotation);
+		camera_y_rotation_matrix = YRotationMatrix(camera_y_rotation);
+		camera_x_rotation_matrix = MatrixMultiply(camera_y_rotation_matrix, camera_x_rotation_matrix);
+		look_direction = MatxVec(camera_x_rotation_matrix, crosshair);
+		crosshair = AddVec(camera_position, look_direction);
+		camera_position_matrix = PointingMatrix(camera_position, crosshair, up_direction);
+		camera_view_matrix = MatrixQuickInverse(camera_position_matrix);
+    };
+
+    auto drawMesh = [&] (vector<tri3> & mesh) {
+        for (tri3 &tri : mesh) {
+			tri3 projected_triangles, transformed, viewable_triangles;
+
+			transformed.p[0] = MatxVec(world_bounds, tri.p[0]);
+			transformed.p[1] = MatxVec(world_bounds, tri.p[1]);
+			transformed.p[2] = MatxVec(world_bounds, tri.p[2]);
+
+			// normalizar el vector
+			vec3 normal, line1, line2;
+
+			line1 = SubVec(transformed.p[1], transformed.p[0]);
+			line2 = SubVec(transformed.p[2], transformed.p[0]);
+			normal = Cross(line1, line2);
+			normal = Norm(normal);
+
+			vec3 vision_line = SubVec(transformed.p[0], camera_position);
+            // verificar que la línea de visión no sea perpendicular (que se mire de lado)
+			if (Dot(normal, vision_line) != 0.0f) {
+				// introducir en el marco de la cámara
+				viewable_triangles.p[0] = MatxVec(camera_view_matrix, transformed.p[0]);
+				viewable_triangles.p[1] = MatxVec(camera_view_matrix, transformed.p[1]);
+				viewable_triangles.p[2] = MatxVec(camera_view_matrix, transformed.p[2]);
+
+				// cortar triángulos si el plano de visión está muy próximo
+				int n_clipped_triangles = 0;
+				tri3 clipped[2];
+				n_clipped_triangles = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, viewable_triangles, clipped[0], clipped[1]);
+
+				// proyectar los triángulos cortados
+				for (int n = 0; n < n_clipped_triangles; n++) {
+
+					// proyección 3D en 2D
+					projected_triangles.p[0] = MatxVec(screen_projection_matrix, clipped[n].p[0]);
+					projected_triangles.p[1] = MatxVec(screen_projection_matrix, clipped[n].p[1]);
+					projected_triangles.p[2] = MatxVec(screen_projection_matrix, clipped[n].p[2]);
+
+					projected_triangles.p[0] = VecdScalar(projected_triangles.p[0], projected_triangles.p[0].w);
+					projected_triangles.p[1] = VecdScalar(projected_triangles.p[1], projected_triangles.p[1].w);
+					projected_triangles.p[2] = VecdScalar(projected_triangles.p[2], projected_triangles.p[2].w);
+
+					projected_triangles.p[0].x *= -1.0f;
+					projected_triangles.p[1].x *= -1.0f;
+					projected_triangles.p[2].x *= -1.0f;
+					projected_triangles.p[0].y *= -1.0f;
+					projected_triangles.p[1].y *= -1.0f;
+					projected_triangles.p[2].y *= -1.0f;
+
+					// escalar triángulos al tamaño de la pantalla
+					projected_triangles.p[0] = AddVec(projected_triangles.p[0], Offset);
+					projected_triangles.p[1] = AddVec(projected_triangles.p[1], Offset);
+					projected_triangles.p[2] = AddVec(projected_triangles.p[2], Offset);
+
+					projected_triangles.p[0].x *= 0.5f * window_settings.x_res;
+					projected_triangles.p[0].y *= 0.5f * window_settings.y_res;
+					projected_triangles.p[1].x *= 0.5f * window_settings.x_res;
+					projected_triangles.p[1].y *= 0.5f * window_settings.y_res;
+					projected_triangles.p[2].x *= 0.5f * window_settings.x_res;
+					projected_triangles.p[2].y *= 0.5f * window_settings.y_res;
+
+					projected_triangles.color[0] = tri.color[0];
+                    projected_triangles.color[1] = tri.color[1];
+                    projected_triangles.color[2] = tri.color[2];
+                    projected_triangles.color[3] = tri.color[3];
+
+					// enviar a rasterizado
+					raster_pipeline.push_back(projected_triangles);
+				}
+			}
+		}
+    };
+
+    auto rasterVector = [&] () {
+        for (const tri3 &triToRaster : raster_pipeline) {
+			tri3 clipped[2];
+			list<tri3> listTriangles;
+
+			listTriangles.push_back(triToRaster);
+			int nNewTriangles = 1;
+
+			for (int p = 0; p < 4; p++) {
+				int nTrisToAdd = 0;
+				while (nNewTriangles > 0) {
+					tri3 test = listTriangles.front();
+					listTriangles.pop_front();
+					nNewTriangles--;
+
+					switch (p) {
+                        case 0:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 1:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, float(window_settings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 2:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 3:	nTrisToAdd = ClipTriangleAgainstPlane({ float(window_settings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+					}
+
+					for (int w = 0; w < nTrisToAdd; w++)
+						listTriangles.push_back(clipped[w]);
+				}
+				nNewTriangles = listTriangles.size();
+			}
+
+			for (auto &Final : listTriangles) {
+				// dibujar los triángulos finales en la pantalla
+				sf::VertexArray poly(sf::Triangles, 3);
+
+				poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
+				poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
+				poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
+				poly[0].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
+				poly[1].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
+				poly[2].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
+
+				window->draw(poly);
+			}
+		}
+    };
+
     auto start_time = std::chrono::system_clock::now();
     auto current_timestamp = start_time;
     int64_t elapsed = 0;
     bool yetToBoot = true;
     int zapCount = 0;
 
-    // cosas así bien tridimensionales
-    vec3 Camera = { 1,0,0 };
-	float Yaw = 0.0f;
-	float Pitch = 0.0f;
-	vec3 lookdir;
-	mat4 Projection = ProjectionMatrix(WindowSettings.FOV, float(WindowSettings.y_res) / float(WindowSettings.x_res), 0.1f, 1000.0f);
-    sf::Time delta;
-    vec3 Forward, Up, Right, CameraUp, Target;
-    mat4 RotZ, RotY, RotX, Translation, World, CameraRotation, PitchRotation, CameraMatrix, ViewMatrix;
-    vector<tri3> TriVector;
-
     sf::Clock clock;
     startup.play();
 
-    while (window->isOpen())
-    {
+    while (window->isOpen()) {
 
-        delta = clock.restart();
+        cycle_time_diff = clock.restart();
         sf::Event event;
         
-        while (window->pollEvent(event))
-        {
+        while (window->pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window->close();
-            if (event.type == sf::Event::Resized)
-            {
+            if (event.type == sf::Event::Resized) {
                 // la ventana se reajustó (probablemente cambió de orientación en Android/iOS)
                 window->setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
                 scaleBG();
@@ -744,10 +931,7 @@ int main() {
                 window->close();
             }
         }
-
-        // renderizar un solo punto a la vez
-        //if (renderIndex+1 <= thunder.size()) renderIndex++;
-        //if (renderIndex > 120 && renderIndex < thunder.size()) renderIndex = thunder.size();
+        
         if (do_spin) {
             if (y_rotation < 2*Physics::PI && y_rotation >= 0) y_rotation += Physics::PI/720;
             else {
@@ -850,229 +1034,21 @@ int main() {
 
         // controles de movimiento... no sabemos si serán realmente implementados
 
-        Forward = VecxScalar(lookdir, 20.0f*delta.asSeconds());
-		Up = { 0,0,1 };
-		Right = Cross(lookdir, Up);
-		CameraUp = Cross(Right, lookdir);
-		Right = VecxScalar(Right, 20.0f*delta.asSeconds());
-		CameraUp = VecxScalar(CameraUp, 20.0f*delta.asSeconds());
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-		{
-			Camera = AddVec(Camera, CameraUp);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-		{
-			Camera = SubVec(Camera, CameraUp);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-		{
-			Camera = AddVec(Camera, Forward);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-		{
-			Camera = SubVec(Camera, Right);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		{
-			Camera = SubVec(Camera, Forward);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-		{
-			Camera = AddVec(Camera, Right);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		{
-			Yaw -= 2.0f * delta.asSeconds();
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		{
-			Yaw += 2.0f * delta.asSeconds();
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		{
-			Pitch += 2.0f * delta.asSeconds();
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		{
-			Pitch -= 2.0f * delta.asSeconds();
-		}
-
-		if (Yaw >= 2.0f * 3.14159f)
-		{
-			Yaw -= 2.0f * 3.14159f;
-		}
-		if (Yaw <= 0.0f)
-		{
-			Yaw += 2.0f * 3.14159f;
-		}
-		if (Pitch >= 3.14159f / 2.0f)
-		{
-			Pitch = 3.14100f / 2.0f;
-		}
-		if (Pitch <= -3.14159f / 2.0f)
-		{
-			Pitch = -3.14100f / 2.0f;
-		}
-
-		//Define Camera Rotation Matrices
-		RotZ = ZRotationMatrix(y_rotation);
-		RotY = YRotationMatrix(x_rotation);
-		RotX = XRotationMatrix(z_rotation);
-
-		//Move Triangles Away from Camera
-		Translation = TranslationMatrix(5.0f, 0.0f, 0.0f);
-
-		World = IdentityMatrix();
-		World = MatrixMultiply(RotZ, RotX);
-		World = MatrixMultiply(World, Translation);
-        Target = { 1,0,0 };
-		CameraRotation = ZRotationMatrix(-Yaw);
-		PitchRotation = YRotationMatrix(Pitch);
-		CameraRotation = MatrixMultiply(PitchRotation, CameraRotation);
-		lookdir = MatxVec(CameraRotation, Target);
-		Target = AddVec(Camera, lookdir);
-		CameraMatrix = PointingMatrix(Camera, Target, Up);
-		ViewMatrix = MatrixQuickInverse(CameraMatrix);
+        calculateMotion();
+        handleMovement();
+        calculateCameraView();
 
         window->clear();
         //window->draw(background);
 
-		// Draw Mesh
-		for (auto tri : thunder)
-		{
-			tri3 Projected, Transformed, Viewed;
+		// dibujar objetos
+		drawMesh(thunder);
 
-			Transformed.p[0] = MatxVec(World, tri.p[0]);
-			Transformed.p[1] = MatxVec(World, tri.p[1]);
-			Transformed.p[2] = MatxVec(World, tri.p[2]);
+		sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
 
-			//Get Normal
-			vec3 normal, line1, line2;
+		rasterVector();
 
-			line1 = SubVec(Transformed.p[1], Transformed.p[0]);
-			line2 = SubVec(Transformed.p[2], Transformed.p[0]);
-			normal = Cross(line1, line2);
-			normal = Norm(normal);
-
-			vec3 CameraRay = SubVec(Transformed.p[0], Camera);
-			if (Dot(normal, CameraRay) != 0.0f)
-			{
-				//Light Triangle
-				vec3 light = { -0.5f, -0.5f, -0.5f };
-				light = Norm(light);
-				float dotproduct = Dot(light, normal);
-
-				//Move from World Frame to Camera Frame
-				Viewed.p[0] = MatxVec(ViewMatrix, Transformed.p[0]);
-				Viewed.p[1] = MatxVec(ViewMatrix, Transformed.p[1]);
-				Viewed.p[2] = MatxVec(ViewMatrix, Transformed.p[2]);
-
-				// Clip Viewed Triangle against near plane, this could form two additional triangles. 
-				int nClippedTriangles = 0;
-				tri3 Clipped[2];
-				nClippedTriangles = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, Viewed, Clipped[0], Clipped[1]);
-
-				// We may end up with multiple triangles form the clip, so project as required
-				for (int n = 0; n < nClippedTriangles; n++)
-				{
-
-					//Project Triangles onto 2D
-					Projected.p[0] = MatxVec(Projection, Clipped[n].p[0]);
-					Projected.p[1] = MatxVec(Projection, Clipped[n].p[1]);
-					Projected.p[2] = MatxVec(Projection, Clipped[n].p[2]);
-
-					Projected.p[0] = VecdScalar(Projected.p[0], Projected.p[0].w);
-					Projected.p[1] = VecdScalar(Projected.p[1], Projected.p[1].w);
-					Projected.p[2] = VecdScalar(Projected.p[2], Projected.p[2].w);
-
-					//Unfuck perspective
-					Projected.p[0].x *= -1.0f;
-					Projected.p[1].x *= -1.0f;
-					Projected.p[2].x *= -1.0f;
-					Projected.p[0].y *= -1.0f;
-					Projected.p[1].y *= -1.0f;
-					Projected.p[2].y *= -1.0f;
-
-					//Scale Triangles to Screen Size
-					vec3 Offset = { 1, 1, 0 };
-					Projected.p[0] = AddVec(Projected.p[0], Offset);
-					Projected.p[1] = AddVec(Projected.p[1], Offset);
-					Projected.p[2] = AddVec(Projected.p[2], Offset);
-
-					Projected.p[0].x *= 0.5f * WindowSettings.x_res;
-					Projected.p[0].y *= 0.5f * WindowSettings.y_res;
-					Projected.p[1].x *= 0.5f * WindowSettings.x_res;
-					Projected.p[1].y *= 0.5f * WindowSettings.y_res;
-					Projected.p[2].x *= 0.5f * WindowSettings.x_res;
-					Projected.p[2].y *= 0.5f * WindowSettings.y_res;
-
-					Projected.color[0] = tri.color[0];
-                    Projected.color[1] = tri.color[1];
-                    Projected.color[2] = tri.color[2];
-                    Projected.color[3] = tri.color[3];
-
-					//Store Triangles For Sorting
-					TriVector.push_back(Projected);
-				}
-			}
-		}
-
-		sort(TriVector.begin(), TriVector.end(), [](tri3 &t1, tri3 &t2)
-		{
-			float z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f;
-			float z2 = (t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f;
-			return z1 > z2;
-		});
-
-		for (auto &triToRaster : TriVector)
-		{
-			tri3 clipped[2];
-			list<tri3> listTriangles;
-
-			listTriangles.push_back(triToRaster);
-			int nNewTriangles = 1;
-
-			for (int p = 0; p < 4; p++)
-			{
-				int nTrisToAdd = 0;
-				while (nNewTriangles > 0)
-				{
-					tri3 test = listTriangles.front();
-					listTriangles.pop_front();
-					nNewTriangles--;
-
-					switch (p)
-					{
-					case 0:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-					case 1:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, float(WindowSettings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-					case 2:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-					case 3:	nTrisToAdd = ClipTriangleAgainstPlane({ float(WindowSettings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-					}
-
-					for (int w = 0; w < nTrisToAdd; w++)
-						listTriangles.push_back(clipped[w]);
-				}
-				nNewTriangles = listTriangles.size();
-			}
-
-			for (auto &Final : listTriangles)
-			{
-				//Draw Triangles to Window
-				sf::VertexArray poly(sf::Triangles, 3);
-
-				poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
-				poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
-				poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
-				poly[0].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
-				poly[1].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
-				poly[2].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
-
-				window->draw(poly);
-			}
-		}
-
-        TriVector.clear();
+        raster_pipeline.clear();
 
         window->draw(left_menu_bg);
         window->draw(right_menu_bg);
