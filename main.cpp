@@ -672,7 +672,7 @@ int main() {
     // cosas así bien tridimensionales
 	float camera_x_rotation = 0.0f, camera_y_rotation = 0.0f;
     sf::Time cycle_time_diff;
-    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-100,0,0}, Offset = {1,1,0};
+    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-400,0,100}, projection_offset = {1,1,0};
     mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
             screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
     vector<tri3> raster_pipeline;
@@ -692,6 +692,10 @@ int main() {
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
 			camera_position = SubVec(camera_position, fly_up_direction);
+		}
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+			forward_direction = VecxScalar(forward_direction, 4.f);
+            right_direction = VecxScalar(right_direction, 4.f);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 			camera_position = AddVec(camera_position, forward_direction);
@@ -799,9 +803,9 @@ int main() {
 					projected_triangles.p[2].y *= -1.0f;
 
 					// escalar triángulos al tamaño de la pantalla
-					projected_triangles.p[0] = AddVec(projected_triangles.p[0], Offset);
-					projected_triangles.p[1] = AddVec(projected_triangles.p[1], Offset);
-					projected_triangles.p[2] = AddVec(projected_triangles.p[2], Offset);
+					projected_triangles.p[0] = AddVec(projected_triangles.p[0], projection_offset);
+					projected_triangles.p[1] = AddVec(projected_triangles.p[1], projection_offset);
+					projected_triangles.p[2] = AddVec(projected_triangles.p[2], projection_offset);
 
 					projected_triangles.p[0].x *= 0.5f * window_settings.x_res;
 					projected_triangles.p[0].y *= 0.5f * window_settings.y_res;
