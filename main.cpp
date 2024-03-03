@@ -85,13 +85,7 @@ int main() {
     WindowSettings.FOV = 105.0f;
     WindowSettings.x_sens = 1.0f;
     WindowSettings.y_sens = 1.0f;
-    vec3 Camera = { 1,0,0 };
-	float Yaw = 0.0f;
-	float Pitch = 0.0f;
-	vec3 lookdir;
-	mat4 Projection = ProjectionMatrix(WindowSettings.FOV, float(WindowSettings.y_res) / float(WindowSettings.x_res), 0.1f, 1000.0f);
-    
-    window = new sf::RenderWindow (sf::VideoMode(WindowSettings.x_res, WindowSettings.y_res), "Fractochales", sf::Style::Fullscreen);
+    window = new sf::RenderWindow (sf::VideoMode(WindowSettings.x_res, WindowSettings.y_res), "Fractochales", sf::Style::Fullscreen);    
 
     sf::Image icon;
 
@@ -672,11 +666,21 @@ int main() {
     generateLightning();
 
     auto start_time = std::chrono::system_clock::now();
-    auto start_fps = start_time;
     auto current_timestamp = start_time;
     int64_t elapsed = 0;
     bool yetToBoot = true;
     int zapCount = 0;
+
+    // cosas así bien tridimensionales
+    vec3 Camera = { 1,0,0 };
+	float Yaw = 0.0f;
+	float Pitch = 0.0f;
+	vec3 lookdir;
+	mat4 Projection = ProjectionMatrix(WindowSettings.FOV, float(WindowSettings.y_res) / float(WindowSettings.x_res), 0.1f, 1000.0f);
+    sf::Time delta;
+    vec3 Forward, Up, Right, CameraUp, Target;
+    mat4 RotZ, RotY, RotX, Translation, World, CameraRotation, PitchRotation, CameraMatrix, ViewMatrix;
+    vector<tri3> TriVector;
 
     sf::Clock clock;
     startup.play();
@@ -684,7 +688,7 @@ int main() {
     while (window->isOpen())
     {
 
-        sf::Time delta = clock.restart();
+        delta = clock.restart();
         sf::Event event;
         
         while (window->pollEvent(event))
@@ -846,10 +850,10 @@ int main() {
 
         // controles de movimiento... no sabemos si serán realmente implementados
 
-        vec3 Forward = VecxScalar(lookdir, 20.0f*delta.asSeconds());
-		vec3 Up = { 0,0,1 };
-		vec3 Right = Cross(lookdir, Up);
-		vec3 CameraUp = Cross(Right, lookdir);
+        Forward = VecxScalar(lookdir, 20.0f*delta.asSeconds());
+		Up = { 0,0,1 };
+		Right = Cross(lookdir, Up);
+		CameraUp = Cross(Right, lookdir);
 		Right = VecxScalar(Right, 20.0f*delta.asSeconds());
 		CameraUp = VecxScalar(CameraUp, 20.0f*delta.asSeconds());
 
@@ -911,34 +915,28 @@ int main() {
 			Pitch = -3.14100f / 2.0f;
 		}
 
-		mat4 RotZ, RotY, RotX;
-
 		//Define Camera Rotation Matrices
 		RotZ = ZRotationMatrix(y_rotation);
 		RotY = YRotationMatrix(x_rotation);
 		RotX = XRotationMatrix(z_rotation);
 
 		//Move Triangles Away from Camera
-		mat4 Translation;
 		Translation = TranslationMatrix(5.0f, 0.0f, 0.0f);
 
-		mat4 World;
 		World = IdentityMatrix();
 		World = MatrixMultiply(RotZ, RotX);
 		World = MatrixMultiply(World, Translation);
-		vec3 Target = { 1,0,0 };
-		mat4 CameraRotation = ZRotationMatrix(-Yaw);
-		mat4 PitchRotation = YRotationMatrix(Pitch);
+        Target = { 1,0,0 };
+		CameraRotation = ZRotationMatrix(-Yaw);
+		PitchRotation = YRotationMatrix(Pitch);
 		CameraRotation = MatrixMultiply(PitchRotation, CameraRotation);
 		lookdir = MatxVec(CameraRotation, Target);
 		Target = AddVec(Camera, lookdir);
-		mat4 CameraMatrix = PointingMatrix(Camera, Target, Up);
-		mat4 ViewMatrix = MatrixQuickInverse(CameraMatrix);
+		CameraMatrix = PointingMatrix(Camera, Target, Up);
+		ViewMatrix = MatrixQuickInverse(CameraMatrix);
 
         window->clear();
         //window->draw(background);
-
-        vector<tri3> TriVector;
 
 		// Draw Mesh
 		for (auto tri : thunder)
@@ -1016,7 +1014,6 @@ int main() {
 
 					//Store Triangles For Sorting
 					TriVector.push_back(Projected);
-
 				}
 			}
 		}
@@ -1059,7 +1056,6 @@ int main() {
 				nNewTriangles = listTriangles.size();
 			}
 
-
 			for (auto &Final : listTriangles)
 			{
 				//Draw Triangles to Window
@@ -1075,6 +1071,8 @@ int main() {
 				window->draw(poly);
 			}
 		}
+
+        TriVector.clear();
 
         window->draw(left_menu_bg);
         window->draw(right_menu_bg);
