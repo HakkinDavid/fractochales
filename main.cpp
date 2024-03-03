@@ -183,7 +183,6 @@ int main() {
         L"¿Sabías que tenemos " + to_wstring(VERSION) + L" contribuciones de código en este programa?",
         L"En la práctica, ningún rayo es idéntico",
         L"Fractochales funciona en Windows, Mac, Linux, Android y iOS",
-        L"El motor 3D es enteramente de nuestra autoría",
         L"Hirales estaría orgulloso de nuestras proyecciones 3D sobre un plano 2D",
         L"Técnicamente emulamos el trazado de rayos",
         L"Mi mamá es un vector ortogonal",
