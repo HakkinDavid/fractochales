@@ -15,10 +15,9 @@
 #include "includes/Slider/slider.h"
 #include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
-#include "includes/ThickLine/thickline.cpp"
-#include "includes/Physics/physics.h"
 #include "includes/Achieve/achieve.h"
 #include "includes/Engine/Source.cpp"
+#include "includes/Physics/physics.h"
 
 #define MOBILE false
 #if defined(WIN32)
@@ -78,10 +77,6 @@ void format (wstringstream & s) {
     s.str(temporal);
 }
 
-bool compareZOrder(thickLine tl1, thickLine tl2) {
-    return tl1.getZOrder() < tl2.getZOrder();
-}
-
 int main() {
     sf::VideoMode video_mode = sf::VideoMode::getDesktopMode();
     WindowSettings.x_res = video_mode.width;
@@ -95,7 +90,6 @@ int main() {
 	float Pitch = 0.0f;
 	vec3 lookdir;
 	mat4 Projection = ProjectionMatrix(WindowSettings.FOV, float(WindowSettings.y_res) / float(WindowSettings.x_res), 0.1f, 1000.0f);
-	float Theta = 0.1f;
     
     window = new sf::RenderWindow (sf::VideoMode(WindowSettings.x_res, WindowSettings.y_res), "Fractochales", sf::Style::Fullscreen);
 
@@ -302,7 +296,6 @@ int main() {
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
 
-    sf::Vector3f centroid;
     auto t0 = std::chrono::system_clock::now();
     long double time;
     long double e_mass;
@@ -328,7 +321,6 @@ int main() {
     float y_rotation = 0.f;
     float z_rotation = 0.f;
     bool zap = false;
-    bool linear_adjustment_line = false;
     bool switchingBG = false;
     bool attemptClose = false;
     bool hide_left = true;
@@ -361,7 +353,6 @@ int main() {
         * backgroundButton = nullptr,
         * closeButton = nullptr;
     Switch
-        * linear_adjustment_switch = nullptr,
         * hide_left_switch = nullptr,
         * hide_right_switch = nullptr,
         * spin_switch = nullptr;
@@ -374,7 +365,7 @@ int main() {
     // colocar los botones que recibirán eventos en grupo
     Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
-    Switch ** all_switches [] = {&linear_adjustment_switch, &hide_left_switch, &hide_right_switch, &spin_switch};
+    Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch};
     // colocar los logros que recibirán eventos en grupo
     Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
@@ -533,7 +524,6 @@ int main() {
         backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
         // interruptores
-        linear_adjustment_switch = new Switch (linear_adjustment_line, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Mostrar ajuste lineal", L"Ocultar ajuste lineal", left_slider_x_size, left_menu_bg.getSize().y*(1.f/21.6f), sf::Color(0, 84, 46), sf::Color(84, 0, 14), sf::Color::White, &hide_left);
         spin_switch = new Switch (do_spin, left_slider_x_pos + left_slider_x_size/1.75f, window->getSize().y*0.825f + left_slider_y_size/1.5f, font, L"Giro automático", L"Giro manual", left_slider_x_size/1.75f, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
@@ -614,11 +604,7 @@ int main() {
 
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
         thunder.clear();
-        centroid.x = 0.0f;
-        centroid.y = 0.0f;
-        centroid.z = 0.0f;
-        int n_points = 0;
-        const int z_index = 200;
+        const int z_index = 0;
         for (int i = storm.getHei()-1; i >= 0; i--) {
             for (int j = storm.getWid()-1; j >= 0; j--) {
                 if (grid[i][j].getIsLight()) {
@@ -629,35 +615,36 @@ int main() {
                     const float end_x = (alignmentOffset + j0*lightning_scale) - WindowSettings.x_res/2.f;
                     const float end_y = WindowSettings.y_res/2.f - (i0*lightning_scale + 1);
                     const float thickness = (2.f);
-                    centroid.x += start_x + end_x;
-                    centroid.y += start_y + end_y;
-                    centroid.z += z_index;
-                    n_points += 2;
+                    const vec3  vA (z_index, start_x, start_y),
+                                vB (z_index, end_x, end_y + thickness),
+                                vC (z_index, start_x + thickness, start_y),
+                                vD (z_index, end_x + thickness, end_y + thickness),
+                                vE (z_index + thickness, start_x, start_y),
+                                vF (z_index + thickness, end_x, end_y + thickness),
+                                vG (z_index + thickness, start_x + thickness, start_y),
+                                vH (z_index + thickness, end_x + thickness, end_y + thickness);
                     // frontface (a.k.a. main lightning)
-                    thunder.emplace_back(vec3(z_index, start_x, start_y), vec3(z_index, end_x, end_y + thickness), vec3(z_index, start_x + thickness, start_y), lightning_color[0], lightning_color[1], lightning_color[2]);
-                    thunder.emplace_back(vec3(z_index, start_x + thickness, start_y), vec3(z_index, end_x, end_y + thickness), vec3(z_index, end_x + thickness, end_y + thickness), lightning_color[0], lightning_color[1], lightning_color[2]);
+                    thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
+                    thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);
                     // backface
-                    thunder.emplace_back(vec3(z_index + thickness, start_x, start_y), vec3(z_index + thickness, end_x, end_y + thickness), vec3(z_index + thickness, start_x + thickness, start_y), lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
-                    thunder.emplace_back(vec3(z_index + thickness, start_x + thickness, start_y), vec3(z_index + thickness, end_x, end_y + thickness), vec3(z_index + thickness, end_x + thickness, end_y + thickness), lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
+                    thunder.emplace_back(vE, vF, vG, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
+                    thunder.emplace_back(vG, vF, vH, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
                     // sideface A
-                    thunder.emplace_back(vec3(z_index, start_x + thickness, start_y), vec3(z_index, end_x + thickness, end_y + thickness), vec3(z_index + thickness, start_x + thickness, start_y), lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-                    thunder.emplace_back(vec3(z_index + thickness, start_x + thickness, start_y), vec3(z_index, end_x + thickness, end_y + thickness), vec3(z_index + thickness, end_x + thickness, end_y + thickness), lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                    thunder.emplace_back(vC, vD, vG, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                    thunder.emplace_back(vG, vD, vH, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
                     // sideface B
-                    thunder.emplace_back(vec3(z_index + thickness, start_x, start_y), vec3(z_index + thickness, end_x, end_y + thickness), vec3(z_index, start_x, start_y), lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-                    thunder.emplace_back(vec3(z_index, start_x, start_y), vec3(z_index + thickness, end_x, end_y + thickness), vec3(z_index, end_x, end_y + thickness), lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                    thunder.emplace_back(vE, vF, vA, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                    thunder.emplace_back(vA, vF, vB, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
                     // topface
-                    thunder.emplace_back(vec3(z_index + thickness, start_x, start_y), vec3(z_index, start_x, start_y), vec3(z_index + thickness, start_x + thickness, start_y), lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-                    thunder.emplace_back(vec3(z_index + thickness, start_x + thickness, start_y), vec3(z_index, start_x, start_y), vec3(z_index, start_x + thickness, start_y), lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                    thunder.emplace_back(vE, vA, vG, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                    thunder.emplace_back(vG, vA, vC, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
                     // bottomface
-                    thunder.emplace_back(vec3(z_index, end_x, end_y + thickness), vec3(z_index + thickness, end_x, end_y + thickness), vec3(z_index, end_x + thickness, end_y + thickness), lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-                    thunder.emplace_back(vec3(z_index, end_x + thickness, end_y + thickness), vec3(z_index + thickness, end_x, end_y + thickness), vec3(z_index + thickness, end_x + thickness, end_y + thickness), lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                    thunder.emplace_back(vB, vF, vD, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                    thunder.emplace_back(vD, vF, vH, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
                 }
 
             }
         }
-        centroid.x /= n_points;
-        centroid.y /= n_points;
-        centroid.z /= n_points;
     };
 
     auto generateLightning = [&] () {
@@ -804,7 +791,7 @@ int main() {
             retypeInfo();
         }
         
-        if (linear_adjustment_switch->updateState() || alignmentSlider->updatePercentage(mousepos_update) || redSlider->updatePercentage(mousepos_update) || greenSlider->updatePercentage(mousepos_update) || blueSlider->updatePercentage(mousepos_update)) {
+        if (alignmentSlider->updatePercentage(mousepos_update) || redSlider->updatePercentage(mousepos_update) || greenSlider->updatePercentage(mousepos_update) || blueSlider->updatePercentage(mousepos_update)) {
             recalculateLightningVertex(true);
         }
         leewaySlider->updatePercentage(mousepos_update);
@@ -925,12 +912,11 @@ int main() {
 		}
 
 		mat4 RotZ, RotY, RotX;
-		//Theta += 1.0f * delta.asSeconds();
 
 		//Define Camera Rotation Matrices
-		RotZ = ZRotationMatrix(Theta*0.2f);
-		RotY = YRotationMatrix(Theta*0.1f);
-		RotX = XRotationMatrix(Theta*1.0f);
+		RotZ = ZRotationMatrix(y_rotation);
+		RotY = YRotationMatrix(x_rotation);
+		RotX = XRotationMatrix(z_rotation);
 
 		//Move Triangles Away from Camera
 		mat4 Translation;

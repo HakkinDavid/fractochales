@@ -35,27 +35,3 @@ float Physics :: P (float force, float velocity) {
 float Physics :: deg_to_rad (float deg) {
     return deg * (PI / 180);
 }
-
-void Physics :: rotate (sf::Vector3f *point, sf::Vector3f *centroid, float x_rad, float y_rad, float z_rad) {
-    (*point) -= (*centroid);
-
-    float rad = 0.0f;
-
-    rad = x_rad;
-    (*point).y = std::cos(rad) * (*point).y - std::sin(rad) * (*point).z; // producto punto para generar una proyección de x en y
-    (*point).z = std::sin(rad) * (*point).y + std::cos(rad) * (*point).z; // ajustar z a los cálculos
-
-    rad = y_rad;
-    (*point).x = std::cos(rad) * (*point).x + std::sin(rad) * (*point).z; // producto punto para generar una proyección de y en x 
-    (*point).z = -std::sin(rad) * (*point).x + std::cos(rad) * (*point).z; // ajustar z a los cálculos
-
-    rad = z_rad;
-    (*point).x = std::cos(rad) * (*point).x - std::sin(rad) * (*point).y; // producto punto para generar una proyección de z en x
-    (*point).y = std::sin(rad) * (*point).x + std::cos(rad) * (*point).y; // producto punto para generar una proyección de z en y 
-
-    (*point) += (*centroid);
-}
-
-void Physics :: rotate_deg (sf::Vector3f *point, sf::Vector3f *centroid, float x_deg, float y_deg, float z_deg) {
-    rotate(point, centroid, deg_to_rad(x_deg), deg_to_rad(y_deg), deg_to_rad(z_deg));
-}
