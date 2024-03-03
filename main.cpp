@@ -1039,7 +1039,7 @@ int main() {
         calculateCameraView();
 
         window->clear();
-        //window->draw(background);
+        window->draw(background);
 
 		// dibujar objetos
 		drawMesh(thunder);
