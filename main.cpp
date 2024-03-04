@@ -513,9 +513,9 @@ int main() {
         redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
         greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
         blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
-        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size/2, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
-        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size/2, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
-        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size/2, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
+        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
+        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
+        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
         // deslizadores de aire
         crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 0; });
         humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 0; });
@@ -532,7 +532,7 @@ int main() {
         backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
         // interruptores
-        spin_switch = new Switch (do_spin, left_slider_x_pos + left_slider_x_size/1.75f, window->getSize().y*0.825f + left_slider_y_size/1.5f, font, L"Giro automático", L"Giro manual", left_slider_x_size/1.75f, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
+        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Giro automático", L"Giro manual", left_slider_x_size, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
@@ -756,7 +756,6 @@ int main() {
 		x_rotation_matrix = YRotationMatrix(x_rotation);
 		z_rotation_matrix = XRotationMatrix(z_rotation);
 		movement_matrix = TranslationMatrix(5.0f, 0.0f, 0.0f);
-		world_bounds = IdentityMatrix();
 		world_bounds = MatrixMultiply(x_rotation_matrix, y_rotation_matrix);
         world_bounds = MatrixMultiply(world_bounds, z_rotation_matrix);
 		world_bounds = MatrixMultiply(world_bounds, movement_matrix);
