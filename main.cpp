@@ -83,6 +83,9 @@ bool compareZOrder (tri3 &t1, tri3 &t2) {
 }
 
 int main() {
+    std::chrono::_V2::system_clock::time_point start_time;
+    std::chrono::_V2::system_clock::time_point current_timestamp;
+    bool yetToBoot = true;
     sf::VideoMode video_mode = sf::VideoMode::getDesktopMode();
     window_settings.x_res = video_mode.width;
     window_settings.y_res = video_mode.height;
@@ -807,6 +810,10 @@ int main() {
             e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
             UI_events(0, e);
         }
+        if (Controller::isPressed(DS5::SQUARE)) {
+            e[0] = sf::Vector2i(backgroundButton->getPosition().x + backgroundButton->getSize().x/2, backgroundButton->getPosition().y + backgroundButton->getSize().y/2);
+            UI_events(0, e);
+        }
         if (Controller::isPressed(DS5::OPTIONS)) {
             e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
             UI_events(0, e);
@@ -814,6 +821,10 @@ int main() {
         if (Controller::isPressed(DS5::CREATE)) {
             e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
             UI_events(0, e);
+        }
+        if (Controller::isPressed(DS5::PS)) {
+            start_time = std::chrono::system_clock::now();
+            yetToBoot = true;
         }
 
 		if (camera_x_rotation >= 2.0f * 3.14159f) {
@@ -974,11 +985,10 @@ int main() {
 		}
     };
 
-    bool yetToBoot = true;
     int zapCount = 0;
 
-    auto start_time = std::chrono::system_clock::now();
-    auto current_timestamp = start_time;
+    start_time = std::chrono::system_clock::now();
+    current_timestamp = start_time;
     int64_t elapsed = 0;
 
     sf::Clock clock;
