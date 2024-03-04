@@ -291,7 +291,7 @@ int main() {
     const float box_A [4] = {0,0,255,255},
                 box_B [4] = {0,255,0,255},
                 box_C [4] = {255,0,0,255};
-    vector<tri3> box = {tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,-500),box_A,box_B,box_C)}; // mimundo
+    vector<tri3> box = {tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C)}; // mimundo
     */
     Point ** grid = storm.getGrid();
     vector<float> * fracs = storm.getFracs();
@@ -757,7 +757,8 @@ int main() {
 		z_rotation_matrix = XRotationMatrix(z_rotation);
 		movement_matrix = TranslationMatrix(5.0f, 0.0f, 0.0f);
 		world_bounds = IdentityMatrix();
-		world_bounds = MatrixMultiply(y_rotation_matrix, z_rotation_matrix);
+		world_bounds = MatrixMultiply(x_rotation_matrix, y_rotation_matrix);
+        world_bounds = MatrixMultiply(world_bounds, z_rotation_matrix);
 		world_bounds = MatrixMultiply(world_bounds, movement_matrix);
         crosshair = { 1,0,0 };
 		camera_x_rotation_matrix = ZRotationMatrix(-camera_x_rotation);
@@ -1069,7 +1070,7 @@ int main() {
         window->draw(background);
 
 		// dibujar objetos
-        //drawMesh(box);
+        // drawMesh(box);
 		drawMesh(thunder);
 
 		sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
