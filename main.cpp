@@ -333,14 +333,19 @@ int main() {
     bool zap = false;
     bool switchingBG = false;
     bool attemptClose = false;
+    bool goForward = false;
+    bool goBackward = false;
+    bool goLeft = false;
+    bool goRight = false;
+    bool lookUp = false;
+    bool lookDown = false;
+    bool lookLeft = false;
+    bool lookRight = false;
     bool hide_left = true;
     bool hide_right = true;
+    bool either_menu_opened = false;
     bool isMobileLandscape = false;
     bool do_spin = false;
-
-    auto start_time = std::chrono::system_clock::now();
-    auto current_timestamp = start_time;
-    int64_t elapsed = 0;
 
     int renderIndex = 0;
     int drawPile = 0;
@@ -364,7 +369,15 @@ int main() {
     Button
         * zapping = nullptr,
         * backgroundButton = nullptr,
-        * closeButton = nullptr;
+        * closeButton = nullptr,
+        * forwardButton = nullptr,
+        * leftButton = nullptr,
+        * backwardButton = nullptr,
+        * rightButton = nullptr,
+        * lookupButton = nullptr,
+        * lookdownButton = nullptr,
+        * lookleftButton = nullptr,
+        * lookrightButton = nullptr;
     Switch
         * hide_left_switch = nullptr,
         * hide_right_switch = nullptr,
@@ -376,7 +389,11 @@ int main() {
     // colocar los deslizadores que recibirán eventos en grupo
     Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
     // colocar los botones que recibirán eventos en grupo
-    Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton};
+    Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton
+        #if MOBILE
+        , &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton
+        #endif
+    };
     // colocar los interruptores que recibirán eventos en grupo
     Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch};
     // colocar los logros que recibirán eventos en grupo
@@ -385,17 +402,17 @@ int main() {
     bool achieve_vars [2] = {false};
 
     // agrupar y ejecutar los eventos correspondientes a los sliders
-    auto UI_events = [&] (int type, sf::Vector2i *mouse = nullptr) {
+    auto UI_events = [&] (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0) {
         for (auto &i : all_sliders) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    (*i)->checkDragging(*mouse);
+                    if (!((*i)->checkDragging(mouse_arr[0], 0))) (*i)->checkDragging(mouse_arr[1], 1);
                 break;
                 case 1: // cuando usuario desclickea
-                    (*i)->setIsDragging(false);
+                    (*i)->setIsDragging(false, mouse_arr_index);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    (*i)->updatePercentage(*mouse);
+                    if (!((*i)->updatePercentage(mouse_arr[0]))) (*i)->updatePercentage(mouse_arr[1]);
                 break;
                 case 3: // dibujar
                     (*i)->draw(*window);
@@ -410,10 +427,10 @@ int main() {
         for (auto &i : all_buttons) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    (*i)->checkClicking(*mouse);
+                    if (!((*i)->checkClicking(mouse_arr[0], 0))) (*i)->checkClicking(mouse_arr[1], 1);
                 break;
                 case 1: // cuando usuario desclickea
-                    (*i)->setIsClicking(false);
+                    (*i)->setIsClicking(false, mouse_arr_index);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
                     (*i)->updateState();
@@ -431,10 +448,10 @@ int main() {
         for (auto &i : all_switches) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    (*i)->checkClicking(*mouse);
+                    if (!((*i)->checkClicking(mouse_arr[0], 0))) (*i)->checkClicking(mouse_arr[1], 1);
                 break;
                 case 1: // cuando usuario desclickea
-                    (*i)->setIsClicking(false);
+                    (*i)->setIsClicking(false, mouse_arr_index);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
                     (*i)->updateState();
@@ -466,11 +483,9 @@ int main() {
 
     auto leftMenuState = [&] () {
         if (hide_left) {
-            left_menu_bg.setPosition(sf::Vector2f(0, window->getSize().y + 1));
             hide_left_switch->changePosition(0, hide_left_switch->getPosition().y);
         }
         else {
-            left_menu_bg.setPosition(sf::Vector2f(0, 0));
             if (!MOBILE) hide_left_switch->changePosition(left_menu_bg.getSize().x, hide_left_switch->getPosition().y);
         }
         if (MOBILE && !hide_right) {
@@ -480,11 +495,9 @@ int main() {
 
     auto rightMenuState = [&] () {
         if (hide_right) {
-            right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, window->getSize().y + 1));
             hide_right_switch->changePosition(window->getSize().x - hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
         }
         else {
-            right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
             if (!MOBILE) hide_right_switch->changePosition(window->getSize().x - right_menu_bg.getSize().x - hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
         }
         if (MOBILE && !hide_left) {
@@ -493,6 +506,7 @@ int main() {
     };
 
     auto init_ui = [&] () {
+        UI_events(-999); // delete all UI elements
         isMobileLandscape = MOBILE && (window->getSize().x > window->getSize().y);
         splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
         splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
@@ -500,7 +514,8 @@ int main() {
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
         left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
-        UI_events(-999); // delete all UI elements
+        right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
+        left_menu_bg.setPosition(sf::Vector2f(0, 0));
         lightning_scale = window->getSize().y/lightning_height;
         alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
         // inicializar interfaz
@@ -535,6 +550,17 @@ int main() {
         zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
         backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
+        // controles
+        #if MOBILE
+            forwardButton = new Button (goForward, 300 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-600, font, L"↑ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            backwardButton = new Button (goBackward, 300 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-300, font, L"↓ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            leftButton = new Button (goLeft, 150 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"←\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            rightButton = new Button (goRight, 450 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"→\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookupButton = new Button (lookUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-600, font, L"↥ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookdownButton = new Button (lookDown, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-300, font, L"↧ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookleftButton = new Button (lookLeft, window->getSize().x-600 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"↤\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+        #endif
         // interruptores
         spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Giro automático", L"Giro manual", left_slider_x_size, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
@@ -706,35 +732,35 @@ int main() {
 			forward_direction = VecxScalar(forward_direction, 4.f);
             right_direction = VecxScalar(right_direction, 4.f);
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward) {
 			camera_position = AddVec(camera_position, forward_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft) {
 			camera_position = SubVec(camera_position, right_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward) {
 			camera_position = SubVec(camera_position, forward_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight) {
 			camera_position = AddVec(camera_position, right_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft) {
 			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight) {
 			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp) {
 			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown) {
 			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
@@ -900,6 +926,10 @@ int main() {
     bool yetToBoot = true;
     int zapCount = 0;
 
+    auto start_time = std::chrono::system_clock::now();
+    auto current_timestamp = start_time;
+    int64_t elapsed = 0;
+
     sf::Clock clock;
     startup.play();
 
@@ -915,6 +945,9 @@ int main() {
                 // la ventana se reajustó (probablemente cambió de orientación en Android/iOS)
                 window->setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
                 scaleBG();
+                window_settings.x_res = event.size.width;
+                window_settings.y_res = event.size.height;
+                screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
                 init_ui();
                 recalculateLightningVertex();
                 retypeInfo();
@@ -967,23 +1000,30 @@ int main() {
             }
         }
 
-        sf::Vector2i mousepos_update;
+        sf::Vector2i mousepos_update[2];
 
         if (sf::Touch::isDown(0)) {
-            mousepos_update = sf::Touch::getPosition(0, *window);
+            mousepos_update[0] = sf::Touch::getPosition(0, *window);
         }
         else {
-            mousepos_update = sf::Mouse::getPosition(*window);
+            mousepos_update[0] = sf::Mouse::getPosition(*window);
+        }
+        if (sf::Touch::isDown(1)) {
+            mousepos_update[1] = sf::Touch::getPosition(1, *window);
         }
 
         // si el usuario está haciendo click izquierdo o tocando
         if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchBegan){
-            UI_events(0, &mousepos_update);            
+            UI_events(0, mousepos_update);
         }
 
         // si el usuario deja de mantener click izquierdo o de tocar 
-        else if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchEnded){
-            UI_events(1);
+        else if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchEnded && event.touch.finger == 0){
+            UI_events(1, nullptr, 0);
+        }
+
+        else if(event.type == sf::Event::TouchEnded && event.touch.finger == 1){
+            UI_events(1, nullptr, 1);
         }
 
         if (backgroundButton->updateState() && switchingBG) {
@@ -1003,23 +1043,33 @@ int main() {
             temperature = 15.0F;
         }
 
-        if (envfactorSlider->updatePercentage(mousepos_update)) {
+        if (envfactorSlider->updatePercentage(mousepos_update[0])) {
             retypeInfo();
         }
         
-        if (alignmentSlider->updatePercentage(mousepos_update) || redSlider->updatePercentage(mousepos_update) || greenSlider->updatePercentage(mousepos_update) || blueSlider->updatePercentage(mousepos_update)) {
+        if (alignmentSlider->updatePercentage(mousepos_update[0]) || redSlider->updatePercentage(mousepos_update[0]) || greenSlider->updatePercentage(mousepos_update[0]) || blueSlider->updatePercentage(mousepos_update[0])) {
             recalculateLightningVertex(true);
         }
-        leewaySlider->updatePercentage(mousepos_update);
-        branchSlider->updatePercentage(mousepos_update);
-        downWeightSlider->updatePercentage(mousepos_update);
-        forcedHeightSlider->updatePercentage(mousepos_update);
-        crystallizateSlider->updatePercentage(mousepos_update);
-        humiditySlider->updatePercentage(mousepos_update);
-        temperatureSlider->updatePercentage(mousepos_update);
-        xRotationSlider->updatePercentage(mousepos_update);
-        yRotationSlider->updatePercentage(mousepos_update);
-        zRotationSlider->updatePercentage(mousepos_update);
+        leewaySlider->updatePercentage(mousepos_update[0]);
+        branchSlider->updatePercentage(mousepos_update[0]);
+        downWeightSlider->updatePercentage(mousepos_update[0]);
+        forcedHeightSlider->updatePercentage(mousepos_update[0]);
+        crystallizateSlider->updatePercentage(mousepos_update[0]);
+        humiditySlider->updatePercentage(mousepos_update[0]);
+        temperatureSlider->updatePercentage(mousepos_update[0]);
+        xRotationSlider->updatePercentage(mousepos_update[0]);
+        yRotationSlider->updatePercentage(mousepos_update[0]);
+        zRotationSlider->updatePercentage(mousepos_update[0]);
+        #if MOBILE
+            forwardButton->updateState();
+            backwardButton->updateState();
+            leftButton->updateState();
+            rightButton->updateState();
+            lookupButton->updateState();
+            lookdownButton->updateState();
+            lookleftButton->updateState();
+            lookrightButton->updateState();
+        #endif
 
         if (spin_switch->updateState()) {
             x_rotation = 0.f;
@@ -1030,6 +1080,8 @@ int main() {
         if (hide_left_switch->updateState() || hide_right_switch->updateState()) {
             leftMenuState();
             rightMenuState();
+            if (hide_left && hide_right) either_menu_opened = false;
+            else either_menu_opened = true;
         }
 
         if (closeButton->updateState() && attemptClose) {
@@ -1079,10 +1131,8 @@ int main() {
 
         raster_pipeline.clear();
 
-        window->draw(left_menu_bg);
-        window->draw(right_menu_bg);
-
         if (!hide_right) {
+            window->draw(right_menu_bg);
             window->draw(dim_text_bg);
             window->draw(dim_physicsOutput_bg);
             window->draw(text);
@@ -1093,6 +1143,7 @@ int main() {
         }
 
         if (!hide_left) {
+            window->draw(left_menu_bg);
             window->draw(currentTitle);
         }
         else if (!MOBILE || hide_right) {

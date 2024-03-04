@@ -36,14 +36,17 @@ Button::Button
     this->hide = hide;
 }
 
-void Button::checkClicking (sf::Vector2i mouse) {
-    if (hide != nullptr && *hide) return;
+bool Button::checkClicking (sf::Vector2i mouse, int index) {
+    if (hide != nullptr && *hide) return false;
     if (shape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse))) {
         isClicking = true;
+        clicking_index = index;
     }
+    return isClicking;
 }
 
-void Button::setIsClicking (bool v) {
+void Button::setIsClicking (bool v, int index) {
+    if (clicking_index != index) return;
     isClicking = v;
 }
 

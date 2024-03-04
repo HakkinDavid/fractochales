@@ -25,11 +25,12 @@ bool Switch::updateState () {
     return false;
 }
 
-void Switch::checkClicking (sf::Vector2i mouse) {
-    if (hide != nullptr && *hide) return;
+bool Switch::checkClicking (sf::Vector2i mouse, int index) {
+    if (hide != nullptr && *hide) return false;
     if (!isClicking) {
         alreadyDispatched = false;
-        Button::checkClicking(mouse);
+        Button::checkClicking(mouse, index);
     }
     else alreadyDispatched = true;
+    return isClicking;
 }

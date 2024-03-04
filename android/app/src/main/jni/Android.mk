@@ -10,7 +10,6 @@ LOCAL_SRC_FILES += ../../../../../includes/Lightning/Lightning.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Physics/physics.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Slider/slider.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Switch/switch.cpp
-LOCAL_SRC_FILES += ../../../../../includes/ThickLine/thickline.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Achieve/achieve.cpp
 LOCAL_SHARED_LIBRARIES := sfml-system
 LOCAL_SHARED_LIBRARIES += sfml-window

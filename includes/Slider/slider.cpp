@@ -54,14 +54,17 @@ Slider::Slider
     this->isEnabled = isEnabled;
 }
 
-void Slider::checkDragging (sf::Vector2i mouse) {
-    if ((hide != nullptr && *hide) || !isEnabled()) return;
+bool Slider::checkDragging (sf::Vector2i mouse, int index) {
+    if ((hide != nullptr && *hide) || !isEnabled()) return false;
     if (handle.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse))) {
         isDragging = true;
+        clicking_index = index;
     }
+    return isDragging;
 }
 
-void Slider::setIsDragging (bool v) {
+void Slider::setIsDragging (bool v, int index) {
+    if (clicking_index != index) return;
     isDragging = v;
 }
 
