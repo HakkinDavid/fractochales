@@ -338,6 +338,10 @@ int main() {
     bool isMobileLandscape = false;
     bool do_spin = false;
 
+    auto start_time = std::chrono::system_clock::now();
+    auto current_timestamp = start_time;
+    int64_t elapsed = 0;
+
     int renderIndex = 0;
     int drawPile = 0;
 
@@ -494,8 +498,8 @@ int main() {
         splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
         watermark_logo.setPosition(window->getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window->getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
-        left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.2f), window->getSize().y));
-        right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.2f), window->getSize().y));
+        left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
+        right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         UI_events(-999); // delete all UI elements
         lightning_scale = window->getSize().y/lightning_height;
         alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
@@ -569,7 +573,8 @@ int main() {
         << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl
         << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl
         << L"Dimensión fractal: " << fixed << setprecision(6) << (*(fracs))[fracs->size()] << endl
-        << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl;
+        << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
+        << L"FPS: " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
 
         thunder_physics_data << scientific << setprecision(4)
         << L"W = " << e_mass << L"kg·9.81 m/s²\n\t= " << Physics::W(e_mass) << L"N" << endl
@@ -700,7 +705,6 @@ int main() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
 			forward_direction = VecxScalar(forward_direction, 4.f);
             right_direction = VecxScalar(right_direction, 4.f);
-            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 			camera_position = AddVec(camera_position, forward_direction);
@@ -893,9 +897,6 @@ int main() {
 		}
     };
 
-    auto start_time = std::chrono::system_clock::now();
-    auto current_timestamp = start_time;
-    int64_t elapsed = 0;
     bool yetToBoot = true;
     int zapCount = 0;
 
