@@ -18,6 +18,7 @@
 #include "includes/Achieve/achieve.h"
 #include "includes/Engine/Source.cpp"
 #include "includes/Physics/physics.h"
+#include "includes/Controller/controller.h"
 
 #define MOBILE false
 #if defined(WIN32)
@@ -613,6 +614,7 @@ int main() {
         << L"Dimensión fractal: " << fixed << setprecision(6) << (*(fracs))[fracs->size()] << endl
         << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
         << L"FPS: " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
+        if (Controller::isConnected(0)) thunder_data << L"Control conectado: " << Controller::getName(0) << endl;
 
         thunder_physics_data << scientific << setprecision(4)
         << L"W = " << e_mass << L"kg·9.81 m/s²\n\t= " << Physics::W(e_mass) << L"N" << endl
@@ -731,51 +733,88 @@ int main() {
     };
 
     auto handleMovement = [&] () {
+        sf::Vector2i e [2];
         bool changed = false;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
 			camera_position = AddVec(camera_position, fly_up_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
 			camera_position = SubVec(camera_position, fly_up_direction);
             changed = true;
 		}
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
 			forward_direction = VecxScalar(forward_direction, 4.f);
             right_direction = VecxScalar(right_direction, 4.f);
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
 			camera_position = AddVec(camera_position, forward_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
 			camera_position = SubVec(camera_position, right_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
 			camera_position = SubVec(camera_position, forward_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
 			camera_position = AddVec(camera_position, right_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
 			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight || Controller::getAxisPosition(0, sf::Joystick::Z) >= 50.f) {
 			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp || Controller::getAxisPosition(0, sf::Joystick::R) <= -50.f) {
 			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown || Controller::getAxisPosition(0, sf::Joystick::R) >= 50.f) {
 			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
             changed = true;
 		}
+        if (Controller::isPressed(DS5::L2)) {
+            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200;
+            else {
+                y_rotation = 2*Physics::PI;
+            }
+        }
+        if (Controller::isPressed(DS5::R2)) {
+            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200;
+            else {
+                y_rotation = 0;
+            }
+        }
+        if (Controller::isPressed(DS5::L1)) {
+            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180;
+            else {
+                x_rotation = 2*Physics::PI;
+            }
+        }
+        if (Controller::isPressed(DS5::R1)) {
+            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180;
+            else {
+                x_rotation = 0;
+            }
+        }
+        if (Controller::isPressed(DS5::TRIANGLE)) {
+            e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
+            UI_events(0, e);
+        }
+        if (Controller::isPressed(DS5::OPTIONS)) {
+            e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
+            UI_events(0, e);
+        }
+        if (Controller::isPressed(DS5::CREATE)) {
+            e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
+            UI_events(0, e);
+        }
 
 		if (camera_x_rotation >= 2.0f * 3.14159f) {
 			camera_x_rotation -= 2.0f * 3.14159f;
@@ -1029,14 +1068,19 @@ int main() {
             UI_events(0, mousepos_update);
         }
 
-        // si el usuario deja de mantener click izquierdo o de tocar 
-        else if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchEnded && event.touch.finger == 0){
+        // si el usuario deja de mantener click izquierdo o de tocar o de usar su mando
+        else if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchEnded && event.touch.finger == 0 || event.type == sf::Event::JoystickButtonReleased){
             UI_events(1, nullptr, 0);
         }
 
         else if(event.type == sf::Event::TouchEnded && event.touch.finger == 1){
             UI_events(1, nullptr, 1);
         }
+
+        // controles de movimiento
+        calculateMotion();
+        handleMovement();
+        calculateCameraView();
 
         if (backgroundButton->updateState() && switchingBG) {
             bgIndex++;
@@ -1126,12 +1170,6 @@ int main() {
                     break;
             }
         }
-
-        // controles de movimiento... no sabemos si serán realmente implementados
-
-        calculateMotion();
-        handleMovement();
-        calculateCameraView();
 
         window->clear();
         window->draw(background);
