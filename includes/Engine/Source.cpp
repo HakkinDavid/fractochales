@@ -37,6 +37,12 @@ class vec3
         this->z = z;
         this->w = w;
     }
+    ~vec3 () {
+        this->x = 0;
+        this->y = 0;
+        this->z = 0;
+        this->w = 0;
+    }
 };
 
 //Declare 3D Polygon Format
@@ -44,15 +50,56 @@ class tri3
 {
     public:
 	vec3 p[3];
-	float color[4];
-    tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), float red = 255.f, float green = 255.f, float blue = 255.f, float alpha = 255.f) {
+	float color_A[4];
+    float color_B[4];
+    float color_C[4];
+    tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), const float red = 255.f, const float green = 255.f, const float blue = 255.f, float alpha = 255.f) {
         this->p[0] = p1;
         this->p[1] = p2;
         this->p[2] = p3;
-        this->color[0] = red;
-        this->color[1] = green;
-        this->color[2] = blue;
-        this->color[3] = alpha;
+        this->color_A[0] = red;
+        this->color_A[1] = green;
+        this->color_A[2] = blue;
+        this->color_A[3] = alpha;
+        this->color_B[0] = red;
+        this->color_B[1] = green;
+        this->color_B[2] = blue;
+        this->color_B[3] = alpha;
+        this->color_C[0] = red;
+        this->color_C[1] = green;
+        this->color_C[2] = blue;
+        this->color_C[3] = alpha;
+    }
+    tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]) {
+        this->p[0] = p1;
+        this->p[1] = p2;
+        this->p[2] = p3;
+        this->color_A[0] = color1[0];
+        this->color_A[1] = color1[1];
+        this->color_A[2] = color1[2];
+        this->color_A[3] = color1[3];
+        this->color_B[0] = color2[0];
+        this->color_B[1] = color2[1];
+        this->color_B[2] = color2[2];
+        this->color_B[3] = color2[3];
+        this->color_C[0] = color3[0];
+        this->color_C[1] = color3[1];
+        this->color_C[2] = color3[2];
+        this->color_C[3] = color3[3];
+    }
+    ~tri3() {
+        this->color_A[0] = 0;
+        this->color_A[1] = 0;
+        this->color_A[2] = 0;
+        this->color_A[3] = 0;
+        this->color_B[0] = 0;
+        this->color_B[1] = 0;
+        this->color_B[2] = 0;
+        this->color_B[3] = 0;
+        this->color_C[0] = 0;
+        this->color_C[1] = 0;
+        this->color_C[2] = 0;
+        this->color_C[3] = 0;
     }
 };
 
@@ -104,6 +151,24 @@ class mat4
 {
     public:
 	float m[4][4] = { 0 };
+    ~mat4() {
+        m[0][0] = 0;
+        m[0][1] = 0;
+        m[0][2] = 0;
+        m[0][3] = 0;
+        m[1][0] = 0;
+        m[1][1] = 0;
+        m[1][2] = 0;
+        m[1][3] = 0;
+        m[2][0] = 0;
+        m[2][1] = 0;
+        m[2][2] = 0;
+        m[2][3] = 0;
+        m[3][0] = 0;
+        m[3][1] = 0;
+        m[3][2] = 0;
+        m[3][3] = 0;
+    }
 };
 
 //Function for Multiplying Vectors by Matrix
@@ -167,23 +232,23 @@ vec3 VectorIntersectPlane(vec3 &plane_p, vec3 &plane_n, vec3 &lineStart, vec3 &l
 	return AddVec(lineStart, lineToIntersect);
 }
 
+float dist (vec3 &plane_p, vec3 &plane_n, vec3 &p)
+{
+    vec3 n = Norm(p);
+    return (plane_n.x * p.x + plane_n.y * p.y + plane_n.z * p.z - Dot(plane_n, plane_p)); //Return signed distance from point to plane
+};
+
 int ClipTriangleAgainstPlane(vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out_tri1, tri3 &out_tri2)
 {
 	plane_n = Norm(plane_n); //Make sure plane normal is unit vector
-
-	auto dist = [&](vec3 &p)
-	{
-		vec3 n = Norm(p);
-		return (plane_n.x * p.x + plane_n.y * p.y + plane_n.z * p.z - Dot(plane_n, plane_p)); //Return signed distance from point to plane
-	};
 
 	//Designate points as in plane or out of plane based on whether signed distance is positive or negative
 	vec3* inside_points[3];  int nInsidePointCount = 0;
 	vec3* outside_points[3]; int nOutsidePointCount = 0;
 
-	float d0 = dist(in_tri.p[0]);
-	float d1 = dist(in_tri.p[1]);
-	float d2 = dist(in_tri.p[2]);
+	float d0 = dist(plane_p, plane_n, in_tri.p[0]);
+	float d1 = dist(plane_p, plane_n, in_tri.p[1]);
+	float d2 = dist(plane_p, plane_n, in_tri.p[2]);
 
 	if (d0 >= 0) { inside_points[nInsidePointCount++] = &in_tri.p[0]; }
 	else { outside_points[nOutsidePointCount++] = &in_tri.p[0]; }
@@ -206,10 +271,18 @@ int ClipTriangleAgainstPlane(vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out
 
 	if (nInsidePointCount == 1 && nOutsidePointCount == 2)
 	{
-		out_tri1.color[0] = in_tri.color[0];
-        out_tri1.color[1] = in_tri.color[1];
-        out_tri1.color[2] = in_tri.color[2];
-        out_tri1.color[3] = in_tri.color[3];
+		out_tri1.color_A[0] = in_tri.color_A[0];
+        out_tri1.color_B[0] = in_tri.color_B[0];
+        out_tri1.color_C[0] = in_tri.color_C[0];
+        out_tri1.color_A[1] = in_tri.color_A[1];
+        out_tri1.color_B[1] = in_tri.color_B[1];
+        out_tri1.color_C[1] = in_tri.color_C[1];
+        out_tri1.color_A[2] = in_tri.color_A[2];
+        out_tri1.color_B[2] = in_tri.color_B[2];
+        out_tri1.color_C[2] = in_tri.color_C[2];
+        out_tri1.color_A[3] = in_tri.color_A[3];
+        out_tri1.color_B[3] = in_tri.color_B[3];
+        out_tri1.color_C[3] = in_tri.color_C[3];
 
 		out_tri1.p[0] = *inside_points[0];
 
@@ -222,15 +295,31 @@ int ClipTriangleAgainstPlane(vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out
 	if (nInsidePointCount == 2 && nOutsidePointCount == 1)
 	{
 
-		out_tri1.color[0] = in_tri.color[0];
-        out_tri1.color[1] = in_tri.color[1];
-        out_tri1.color[2] = in_tri.color[2];
-        out_tri1.color[3] = in_tri.color[3];
+		out_tri1.color_A[0] = in_tri.color_A[0];
+        out_tri1.color_B[0] = in_tri.color_B[0];
+        out_tri1.color_C[0] = in_tri.color_C[0];
+        out_tri1.color_A[1] = in_tri.color_A[1];
+        out_tri1.color_B[1] = in_tri.color_B[1];
+        out_tri1.color_C[1] = in_tri.color_C[1];
+        out_tri1.color_A[2] = in_tri.color_A[2];
+        out_tri1.color_B[2] = in_tri.color_B[2];
+        out_tri1.color_C[2] = in_tri.color_C[2];
+        out_tri1.color_A[3] = in_tri.color_A[3];
+        out_tri1.color_B[3] = in_tri.color_B[3];
+        out_tri1.color_C[3] = in_tri.color_C[3];
 
-		out_tri2.color[0] = in_tri.color[0];
-        out_tri2.color[1] = in_tri.color[1];
-        out_tri2.color[2] = in_tri.color[2];
-        out_tri2.color[3] = in_tri.color[3];
+		out_tri2.color_A[0] = in_tri.color_A[0];
+        out_tri2.color_B[0] = in_tri.color_B[0];
+        out_tri2.color_C[0] = in_tri.color_C[0];
+        out_tri2.color_A[1] = in_tri.color_A[1];
+        out_tri2.color_B[1] = in_tri.color_B[1];
+        out_tri2.color_C[1] = in_tri.color_C[1];
+        out_tri2.color_A[2] = in_tri.color_A[2];
+        out_tri2.color_B[2] = in_tri.color_B[2];
+        out_tri2.color_C[2] = in_tri.color_C[2];
+        out_tri2.color_A[3] = in_tri.color_A[3];
+        out_tri2.color_B[3] = in_tri.color_B[3];
+        out_tri2.color_C[3] = in_tri.color_C[3];
 
 		out_tri1.p[0] = *inside_points[0];
 		out_tri1.p[1] = *inside_points[1];

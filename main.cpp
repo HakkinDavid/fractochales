@@ -287,8 +287,22 @@ int main() {
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> thunder; // crear el vector de vértices a renderizar
+    /*
+    const float box_A [4] = {0,0,255,255},
+                box_B [4] = {0,255,0,255},
+                box_C [4] = {255,0,0,255};
+    vector<tri3> box = {tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,-500),box_A,box_B,box_C)}; // mimundo
+    */
     Point ** grid = storm.getGrid();
     vector<float> * fracs = storm.getFracs();
+
+    // cosas así bien tridimensionales
+	float camera_x_rotation = 0.0f, camera_y_rotation = 0.0f;
+    sf::Time cycle_time_diff;
+    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-400,0,100}, projection_offset = {1,1,0};
+    mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
+            screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
+    vector<tri3> raster_pipeline;
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
@@ -303,7 +317,6 @@ int main() {
     float branch = defaultBranch;
     float forcedHeight = 0.75F;
     float downWeight = 0;
-    float fractalStep = 0;
     float crystallizate = 0;
     float humidity = 0.9F;
     float temperature = 15.0F;
@@ -329,18 +342,17 @@ int main() {
     int drawPile = 0;
 
     Slider
-        * alignmentSlider = nullptr, 
-        * fractalStepSlider = nullptr, 
-        * redSlider = nullptr, 
-        * greenSlider = nullptr, 
-        * blueSlider = nullptr, 
-        * crystallizateSlider = nullptr, 
-        * humiditySlider = nullptr, 
-        * temperatureSlider = nullptr, 
-        * leewaySlider = nullptr, 
-        * branchSlider = nullptr, 
-        * downWeightSlider = nullptr, 
-        * forcedHeightSlider = nullptr, 
+        * alignmentSlider = nullptr,
+        * redSlider = nullptr,
+        * greenSlider = nullptr,
+        * blueSlider = nullptr,
+        * crystallizateSlider = nullptr,
+        * humiditySlider = nullptr,
+        * temperatureSlider = nullptr,
+        * leewaySlider = nullptr,
+        * branchSlider = nullptr,
+        * downWeightSlider = nullptr,
+        * forcedHeightSlider = nullptr,
         * envfactorSlider = nullptr,
         * xRotationSlider = nullptr,
         * yRotationSlider = nullptr,
@@ -358,7 +370,7 @@ int main() {
         * chievo2 = nullptr;
     
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &fractalStepSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
+    Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
     // colocar los botones que recibirán eventos en grupo
     Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton};
     // colocar los interruptores que recibirán eventos en grupo
@@ -498,7 +510,6 @@ int main() {
         // deslizadores constantes
         bool shouldInvertAlignment = alignmentOffset > 0;
         alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window->getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window->getSize().x - lightning_width*lightning_scale), left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
-        fractalStepSlider = new Slider (fractalStep, 1.0f, 2.0f, window->getSize().x - right_menu_bg.getSize().x*(5.f/6.f), (isMobileLandscape ? right_menu_bg.getPosition().y + right_menu_bg.getSize().y*(1.f/6.f) : window->getSize().y * 0.39f), 0, font, L"Términos de MacLaurin", true, sf::Color(217, 189, 165), sf::Color::White, right_menu_bg.getSize().x*(2.f/3.f), right_menu_bg.getSize().y*(1.f/135.f), handle_x_size, handle_y_size, &hide_right);
         redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
         greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
         blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
@@ -557,7 +568,8 @@ int main() {
         << L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl
         << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl
         << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl
-        << L"Dimensión fractal: " << fixed << setprecision(6) << (*(fracs))[floor(fractalStep+0.5) - 1] << endl;
+        << L"Dimensión fractal: " << fixed << setprecision(6) << (*(fracs))[fracs->size()] << endl
+        << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl;
 
         thunder_physics_data << scientific << setprecision(4)
         << L"W = " << e_mass << L"kg·9.81 m/s²\n\t= " << Physics::W(e_mass) << L"N" << endl
@@ -660,21 +672,11 @@ int main() {
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         direction = storm.directionComp();
         storm.fractalComp();
-        fractalStep = fracs->size();
-        fractalStepSlider->setUpperBound(fractalStep);
         recalculateLightningVertex();
         retypeInfo();
     };
 
     generateLightning();
-
-    // cosas así bien tridimensionales
-	float camera_x_rotation = 0.0f, camera_y_rotation = 0.0f;
-    sf::Time cycle_time_diff;
-    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-400,0,100}, projection_offset = {1,1,0};
-    mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
-            screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
-    vector<tri3> raster_pipeline;
 
     auto calculateMotion = [&] () {
         forward_direction = VecxScalar(look_direction, 20.0f*cycle_time_diff.asSeconds());
@@ -686,39 +688,51 @@ int main() {
     };
 
     auto handleMovement = [&] () {
+        bool changed = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 			camera_position = AddVec(camera_position, fly_up_direction);
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
 			camera_position = SubVec(camera_position, fly_up_direction);
+            changed = true;
 		}
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
 			forward_direction = VecxScalar(forward_direction, 4.f);
             right_direction = VecxScalar(right_direction, 4.f);
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 			camera_position = AddVec(camera_position, forward_direction);
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
 			camera_position = SubVec(camera_position, right_direction);
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
 			camera_position = SubVec(camera_position, forward_direction);
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
 			camera_position = AddVec(camera_position, right_direction);
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
 			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
 			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
 		}
 
 		if (camera_x_rotation >= 2.0f * 3.14159f) {
@@ -733,6 +747,8 @@ int main() {
 		if (camera_y_rotation <= -3.14159f / 2.0f) {
 			camera_y_rotation = -3.14100f / 2.0f;
 		}
+
+        if (changed) retypeInfo();
     };
 
     auto calculateCameraView = [&] {
@@ -813,10 +829,18 @@ int main() {
 					projected_triangles.p[2].x *= 0.5f * window_settings.x_res;
 					projected_triangles.p[2].y *= 0.5f * window_settings.y_res;
 
-					projected_triangles.color[0] = tri.color[0];
-                    projected_triangles.color[1] = tri.color[1];
-                    projected_triangles.color[2] = tri.color[2];
-                    projected_triangles.color[3] = tri.color[3];
+					projected_triangles.color_A[0] = tri.color_A[0];
+                    projected_triangles.color_B[0] = tri.color_B[0];
+                    projected_triangles.color_C[0] = tri.color_C[0];
+                    projected_triangles.color_A[1] = tri.color_A[1];
+                    projected_triangles.color_B[1] = tri.color_B[1];
+                    projected_triangles.color_C[1] = tri.color_C[1];
+                    projected_triangles.color_A[2] = tri.color_A[2];
+                    projected_triangles.color_B[2] = tri.color_B[2];
+                    projected_triangles.color_C[2] = tri.color_C[2];
+                    projected_triangles.color_A[3] = tri.color_A[3];
+                    projected_triangles.color_B[3] = tri.color_B[3];
+                    projected_triangles.color_C[3] = tri.color_C[3];
 
 					// enviar a rasterizado
 					raster_pipeline.push_back(projected_triangles);
@@ -860,9 +884,9 @@ int main() {
 				poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
 				poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
 				poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
-				poly[0].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
-				poly[1].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
-				poly[2].color = sf::Color(Final.color[0], Final.color[1], Final.color[2], Final.color[3]);
+				poly[0].color = sf::Color(Final.color_A[0], Final.color_A[1], Final.color_A[2], Final.color_A[3]);
+				poly[1].color = sf::Color(Final.color_B[0], Final.color_B[1], Final.color_B[2], Final.color_B[3]);
+				poly[2].color = sf::Color(Final.color_C[0], Final.color_C[1], Final.color_C[2], Final.color_C[3]);
 
 				window->draw(poly);
 			}
@@ -978,7 +1002,7 @@ int main() {
             temperature = 15.0F;
         }
 
-        if (envfactorSlider->updatePercentage(mousepos_update) || fractalStepSlider->updatePercentage(mousepos_update)) {
+        if (envfactorSlider->updatePercentage(mousepos_update)) {
             retypeInfo();
         }
         
@@ -1045,6 +1069,7 @@ int main() {
         window->draw(background);
 
 		// dibujar objetos
+        //drawMesh(box);
 		drawMesh(thunder);
 
 		sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
@@ -1079,6 +1104,9 @@ int main() {
     UI_events(-999); // delete all UI elements
     delete [] direction;
     // delete fracs somehow
+    fracs->clear();
+    raster_pipeline.clear();
+    thunder.clear();
     delete window;
     return 0;
 }
