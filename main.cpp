@@ -567,8 +567,8 @@ int main() {
         hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
 
         // logros
-        chievo1 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[0]; });
-        chievo2 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*0.9f, watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*0.2f, window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[1]; });
+        chievo1 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.4f : 0.2f), window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[0]; });
+        chievo2 = new Achieve (drawPile, window->getSize().x*0.4f, window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.4f : 0.2f), window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[1]; });
 
         leftMenuState();
         rightMenuState();
