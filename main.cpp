@@ -341,6 +341,9 @@ int main() {
     bool lookDown = false;
     bool lookLeft = false;
     bool lookRight = false;
+    bool goUp = false;
+    bool goDown = false;
+    bool goFast = false;
     bool hide_left = true;
     bool hide_right = true;
     bool either_menu_opened = false;
@@ -377,7 +380,10 @@ int main() {
         * lookupButton = nullptr,
         * lookdownButton = nullptr,
         * lookleftButton = nullptr,
-        * lookrightButton = nullptr;
+        * lookrightButton = nullptr,
+        * shiftButton = nullptr,
+        * jumpButton = nullptr,
+        * runButton = nullptr;
     Switch
         * hide_left_switch = nullptr,
         * hide_right_switch = nullptr,
@@ -389,10 +395,13 @@ int main() {
     // colocar los deslizadores que recibirán eventos en grupo
     Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
     // colocar los botones que recibirán eventos en grupo
-    Button ** all_buttons [] = {&zapping, &backgroundButton, &closeButton
+    Button ** all_buttons [] = 
+    {
+        &zapping, &backgroundButton,
         #if MOBILE
-        , &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton
+            &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton, &shiftButton, &runButton, &jumpButton,
         #endif
+        &closeButton
     };
     // colocar los interruptores que recibirán eventos en grupo
     Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch};
@@ -552,14 +561,17 @@ int main() {
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
         // controles
         #if MOBILE
-            forwardButton = new Button (goForward, 300 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-600, font, L"↑ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            backwardButton = new Button (goBackward, 300 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-300, font, L"↓ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            forwardButton = new Button (goForward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"↑ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            shiftButton = new Button (goDown, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"○ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            backwardButton = new Button (goBackward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-300, font, L"↓ \n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
             leftButton = new Button (goLeft, 150 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"←\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            rightButton = new Button (goRight, 450 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"→\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookupButton = new Button (lookUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-600, font, L"↥ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookdownButton = new Button (lookDown, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-300, font, L"↧ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookleftButton = new Button (lookLeft, window->getSize().x-600 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"↤\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            rightButton = new Button (goRight, 450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-450, font, L"→\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookupButton = new Button (lookUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-600, font, L"↥ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            runButton = new Button (goFast, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"» ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            jumpButton = new Button (goUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-450, font, L"● ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookdownButton = new Button (lookDown, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-300, font, L"↧ \n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookleftButton = new Button (lookLeft, window->getSize().x-600 * (isMobileLandscape ? 1.f : 0.875f), window->getSize().y-450, font, L"↤\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
         #endif
         // interruptores
         spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Giro automático", L"Giro manual", left_slider_x_size, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
@@ -720,15 +732,15 @@ int main() {
 
     auto handleMovement = [&] () {
         bool changed = false;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp) {
 			camera_position = AddVec(camera_position, fly_up_direction);
             changed = true;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown) {
 			camera_position = SubVec(camera_position, fly_up_direction);
             changed = true;
 		}
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast) {
 			forward_direction = VecxScalar(forward_direction, 4.f);
             right_direction = VecxScalar(right_direction, 4.f);
 		}
@@ -1069,6 +1081,9 @@ int main() {
             lookdownButton->updateState();
             lookleftButton->updateState();
             lookrightButton->updateState();
+            shiftButton->updateState();
+            jumpButton->updateState();
+            runButton->updateState();
         #endif
 
         if (spin_switch->updateState()) {
