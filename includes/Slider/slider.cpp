@@ -23,7 +23,8 @@ Slider::Slider
     float size_x, float size_y,
     float handle_size_x, float handle_size_y,
     bool * hide,
-    std::function<bool()> isEnabled
+    std::function<bool()> isEnabled,
+    std::function<void()> onUpdate
 ) {
     this->x = &binded;
     this->lowerBound = lowerBound;
@@ -52,6 +53,7 @@ Slider::Slider
     this->swapToUnits = swapToUnits;
     this->hide = hide;
     this->isEnabled = isEnabled;
+    this->onUpdate = onUpdate;
 }
 
 bool Slider::checkDragging (sf::Vector2i mouse, int index) {
@@ -121,8 +123,13 @@ bool Slider::updatePercentage (sf::Vector2i mouse) {
     if (swapToUnits) handle_text_percentage << fixed << setprecision(0) << *x;
     else handle_text_percentage << fixed << setprecision(2) << percent << "%";
     handle_percent.setString(handle_text_percentage.str());
-    if (percent != oldPercent) return true;
-    else return false;
+    if (percent != oldPercent) {
+        onUpdate();
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void Slider::draw (sf::RenderWindow &window) {
@@ -139,4 +146,15 @@ void Slider::setUpperBound (float newUpperBound) {
 
 void Slider::setLowerBound (float newLowerBound) {
     lowerBound = newLowerBound;
+}
+
+float Slider::getPercentage () {
+    return percent;
+}
+
+sf::Vector2f Slider::getPosition () {
+    return shape.getPosition();
+}
+sf::Vector2f Slider::getSize () {
+    return shape.getSize();
 }

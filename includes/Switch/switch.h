@@ -19,7 +19,7 @@ class Switch : public Button {
         bool * hide;
         wstring title[2];
     public:
-        Switch (bool &binded, float position_x, float position_y, sf::Font &font, wstring title_while_off = wstring(), wstring title_while_on = wstring(), float size_x = 100, float size_y = 50, sf::Color color_shape = sf::Color(84,0,14), sf::Color color_shape_active = sf::Color(0,84,46), sf::Color color_text = sf::Color::White, bool * hide = nullptr);
+        Switch (bool &binded, float position_x, float position_y, sf::Font &font, wstring title_while_off = wstring(), wstring title_while_on = wstring(), float size_x = 100, float size_y = 50, sf::Color color_shape = sf::Color(84,0,14), sf::Color color_shape_active = sf::Color(0,84,46), sf::Color color_text = sf::Color::White, bool * hide = nullptr, std::function<bool()> isEnabled = [] () { return true; }, std::function<void()> onUpdate = [] () {});
         bool updateState ();
         bool checkClicking (sf::Vector2i mouse, int index = 0);
 };
