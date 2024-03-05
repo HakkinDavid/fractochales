@@ -12,7 +12,6 @@
 #include <fstream>
 #include <list>
 #include <cmath>
-using namespace std;
 
 #include "engine.h"
 
@@ -51,9 +50,9 @@ class tri3 {
 //Declare 3D Mesh Format
 class mesh {
     public:
-	vector<tri3> polys;
+	std::vector<tri3> polys;
 
-	bool LoadObj(string Filename);
+	bool LoadObj(std::string Filename);
 
 };
 
@@ -86,6 +85,13 @@ namespace LinearAlgebra {
     mat4 MatrixMultiply(mat4 &m1, mat4 &m2);
     mat4 PointingMatrix(vec3 &pos, vec3 &target, vec3 &up);
     mat4 MatrixQuickInverse(mat4 &m);
+}
+
+namespace Engine {
+    void drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, mat4 & world_bounds, vec3 & camera_position, mat4 & camera_view_matrix, mat4 & screen_projection_matrix, vec3 & projection_offset);
+    void rasterVector (std::vector<tri3> & raster_pipeline, sf::RenderTarget * window, RenderSettings & window_settings);
+    void calculateMotion (vec3 & forward_direction, vec3 & look_direction, vec3 & up_direction, vec3 & right_direction, vec3 & fly_up_direction, sf::Time & cycle_time_diff);
+    void calculateCameraView (mat4 & y_rotation_matrix, float & y_rotation, mat4 & x_rotation_matrix, float & x_rotation, mat4 & z_rotation_matrix, float & z_rotation, mat4 & movement_matrix, mat4 & world_bounds, vec3 & crosshair, mat4 & camera_x_rotation_matrix, float & camera_x_rotation, mat4 & camera_y_rotation_matrix, float & camera_y_rotation, vec3 & look_direction, vec3 & camera_position, mat4 & camera_position_matrix, vec3 & up_direction, mat4 & camera_view_matrix);
 }
 
 #endif

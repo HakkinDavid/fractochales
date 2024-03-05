@@ -652,15 +652,6 @@ int main() {
 
     generateLightning();
 
-    auto calculateMotion = [&] () {
-        forward_direction = LinearAlgebra::VecxScalar(look_direction, 20.0f*cycle_time_diff.asSeconds());
-		up_direction = { 0,0,1 };
-		right_direction = LinearAlgebra::Cross(look_direction, up_direction);
-		fly_up_direction = LinearAlgebra::Cross(right_direction, look_direction);
-		right_direction = LinearAlgebra::VecxScalar(right_direction, 20.0f*cycle_time_diff.asSeconds());
-		fly_up_direction = LinearAlgebra::VecxScalar(fly_up_direction, 20.0f*cycle_time_diff.asSeconds());
-    };
-
     auto handleMovement = [&] () {
         sf::Vector2i e [2];
         bool changed = false;
@@ -792,148 +783,6 @@ int main() {
 		}
 
         if (changed) retypeInfo();
-    };
-
-    auto calculateCameraView = [&] {
-        y_rotation_matrix = LinearAlgebra::ZRotationMatrix(y_rotation);
-		x_rotation_matrix = LinearAlgebra::YRotationMatrix(x_rotation);
-		z_rotation_matrix = LinearAlgebra::XRotationMatrix(z_rotation);
-		movement_matrix = LinearAlgebra::TranslationMatrix(5.0f, 0.0f, 0.0f);
-		world_bounds = LinearAlgebra::MatrixMultiply(x_rotation_matrix, y_rotation_matrix);
-        world_bounds = LinearAlgebra::MatrixMultiply(world_bounds, z_rotation_matrix);
-		world_bounds = LinearAlgebra::MatrixMultiply(world_bounds, movement_matrix);
-        crosshair = { 1,0,0 };
-		camera_x_rotation_matrix = LinearAlgebra::ZRotationMatrix(-camera_x_rotation);
-		camera_y_rotation_matrix = LinearAlgebra::YRotationMatrix(camera_y_rotation);
-		camera_x_rotation_matrix = LinearAlgebra::MatrixMultiply(camera_y_rotation_matrix, camera_x_rotation_matrix);
-		look_direction = LinearAlgebra::MatxVec(camera_x_rotation_matrix, crosshair);
-		crosshair = LinearAlgebra::AddVec(camera_position, look_direction);
-		camera_position_matrix = LinearAlgebra::PointingMatrix(camera_position, crosshair, up_direction);
-		camera_view_matrix = LinearAlgebra::MatrixQuickInverse(camera_position_matrix);
-    };
-
-    auto drawMesh = [&] (vector<tri3> & mesh) {
-        for (tri3 &tri : mesh) {
-			tri3 projected_triangles, transformed, viewable_triangles;
-
-			transformed.p[0] = LinearAlgebra::MatxVec(world_bounds, tri.p[0]);
-			transformed.p[1] = LinearAlgebra::MatxVec(world_bounds, tri.p[1]);
-			transformed.p[2] = LinearAlgebra::MatxVec(world_bounds, tri.p[2]);
-
-			// normalizar el vector
-			vec3 normal, line1, line2;
-
-			line1 = LinearAlgebra::SubVec(transformed.p[1], transformed.p[0]);
-			line2 = LinearAlgebra::SubVec(transformed.p[2], transformed.p[0]);
-			normal = LinearAlgebra::Cross(line1, line2);
-			normal = LinearAlgebra::Norm(normal);
-
-			vec3 vision_line = LinearAlgebra::SubVec(transformed.p[0], camera_position);
-            // verificar que la línea de visión no sea perpendicular (que se mire de lado)
-			if (LinearAlgebra::Dot(normal, vision_line) != 0.0f) {
-				// introducir en el marco de la cámara
-				viewable_triangles.p[0] = LinearAlgebra::MatxVec(camera_view_matrix, transformed.p[0]);
-				viewable_triangles.p[1] = LinearAlgebra::MatxVec(camera_view_matrix, transformed.p[1]);
-				viewable_triangles.p[2] = LinearAlgebra::MatxVec(camera_view_matrix, transformed.p[2]);
-
-				// cortar triángulos si el plano de visión está muy próximo
-				int n_clipped_triangles = 0;
-				tri3 clipped[2];
-				n_clipped_triangles = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, viewable_triangles, clipped[0], clipped[1]);
-
-				// proyectar los triángulos cortados
-				for (int n = 0; n < n_clipped_triangles; n++) {
-
-					// proyección 3D en 2D
-					projected_triangles.p[0] = LinearAlgebra::MatxVec(screen_projection_matrix, clipped[n].p[0]);
-					projected_triangles.p[1] = LinearAlgebra::MatxVec(screen_projection_matrix, clipped[n].p[1]);
-					projected_triangles.p[2] = LinearAlgebra::MatxVec(screen_projection_matrix, clipped[n].p[2]);
-
-					projected_triangles.p[0] = LinearAlgebra::VecdScalar(projected_triangles.p[0], projected_triangles.p[0].w);
-					projected_triangles.p[1] = LinearAlgebra::VecdScalar(projected_triangles.p[1], projected_triangles.p[1].w);
-					projected_triangles.p[2] = LinearAlgebra::VecdScalar(projected_triangles.p[2], projected_triangles.p[2].w);
-
-					projected_triangles.p[0].x *= -1.0f;
-					projected_triangles.p[1].x *= -1.0f;
-					projected_triangles.p[2].x *= -1.0f;
-					projected_triangles.p[0].y *= -1.0f;
-					projected_triangles.p[1].y *= -1.0f;
-					projected_triangles.p[2].y *= -1.0f;
-
-					// escalar triángulos al tamaño de la pantalla
-					projected_triangles.p[0] = LinearAlgebra::AddVec(projected_triangles.p[0], projection_offset);
-					projected_triangles.p[1] = LinearAlgebra::AddVec(projected_triangles.p[1], projection_offset);
-					projected_triangles.p[2] = LinearAlgebra::AddVec(projected_triangles.p[2], projection_offset);
-
-					projected_triangles.p[0].x *= 0.5f * window_settings.x_res;
-					projected_triangles.p[0].y *= 0.5f * window_settings.y_res;
-					projected_triangles.p[1].x *= 0.5f * window_settings.x_res;
-					projected_triangles.p[1].y *= 0.5f * window_settings.y_res;
-					projected_triangles.p[2].x *= 0.5f * window_settings.x_res;
-					projected_triangles.p[2].y *= 0.5f * window_settings.y_res;
-
-					projected_triangles.color_A[0] = tri.color_A[0];
-                    projected_triangles.color_B[0] = tri.color_B[0];
-                    projected_triangles.color_C[0] = tri.color_C[0];
-                    projected_triangles.color_A[1] = tri.color_A[1];
-                    projected_triangles.color_B[1] = tri.color_B[1];
-                    projected_triangles.color_C[1] = tri.color_C[1];
-                    projected_triangles.color_A[2] = tri.color_A[2];
-                    projected_triangles.color_B[2] = tri.color_B[2];
-                    projected_triangles.color_C[2] = tri.color_C[2];
-                    projected_triangles.color_A[3] = tri.color_A[3];
-                    projected_triangles.color_B[3] = tri.color_B[3];
-                    projected_triangles.color_C[3] = tri.color_C[3];
-
-					// enviar a rasterizado
-					raster_pipeline.push_back(projected_triangles);
-				}
-			}
-		}
-    };
-
-    auto rasterVector = [&] () {
-        for (const tri3 &triToRaster : raster_pipeline) {
-			tri3 clipped[2];
-			list<tri3> listTriangles;
-
-			listTriangles.push_back(triToRaster);
-			int nNewTriangles = 1;
-
-			for (int p = 0; p < 4; p++) {
-				int nTrisToAdd = 0;
-				while (nNewTriangles > 0) {
-					tri3 test = listTriangles.front();
-					listTriangles.pop_front();
-					nNewTriangles--;
-
-					switch (p) {
-                        case 0:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 1:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, float(window_settings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 2:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 3:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ float(window_settings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-					}
-
-					for (int w = 0; w < nTrisToAdd; w++)
-						listTriangles.push_back(clipped[w]);
-				}
-				nNewTriangles = listTriangles.size();
-			}
-
-			for (auto &Final : listTriangles) {
-				// dibujar los triángulos finales en la pantalla
-				sf::VertexArray poly(sf::Triangles, 3);
-
-				poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
-				poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
-				poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
-				poly[0].color = sf::Color(Final.color_A[0], Final.color_A[1], Final.color_A[2], Final.color_A[3]);
-				poly[1].color = sf::Color(Final.color_B[0], Final.color_B[1], Final.color_B[2], Final.color_B[3]);
-				poly[2].color = sf::Color(Final.color_C[0], Final.color_C[1], Final.color_C[2], Final.color_C[3]);
-
-				window->draw(poly);
-			}
-		}
     };
 
     auto init_ui = [&] () {
@@ -1173,9 +1022,9 @@ int main() {
         }
 
         // controles de movimiento
-        calculateMotion();
+        Engine :: calculateMotion(forward_direction, look_direction, up_direction, right_direction, fly_up_direction, cycle_time_diff);
         handleMovement();
-        calculateCameraView();
+        Engine :: calculateCameraView (y_rotation_matrix, y_rotation, x_rotation_matrix, x_rotation, z_rotation_matrix, z_rotation, movement_matrix, world_bounds, crosshair, camera_x_rotation_matrix, camera_x_rotation, camera_y_rotation_matrix, camera_y_rotation, look_direction, camera_position, camera_position_matrix, up_direction, camera_view_matrix);
 
         UI_events(2, mousepos_update);
 
@@ -1184,11 +1033,11 @@ int main() {
 
 		// dibujar objetos
         // drawMesh(box);
-		drawMesh(thunder);
+		Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
 		sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
 
-		rasterVector();
+		Engine :: rasterVector(raster_pipeline, window, window_settings);
 
         raster_pipeline.clear();
 
