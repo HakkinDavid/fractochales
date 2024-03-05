@@ -16,7 +16,7 @@
 #include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
 #include "includes/Achieve/achieve.h"
-#include "includes/Engine/Source.cpp"
+#include "includes/Engine/engine.h"
 #include "includes/Physics/physics.h"
 #include "includes/Controller/controller.h"
 
@@ -83,8 +83,8 @@ bool compareZOrder (tri3 &t1, tri3 &t2) {
 }
 
 int main() {
-    std::chrono::_V2::system_clock::time_point start_time;
-    std::chrono::_V2::system_clock::time_point current_timestamp;
+    std::chrono::system_clock::time_point start_time;
+    std::chrono::system_clock::time_point current_timestamp;
     bool yetToBoot = true;
     sf::VideoMode video_mode = sf::VideoMode::getDesktopMode();
     window_settings.x_res = video_mode.width;
@@ -305,7 +305,7 @@ int main() {
     sf::Time cycle_time_diff;
     vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-400,0,100}, projection_offset = {1,1,0};
     mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
-            screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
+            screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
     vector<tri3> raster_pipeline;
 
     const float defaultLeeway = 0.24F;
@@ -653,43 +653,43 @@ int main() {
     generateLightning();
 
     auto calculateMotion = [&] () {
-        forward_direction = VecxScalar(look_direction, 20.0f*cycle_time_diff.asSeconds());
+        forward_direction = LinearAlgebra::VecxScalar(look_direction, 20.0f*cycle_time_diff.asSeconds());
 		up_direction = { 0,0,1 };
-		right_direction = Cross(look_direction, up_direction);
-		fly_up_direction = Cross(right_direction, look_direction);
-		right_direction = VecxScalar(right_direction, 20.0f*cycle_time_diff.asSeconds());
-		fly_up_direction = VecxScalar(fly_up_direction, 20.0f*cycle_time_diff.asSeconds());
+		right_direction = LinearAlgebra::Cross(look_direction, up_direction);
+		fly_up_direction = LinearAlgebra::Cross(right_direction, look_direction);
+		right_direction = LinearAlgebra::VecxScalar(right_direction, 20.0f*cycle_time_diff.asSeconds());
+		fly_up_direction = LinearAlgebra::VecxScalar(fly_up_direction, 20.0f*cycle_time_diff.asSeconds());
     };
 
     auto handleMovement = [&] () {
         sf::Vector2i e [2];
         bool changed = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
-			camera_position = AddVec(camera_position, fly_up_direction);
+			camera_position = LinearAlgebra::AddVec(camera_position, fly_up_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
-			camera_position = SubVec(camera_position, fly_up_direction);
+			camera_position = LinearAlgebra::SubVec(camera_position, fly_up_direction);
             changed = true;
 		}
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
-			forward_direction = VecxScalar(forward_direction, 4.f);
-            right_direction = VecxScalar(right_direction, 4.f);
+			forward_direction = LinearAlgebra::VecxScalar(forward_direction, 4.f);
+            right_direction = LinearAlgebra::VecxScalar(right_direction, 4.f);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
-			camera_position = AddVec(camera_position, forward_direction);
+			camera_position = LinearAlgebra::AddVec(camera_position, forward_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
-			camera_position = SubVec(camera_position, right_direction);
+			camera_position = LinearAlgebra::SubVec(camera_position, right_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
-			camera_position = SubVec(camera_position, forward_direction);
+			camera_position = LinearAlgebra::SubVec(camera_position, forward_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
-			camera_position = AddVec(camera_position, right_direction);
+			camera_position = LinearAlgebra::AddVec(camera_position, right_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
@@ -795,63 +795,63 @@ int main() {
     };
 
     auto calculateCameraView = [&] {
-        y_rotation_matrix = ZRotationMatrix(y_rotation);
-		x_rotation_matrix = YRotationMatrix(x_rotation);
-		z_rotation_matrix = XRotationMatrix(z_rotation);
-		movement_matrix = TranslationMatrix(5.0f, 0.0f, 0.0f);
-		world_bounds = MatrixMultiply(x_rotation_matrix, y_rotation_matrix);
-        world_bounds = MatrixMultiply(world_bounds, z_rotation_matrix);
-		world_bounds = MatrixMultiply(world_bounds, movement_matrix);
+        y_rotation_matrix = LinearAlgebra::ZRotationMatrix(y_rotation);
+		x_rotation_matrix = LinearAlgebra::YRotationMatrix(x_rotation);
+		z_rotation_matrix = LinearAlgebra::XRotationMatrix(z_rotation);
+		movement_matrix = LinearAlgebra::TranslationMatrix(5.0f, 0.0f, 0.0f);
+		world_bounds = LinearAlgebra::MatrixMultiply(x_rotation_matrix, y_rotation_matrix);
+        world_bounds = LinearAlgebra::MatrixMultiply(world_bounds, z_rotation_matrix);
+		world_bounds = LinearAlgebra::MatrixMultiply(world_bounds, movement_matrix);
         crosshair = { 1,0,0 };
-		camera_x_rotation_matrix = ZRotationMatrix(-camera_x_rotation);
-		camera_y_rotation_matrix = YRotationMatrix(camera_y_rotation);
-		camera_x_rotation_matrix = MatrixMultiply(camera_y_rotation_matrix, camera_x_rotation_matrix);
-		look_direction = MatxVec(camera_x_rotation_matrix, crosshair);
-		crosshair = AddVec(camera_position, look_direction);
-		camera_position_matrix = PointingMatrix(camera_position, crosshair, up_direction);
-		camera_view_matrix = MatrixQuickInverse(camera_position_matrix);
+		camera_x_rotation_matrix = LinearAlgebra::ZRotationMatrix(-camera_x_rotation);
+		camera_y_rotation_matrix = LinearAlgebra::YRotationMatrix(camera_y_rotation);
+		camera_x_rotation_matrix = LinearAlgebra::MatrixMultiply(camera_y_rotation_matrix, camera_x_rotation_matrix);
+		look_direction = LinearAlgebra::MatxVec(camera_x_rotation_matrix, crosshair);
+		crosshair = LinearAlgebra::AddVec(camera_position, look_direction);
+		camera_position_matrix = LinearAlgebra::PointingMatrix(camera_position, crosshair, up_direction);
+		camera_view_matrix = LinearAlgebra::MatrixQuickInverse(camera_position_matrix);
     };
 
     auto drawMesh = [&] (vector<tri3> & mesh) {
         for (tri3 &tri : mesh) {
 			tri3 projected_triangles, transformed, viewable_triangles;
 
-			transformed.p[0] = MatxVec(world_bounds, tri.p[0]);
-			transformed.p[1] = MatxVec(world_bounds, tri.p[1]);
-			transformed.p[2] = MatxVec(world_bounds, tri.p[2]);
+			transformed.p[0] = LinearAlgebra::MatxVec(world_bounds, tri.p[0]);
+			transformed.p[1] = LinearAlgebra::MatxVec(world_bounds, tri.p[1]);
+			transformed.p[2] = LinearAlgebra::MatxVec(world_bounds, tri.p[2]);
 
 			// normalizar el vector
 			vec3 normal, line1, line2;
 
-			line1 = SubVec(transformed.p[1], transformed.p[0]);
-			line2 = SubVec(transformed.p[2], transformed.p[0]);
-			normal = Cross(line1, line2);
-			normal = Norm(normal);
+			line1 = LinearAlgebra::SubVec(transformed.p[1], transformed.p[0]);
+			line2 = LinearAlgebra::SubVec(transformed.p[2], transformed.p[0]);
+			normal = LinearAlgebra::Cross(line1, line2);
+			normal = LinearAlgebra::Norm(normal);
 
-			vec3 vision_line = SubVec(transformed.p[0], camera_position);
+			vec3 vision_line = LinearAlgebra::SubVec(transformed.p[0], camera_position);
             // verificar que la línea de visión no sea perpendicular (que se mire de lado)
-			if (Dot(normal, vision_line) != 0.0f) {
+			if (LinearAlgebra::Dot(normal, vision_line) != 0.0f) {
 				// introducir en el marco de la cámara
-				viewable_triangles.p[0] = MatxVec(camera_view_matrix, transformed.p[0]);
-				viewable_triangles.p[1] = MatxVec(camera_view_matrix, transformed.p[1]);
-				viewable_triangles.p[2] = MatxVec(camera_view_matrix, transformed.p[2]);
+				viewable_triangles.p[0] = LinearAlgebra::MatxVec(camera_view_matrix, transformed.p[0]);
+				viewable_triangles.p[1] = LinearAlgebra::MatxVec(camera_view_matrix, transformed.p[1]);
+				viewable_triangles.p[2] = LinearAlgebra::MatxVec(camera_view_matrix, transformed.p[2]);
 
 				// cortar triángulos si el plano de visión está muy próximo
 				int n_clipped_triangles = 0;
 				tri3 clipped[2];
-				n_clipped_triangles = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, viewable_triangles, clipped[0], clipped[1]);
+				n_clipped_triangles = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, viewable_triangles, clipped[0], clipped[1]);
 
 				// proyectar los triángulos cortados
 				for (int n = 0; n < n_clipped_triangles; n++) {
 
 					// proyección 3D en 2D
-					projected_triangles.p[0] = MatxVec(screen_projection_matrix, clipped[n].p[0]);
-					projected_triangles.p[1] = MatxVec(screen_projection_matrix, clipped[n].p[1]);
-					projected_triangles.p[2] = MatxVec(screen_projection_matrix, clipped[n].p[2]);
+					projected_triangles.p[0] = LinearAlgebra::MatxVec(screen_projection_matrix, clipped[n].p[0]);
+					projected_triangles.p[1] = LinearAlgebra::MatxVec(screen_projection_matrix, clipped[n].p[1]);
+					projected_triangles.p[2] = LinearAlgebra::MatxVec(screen_projection_matrix, clipped[n].p[2]);
 
-					projected_triangles.p[0] = VecdScalar(projected_triangles.p[0], projected_triangles.p[0].w);
-					projected_triangles.p[1] = VecdScalar(projected_triangles.p[1], projected_triangles.p[1].w);
-					projected_triangles.p[2] = VecdScalar(projected_triangles.p[2], projected_triangles.p[2].w);
+					projected_triangles.p[0] = LinearAlgebra::VecdScalar(projected_triangles.p[0], projected_triangles.p[0].w);
+					projected_triangles.p[1] = LinearAlgebra::VecdScalar(projected_triangles.p[1], projected_triangles.p[1].w);
+					projected_triangles.p[2] = LinearAlgebra::VecdScalar(projected_triangles.p[2], projected_triangles.p[2].w);
 
 					projected_triangles.p[0].x *= -1.0f;
 					projected_triangles.p[1].x *= -1.0f;
@@ -861,9 +861,9 @@ int main() {
 					projected_triangles.p[2].y *= -1.0f;
 
 					// escalar triángulos al tamaño de la pantalla
-					projected_triangles.p[0] = AddVec(projected_triangles.p[0], projection_offset);
-					projected_triangles.p[1] = AddVec(projected_triangles.p[1], projection_offset);
-					projected_triangles.p[2] = AddVec(projected_triangles.p[2], projection_offset);
+					projected_triangles.p[0] = LinearAlgebra::AddVec(projected_triangles.p[0], projection_offset);
+					projected_triangles.p[1] = LinearAlgebra::AddVec(projected_triangles.p[1], projection_offset);
+					projected_triangles.p[2] = LinearAlgebra::AddVec(projected_triangles.p[2], projection_offset);
 
 					projected_triangles.p[0].x *= 0.5f * window_settings.x_res;
 					projected_triangles.p[0].y *= 0.5f * window_settings.y_res;
@@ -908,10 +908,10 @@ int main() {
 					nNewTriangles--;
 
 					switch (p) {
-                        case 0:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 1:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, float(window_settings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 2:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 3:	nTrisToAdd = ClipTriangleAgainstPlane({ float(window_settings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 0:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 1:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, float(window_settings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 2:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
+                        case 3:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ float(window_settings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
 					}
 
 					for (int w = 0; w < nTrisToAdd; w++)
@@ -1090,7 +1090,7 @@ int main() {
                 scaleBG();
                 window_settings.x_res = event.size.width;
                 window_settings.y_res = event.size.height;
-                screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
+                screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
                 init_ui();
                 recalculateLightningVertex();
                 retypeInfo();
