@@ -18,7 +18,9 @@ Button::Button
     sf::Color color_shape,
     sf::Color color_shape_clicked,
     sf::Color color_text,
-    bool *hide
+    bool *hide,
+    std::function<bool()> isEnabled,
+    std::function<void()> onUpdate
 ) {
     this->x = &binded;
     this->colors[0] = color_shape;
@@ -34,6 +36,8 @@ Button::Button
     this->title.setPosition(shape.getPosition().x + ((shape.getSize().x - this->title.getLocalBounds().width)/2), shape.getPosition().y + ((shape.getSize().y - this->title.getLocalBounds().height)/2) - 4);
     this->isClicking = false;
     this->hide = hide;
+    this->isEnabled = isEnabled;
+    this->onUpdate = onUpdate;
 }
 
 bool Button::checkClicking (sf::Vector2i mouse, int index) {
@@ -51,13 +55,20 @@ void Button::setIsClicking (bool v, int index) {
 }
 
 bool Button::updateState () {
+    if (!isEnabled()) return false;
     bool hasChanged = false;
     if (*x != isClicking) {
         hasChanged = true;
     }
     *x = isClicking;
     shape.setFillColor(colors[isClicking]);
-    return hasChanged;
+    if (hasChanged) {
+        onUpdate();
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void Button::draw(sf::RenderWindow &window) {

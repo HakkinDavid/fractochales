@@ -16,7 +16,7 @@
 #include "includes/Switch/switch.h"
 #include "includes/Button/button.h"
 #include "includes/Achieve/achieve.h"
-#include "includes/Engine/Source.cpp"
+#include "includes/Engine/engine.h"
 #include "includes/Physics/physics.h"
 #include "includes/Controller/controller.h"
 
@@ -83,6 +83,9 @@ bool compareZOrder (tri3 &t1, tri3 &t2) {
 }
 
 int main() {
+    std::chrono::system_clock::time_point start_time;
+    std::chrono::system_clock::time_point current_timestamp;
+    bool yetToBoot = true;
     sf::VideoMode video_mode = sf::VideoMode::getDesktopMode();
     window_settings.x_res = video_mode.width;
     window_settings.y_res = video_mode.height;
@@ -302,7 +305,7 @@ int main() {
     sf::Time cycle_time_diff;
     vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-400,0,100}, projection_offset = {1,1,0};
     mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
-            screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
+            screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
     vector<tri3> raster_pipeline;
 
     const float defaultLeeway = 0.24F;
@@ -350,9 +353,9 @@ int main() {
     bool either_menu_opened = false;
     bool isMobileLandscape = false;
     bool do_spin = false;
-
-    int renderIndex = 0;
+    
     int drawPile = 0;
+    int zapCount = 0;
 
     Slider
         * alignmentSlider = nullptr,
@@ -416,13 +419,13 @@ int main() {
         for (auto &i : all_sliders) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    if (!((*i)->checkDragging(mouse_arr[0], 0))) (*i)->checkDragging(mouse_arr[1], 1);
+                    if (!((*i)->checkDragging(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkDragging(mouse_arr[1], 1);
                 break;
                 case 1: // cuando usuario desclickea
                     (*i)->setIsDragging(false, mouse_arr_index);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    if (!((*i)->updatePercentage(mouse_arr[0]))) (*i)->updatePercentage(mouse_arr[1]);
+                    if (!((*i)->updatePercentage(mouse_arr[0])) && mouse_arr[0] != mouse_arr[1]) (*i)->updatePercentage(mouse_arr[1]);
                 break;
                 case 3: // dibujar
                     (*i)->draw(*window);
@@ -437,7 +440,7 @@ int main() {
         for (auto &i : all_buttons) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    if (!((*i)->checkClicking(mouse_arr[0], 0))) (*i)->checkClicking(mouse_arr[1], 1);
+                    if (!((*i)->checkClicking(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkClicking(mouse_arr[1], 1);
                 break;
                 case 1: // cuando usuario desclickea
                     (*i)->setIsClicking(false, mouse_arr_index);
@@ -458,10 +461,10 @@ int main() {
         for (auto &i : all_switches) {
             switch (type) {
                 case 0: // cuando usuario clickea
-                    if (!((*i)->checkClicking(mouse_arr[0], 0))) (*i)->checkClicking(mouse_arr[1], 1);
+                    if (!((*i)->checkClicking(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkClicking(mouse_arr[1], 1);
                 break;
                 case 1: // cuando usuario desclickea
-                    (*i)->setIsClicking(false, mouse_arr_index);
+                    (*i)->setIsClicking(false, 0);
                 break;
                 case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
                     (*i)->updateState();
@@ -515,80 +518,6 @@ int main() {
         }
     };
 
-    auto init_ui = [&] () {
-        UI_events(-999); // delete all UI elements
-        isMobileLandscape = MOBILE && (window->getSize().x > window->getSize().y);
-        splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
-        splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
-        watermark_logo.setPosition(window->getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window->getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
-        watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
-        left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
-        right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
-        right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
-        left_menu_bg.setPosition(sf::Vector2f(0, 0));
-        lightning_scale = window->getSize().y/lightning_height;
-        alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
-        // inicializar interfaz
-        const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
-        const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);
-        const float left_slider_y_size = left_menu_bg.getSize().y*(1.f/135.f);
-        const float handle_x_size = (MOBILE ? 120 : 10);
-        const float handle_y_size = (MOBILE ? 40 : 20);
-        const float left_button_y_size = left_menu_bg.getSize().y*(0.75f/21.6f);
-        // para los deslizadores, estamos usando de posición (left_slider_x_pos, window->getSize().y * [-0.06 respecto al que está por debajo]f)
-        // deslizadores constantes
-        bool shouldInvertAlignment = alignmentOffset > 0;
-        alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window->getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window->getSize().x - lightning_width*lightning_scale), left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
-        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
-        greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
-        blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left);
-        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
-        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
-        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return !do_spin; });
-        // deslizadores de aire
-        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 0; });
-        humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 0; });
-        // deslizadores de agua
-        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, left_slider_x_pos, window->getSize().y*0.36f, 0, font, L"Temperatura (°C)", true, sf::Color(255, 142, 56), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == 1; });
-        // deslizadores de vacío
-        leewaySlider = new Slider (leeway, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
-        branchSlider = new Slider (branch, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
-        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, left_slider_x_pos, window->getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
-        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
-        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&] () { return bgIndex == voidIndex; });
-        // botones
-        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left);
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left);
-        closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White);
-        // controles
-        #if MOBILE
-            forwardButton = new Button (goForward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"↑ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            shiftButton = new Button (goDown, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"○ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            backwardButton = new Button (goBackward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-300, font, L"↓ \n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            leftButton = new Button (goLeft, 150 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"←\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            rightButton = new Button (goRight, 450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-450, font, L"→\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookupButton = new Button (lookUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-600, font, L"↥ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            runButton = new Button (goFast, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"» ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            jumpButton = new Button (goUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-450, font, L"● ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookdownButton = new Button (lookDown, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-300, font, L"↧ \n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookleftButton = new Button (lookLeft, window->getSize().x-600 * (isMobileLandscape ? 1.f : 0.875f), window->getSize().y-450, font, L"↤\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-            lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
-        #endif
-        // interruptores
-        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Giro automático", L"Giro manual", left_slider_x_size, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left);
-        hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
-        hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White);
-
-        // logros
-        chievo1 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[0]; });
-        chievo2 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&] () { return achieve_vars[1]; });
-
-        leftMenuState();
-        rightMenuState();
-    };
-    
-    init_ui();
-
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
 
@@ -611,7 +540,7 @@ int main() {
         << L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl
         << L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl
         << L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl
-        << L"Dimensión fractal: " << fixed << setprecision(6) << (*(fracs))[fracs->size()] << endl
+        << L"Dimensión fractal: " << fixed << setprecision(6) << fracs->back() << endl
         << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
         << L"FPS: " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
         if (Controller::isConnected(0)) thunder_data << L"Control conectado: " << Controller::getName(0) << endl;
@@ -727,44 +656,35 @@ int main() {
 
     generateLightning();
 
-    auto calculateMotion = [&] () {
-        forward_direction = VecxScalar(look_direction, 20.0f*cycle_time_diff.asSeconds());
-		up_direction = { 0,0,1 };
-		right_direction = Cross(look_direction, up_direction);
-		fly_up_direction = Cross(right_direction, look_direction);
-		right_direction = VecxScalar(right_direction, 20.0f*cycle_time_diff.asSeconds());
-		fly_up_direction = VecxScalar(fly_up_direction, 20.0f*cycle_time_diff.asSeconds());
-    };
-
     auto handleMovement = [&] () {
         sf::Vector2i e [2];
         bool changed = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
-			camera_position = AddVec(camera_position, fly_up_direction);
+			camera_position = LinearAlgebra::AddVec(camera_position, fly_up_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
-			camera_position = SubVec(camera_position, fly_up_direction);
+			camera_position = LinearAlgebra::SubVec(camera_position, fly_up_direction);
             changed = true;
 		}
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
-			forward_direction = VecxScalar(forward_direction, 4.f);
-            right_direction = VecxScalar(right_direction, 4.f);
+			forward_direction = LinearAlgebra::VecxScalar(forward_direction, 4.f);
+            right_direction = LinearAlgebra::VecxScalar(right_direction, 4.f);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
-			camera_position = AddVec(camera_position, forward_direction);
+			camera_position = LinearAlgebra::AddVec(camera_position, forward_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
-			camera_position = SubVec(camera_position, right_direction);
+			camera_position = LinearAlgebra::SubVec(camera_position, right_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
-			camera_position = SubVec(camera_position, forward_direction);
+			camera_position = LinearAlgebra::SubVec(camera_position, forward_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
-			camera_position = AddVec(camera_position, right_direction);
+			camera_position = LinearAlgebra::AddVec(camera_position, right_direction);
             changed = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
@@ -784,32 +704,54 @@ int main() {
             changed = true;
 		}
         if (Controller::isPressed(DS5::L2)) {
-            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200;
+            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200.f;
             else {
                 y_rotation = 2*Physics::PI;
             }
         }
         if (Controller::isPressed(DS5::R2)) {
-            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200;
+            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200.f;
             else {
                 y_rotation = 0;
             }
         }
         if (Controller::isPressed(DS5::L1)) {
-            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180;
+            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180.f;
             else {
                 x_rotation = 2*Physics::PI;
             }
         }
         if (Controller::isPressed(DS5::R1)) {
-            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180;
+            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180.f;
             else {
                 x_rotation = 0;
             }
         }
+        if (Controller::getAxisPosition(0, sf::Joystick::PovX) >= 50.f) {
+            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation -= Physics::PI/180.f;
+            else {
+                z_rotation = 2*Physics::PI;
+            }
+        }
+        if (Controller::getAxisPosition(0, sf::Joystick::PovX) <= -50.f) {
+            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation += Physics::PI/180.f;
+            else {
+                z_rotation = 0;
+            }
+        }
         if (Controller::isPressed(DS5::TRIANGLE)) {
+            bool silently_shown = hide_left;
+            hide_left = false;
             e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
             UI_events(0, e);
+            hide_left = silently_shown;
+        }
+        if (Controller::isPressed(DS5::SQUARE)) {
+            bool silently_shown = hide_left;
+            hide_left = false;
+            e[0] = sf::Vector2i(backgroundButton->getPosition().x + backgroundButton->getSize().x/2, backgroundButton->getPosition().y + backgroundButton->getSize().y/2);
+            UI_events(0, e);
+            hide_left = silently_shown;
         }
         if (Controller::isPressed(DS5::OPTIONS)) {
             e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
@@ -818,6 +760,17 @@ int main() {
         if (Controller::isPressed(DS5::CREATE)) {
             e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
             UI_events(0, e);
+        }
+        if (Controller::isPressed(DS5::PS) || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+            start_time = std::chrono::system_clock::now();
+            yetToBoot = true;
+            camera_x_rotation = 0.0f;
+            camera_y_rotation = 0.0f;
+            camera_position = {-400,0,100};
+            x_rotation = 0.0f;
+            y_rotation = 0.0f;
+            z_rotation = 0.0f;
+            alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
         }
 
 		if (camera_x_rotation >= 2.0f * 3.14159f) {
@@ -836,153 +789,140 @@ int main() {
         if (changed) retypeInfo();
     };
 
-    auto calculateCameraView = [&] {
-        y_rotation_matrix = ZRotationMatrix(y_rotation);
-		x_rotation_matrix = YRotationMatrix(x_rotation);
-		z_rotation_matrix = XRotationMatrix(z_rotation);
-		movement_matrix = TranslationMatrix(5.0f, 0.0f, 0.0f);
-		world_bounds = MatrixMultiply(x_rotation_matrix, y_rotation_matrix);
-        world_bounds = MatrixMultiply(world_bounds, z_rotation_matrix);
-		world_bounds = MatrixMultiply(world_bounds, movement_matrix);
-        crosshair = { 1,0,0 };
-		camera_x_rotation_matrix = ZRotationMatrix(-camera_x_rotation);
-		camera_y_rotation_matrix = YRotationMatrix(camera_y_rotation);
-		camera_x_rotation_matrix = MatrixMultiply(camera_y_rotation_matrix, camera_x_rotation_matrix);
-		look_direction = MatxVec(camera_x_rotation_matrix, crosshair);
-		crosshair = AddVec(camera_position, look_direction);
-		camera_position_matrix = PointingMatrix(camera_position, crosshair, up_direction);
-		camera_view_matrix = MatrixQuickInverse(camera_position_matrix);
+    auto init_ui = [&] () {
+        UI_events(-999); // delete all UI elements
+        isMobileLandscape = MOBILE && (window->getSize().x > window->getSize().y);
+        splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+        splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
+        watermark_logo.setPosition(window->getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window->getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
+        watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
+        left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
+        right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
+        right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
+        left_menu_bg.setPosition(sf::Vector2f(0, 0));
+        lightning_scale = window->getSize().y/lightning_height;
+        alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
+        // inicializar interfaz
+        const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
+        const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);
+        const float left_slider_y_size = left_menu_bg.getSize().y*(1.f/135.f);
+        const float handle_x_size = (MOBILE ? 120 : 10);
+        const float handle_y_size = (MOBILE ? 40 : 20);
+        const float left_button_y_size = left_menu_bg.getSize().y*(0.75f/21.6f);
+        // para los deslizadores, estamos usando de posición (left_slider_x_pos, window->getSize().y * [-0.06 respecto al que está por debajo]f)
+        // deslizadores constantes
+        bool shouldInvertAlignment = alignmentOffset > 0;
+        alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window->getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window->getSize().x - lightning_width*lightning_scale), left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(true); });
+        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(true); });
+        greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(true); });
+        blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(true); });
+        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; });
+        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; });
+        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; });
+        // deslizadores de aire
+        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
+        humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
+        // deslizadores de agua
+        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, left_slider_x_pos, window->getSize().y*0.36f, 0, font, L"Temperatura (°C)", true, sf::Color(255, 142, 56), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 1; });
+        // deslizadores de vacío
+        leewaySlider = new Slider (leeway, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        branchSlider = new Slider (branch, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, left_slider_x_pos, window->getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; }, [&retypeInfo] () { retypeInfo(); });
+        // botones
+        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left, [] () { return true; }, [&zap, &generateLightning, &zapCount, &achieve_vars, &sfx_i, &sound1, &sound2, &sound3] () {
+            if (zap) {
+                generateLightning();
+                zapCount++;
+                if (zapCount == 1) achieve_vars[0] = true;
+                if (zapCount == 2) achieve_vars[1] = true; // the actual numbers should be more like 1, 15, 50, 100, or something. this is just a test
+                switch (1 + sfx_i % 3) {
+                    case 1:
+                        sfx_i++;
+                        sound1.play();
+                        break;
+                    case 2:
+                        sfx_i++;
+                        sound2.play();
+                        break;
+                    case 3:
+                        sfx_i++;
+                        sound3.play();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &scaleBG, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature] () {
+            if (switchingBG) {
+                bgIndex++;
+                if (bg[bgIndex] == nullptr) bgIndex = 0;
+                background.setTexture(*bg[bgIndex]);
+
+                scaleBG();
+
+                current_environmental_factor = environmental_factors[bgIndex];
+                leeway = leeway_in_environment[bgIndex];
+                branch = branch_in_environment[bgIndex];
+                downWeight = weight_in_environment[bgIndex];
+                forcedHeight = height_in_environment[bgIndex];
+                crystallizate = 0;
+                humidity = 0.9F;
+                temperature = 15.0F;
+            }
+        });
+        closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White, nullptr, [] () { return true; }, [&attemptClose, &start_time] () {
+            if (attemptClose) {
+                start_time = std::chrono::system_clock::now();
+            }
+        });
+        // controles
+        #if MOBILE
+            forwardButton = new Button (goForward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"↑ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            shiftButton = new Button (goDown, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"○ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            backwardButton = new Button (goBackward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-300, font, L"↓ \n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            leftButton = new Button (goLeft, 150 * (isMobileLandscape ? 1.f : 0.5f), window->getSize().y-450, font, L"←\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            rightButton = new Button (goRight, 450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-450, font, L"→\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookupButton = new Button (lookUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-600, font, L"↥ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            runButton = new Button (goFast, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"» ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            jumpButton = new Button (goUp, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-450, font, L"● ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookdownButton = new Button (lookDown, window->getSize().x-450 * (isMobileLandscape ? 1.f : 0.8333f), window->getSize().y-300, font, L"↧ \n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookleftButton = new Button (lookLeft, window->getSize().x-600 * (isMobileLandscape ? 1.f : 0.875f), window->getSize().y-450, font, L"↤\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+            lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
+        #endif
+        // interruptores
+        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Giro automático", L"Giro manual", left_slider_x_size, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left, [] () { return true; }, [&x_rotation, &y_rotation, &z_rotation] () {
+            x_rotation = 0.f;
+            y_rotation = 0.f;
+            z_rotation = 0.f;
+        });
+        hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&leftMenuState, &rightMenuState, &hide_left, &hide_right, &either_menu_opened] () {
+            leftMenuState();
+            rightMenuState();
+            if (hide_left && hide_right) either_menu_opened = false;
+            else either_menu_opened = true;
+        });
+        hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&leftMenuState, &rightMenuState, &hide_left, &hide_right, &either_menu_opened] () {
+            leftMenuState();
+            rightMenuState();
+            if (hide_left && hide_right) either_menu_opened = false;
+            else either_menu_opened = true;
+        });
+
+        // logros
+        chievo1 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[0]; });
+        chievo2 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[1]; });
+
+        leftMenuState();
+        rightMenuState();
     };
+    
+    init_ui();
 
-    auto drawMesh = [&] (vector<tri3> & mesh) {
-        for (tri3 &tri : mesh) {
-			tri3 projected_triangles, transformed, viewable_triangles;
-
-			transformed.p[0] = MatxVec(world_bounds, tri.p[0]);
-			transformed.p[1] = MatxVec(world_bounds, tri.p[1]);
-			transformed.p[2] = MatxVec(world_bounds, tri.p[2]);
-
-			// normalizar el vector
-			vec3 normal, line1, line2;
-
-			line1 = SubVec(transformed.p[1], transformed.p[0]);
-			line2 = SubVec(transformed.p[2], transformed.p[0]);
-			normal = Cross(line1, line2);
-			normal = Norm(normal);
-
-			vec3 vision_line = SubVec(transformed.p[0], camera_position);
-            // verificar que la línea de visión no sea perpendicular (que se mire de lado)
-			if (Dot(normal, vision_line) != 0.0f) {
-				// introducir en el marco de la cámara
-				viewable_triangles.p[0] = MatxVec(camera_view_matrix, transformed.p[0]);
-				viewable_triangles.p[1] = MatxVec(camera_view_matrix, transformed.p[1]);
-				viewable_triangles.p[2] = MatxVec(camera_view_matrix, transformed.p[2]);
-
-				// cortar triángulos si el plano de visión está muy próximo
-				int n_clipped_triangles = 0;
-				tri3 clipped[2];
-				n_clipped_triangles = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, viewable_triangles, clipped[0], clipped[1]);
-
-				// proyectar los triángulos cortados
-				for (int n = 0; n < n_clipped_triangles; n++) {
-
-					// proyección 3D en 2D
-					projected_triangles.p[0] = MatxVec(screen_projection_matrix, clipped[n].p[0]);
-					projected_triangles.p[1] = MatxVec(screen_projection_matrix, clipped[n].p[1]);
-					projected_triangles.p[2] = MatxVec(screen_projection_matrix, clipped[n].p[2]);
-
-					projected_triangles.p[0] = VecdScalar(projected_triangles.p[0], projected_triangles.p[0].w);
-					projected_triangles.p[1] = VecdScalar(projected_triangles.p[1], projected_triangles.p[1].w);
-					projected_triangles.p[2] = VecdScalar(projected_triangles.p[2], projected_triangles.p[2].w);
-
-					projected_triangles.p[0].x *= -1.0f;
-					projected_triangles.p[1].x *= -1.0f;
-					projected_triangles.p[2].x *= -1.0f;
-					projected_triangles.p[0].y *= -1.0f;
-					projected_triangles.p[1].y *= -1.0f;
-					projected_triangles.p[2].y *= -1.0f;
-
-					// escalar triángulos al tamaño de la pantalla
-					projected_triangles.p[0] = AddVec(projected_triangles.p[0], projection_offset);
-					projected_triangles.p[1] = AddVec(projected_triangles.p[1], projection_offset);
-					projected_triangles.p[2] = AddVec(projected_triangles.p[2], projection_offset);
-
-					projected_triangles.p[0].x *= 0.5f * window_settings.x_res;
-					projected_triangles.p[0].y *= 0.5f * window_settings.y_res;
-					projected_triangles.p[1].x *= 0.5f * window_settings.x_res;
-					projected_triangles.p[1].y *= 0.5f * window_settings.y_res;
-					projected_triangles.p[2].x *= 0.5f * window_settings.x_res;
-					projected_triangles.p[2].y *= 0.5f * window_settings.y_res;
-
-					projected_triangles.color_A[0] = tri.color_A[0];
-                    projected_triangles.color_B[0] = tri.color_B[0];
-                    projected_triangles.color_C[0] = tri.color_C[0];
-                    projected_triangles.color_A[1] = tri.color_A[1];
-                    projected_triangles.color_B[1] = tri.color_B[1];
-                    projected_triangles.color_C[1] = tri.color_C[1];
-                    projected_triangles.color_A[2] = tri.color_A[2];
-                    projected_triangles.color_B[2] = tri.color_B[2];
-                    projected_triangles.color_C[2] = tri.color_C[2];
-                    projected_triangles.color_A[3] = tri.color_A[3];
-                    projected_triangles.color_B[3] = tri.color_B[3];
-                    projected_triangles.color_C[3] = tri.color_C[3];
-
-					// enviar a rasterizado
-					raster_pipeline.push_back(projected_triangles);
-				}
-			}
-		}
-    };
-
-    auto rasterVector = [&] () {
-        for (const tri3 &triToRaster : raster_pipeline) {
-			tri3 clipped[2];
-			list<tri3> listTriangles;
-
-			listTriangles.push_back(triToRaster);
-			int nNewTriangles = 1;
-
-			for (int p = 0; p < 4; p++) {
-				int nTrisToAdd = 0;
-				while (nNewTriangles > 0) {
-					tri3 test = listTriangles.front();
-					listTriangles.pop_front();
-					nNewTriangles--;
-
-					switch (p) {
-                        case 0:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 1:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, float(window_settings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 2:	nTrisToAdd = ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-                        case 3:	nTrisToAdd = ClipTriangleAgainstPlane({ float(window_settings.x_res) - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]); break;
-					}
-
-					for (int w = 0; w < nTrisToAdd; w++)
-						listTriangles.push_back(clipped[w]);
-				}
-				nNewTriangles = listTriangles.size();
-			}
-
-			for (auto &Final : listTriangles) {
-				// dibujar los triángulos finales en la pantalla
-				sf::VertexArray poly(sf::Triangles, 3);
-
-				poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
-				poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
-				poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
-				poly[0].color = sf::Color(Final.color_A[0], Final.color_A[1], Final.color_A[2], Final.color_A[3]);
-				poly[1].color = sf::Color(Final.color_B[0], Final.color_B[1], Final.color_B[2], Final.color_B[3]);
-				poly[2].color = sf::Color(Final.color_C[0], Final.color_C[1], Final.color_C[2], Final.color_C[3]);
-
-				window->draw(poly);
-			}
-		}
-    };
-
-    bool yetToBoot = true;
-    int zapCount = 0;
-
-    auto start_time = std::chrono::system_clock::now();
-    auto current_timestamp = start_time;
+    start_time = std::chrono::system_clock::now();
+    current_timestamp = start_time;
     int64_t elapsed = 0;
 
     sf::Clock clock;
@@ -1002,7 +942,7 @@ int main() {
                 scaleBG();
                 window_settings.x_res = event.size.width;
                 window_settings.y_res = event.size.height;
-                screen_projection_matrix = ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
+                screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
                 init_ui();
                 recalculateLightningVertex();
                 retypeInfo();
@@ -1066,6 +1006,9 @@ int main() {
         if (sf::Touch::isDown(1)) {
             mousepos_update[1] = sf::Touch::getPosition(1, *window);
         }
+        else {
+            mousepos_update[1] = mousepos_update[0];
+        }
 
         // si el usuario está haciendo click izquierdo o tocando
         if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left || event.type == sf::Event::TouchBegan){
@@ -1082,109 +1025,22 @@ int main() {
         }
 
         // controles de movimiento
-        calculateMotion();
+        Engine :: calculateMotion(forward_direction, look_direction, up_direction, right_direction, fly_up_direction, cycle_time_diff);
         handleMovement();
-        calculateCameraView();
+        Engine :: calculateCameraView (y_rotation_matrix, y_rotation, x_rotation_matrix, x_rotation, z_rotation_matrix, z_rotation, movement_matrix, world_bounds, crosshair, camera_x_rotation_matrix, camera_x_rotation, camera_y_rotation_matrix, camera_y_rotation, look_direction, camera_position, camera_position_matrix, up_direction, camera_view_matrix);
 
-        if (backgroundButton->updateState() && switchingBG) {
-            bgIndex++;
-            if (bg[bgIndex] == nullptr) bgIndex = 0;
-            background.setTexture(*bg[bgIndex]);
-
-            scaleBG();
-
-            current_environmental_factor = environmental_factors[bgIndex];
-            leeway = leeway_in_environment[bgIndex];
-            branch = branch_in_environment[bgIndex];
-            downWeight = weight_in_environment[bgIndex];
-            forcedHeight = height_in_environment[bgIndex];
-            crystallizate = 0;
-            humidity = 0.9F;
-            temperature = 15.0F;
-        }
-
-        if (envfactorSlider->updatePercentage(mousepos_update[0])) {
-            retypeInfo();
-        }
-        
-        if (alignmentSlider->updatePercentage(mousepos_update[0]) || redSlider->updatePercentage(mousepos_update[0]) || greenSlider->updatePercentage(mousepos_update[0]) || blueSlider->updatePercentage(mousepos_update[0])) {
-            recalculateLightningVertex(true);
-        }
-        leewaySlider->updatePercentage(mousepos_update[0]);
-        branchSlider->updatePercentage(mousepos_update[0]);
-        downWeightSlider->updatePercentage(mousepos_update[0]);
-        forcedHeightSlider->updatePercentage(mousepos_update[0]);
-        crystallizateSlider->updatePercentage(mousepos_update[0]);
-        humiditySlider->updatePercentage(mousepos_update[0]);
-        temperatureSlider->updatePercentage(mousepos_update[0]);
-        xRotationSlider->updatePercentage(mousepos_update[0]);
-        yRotationSlider->updatePercentage(mousepos_update[0]);
-        zRotationSlider->updatePercentage(mousepos_update[0]);
-        #if MOBILE
-            forwardButton->updateState();
-            backwardButton->updateState();
-            leftButton->updateState();
-            rightButton->updateState();
-            lookupButton->updateState();
-            lookdownButton->updateState();
-            lookleftButton->updateState();
-            lookrightButton->updateState();
-            shiftButton->updateState();
-            jumpButton->updateState();
-            runButton->updateState();
-        #endif
-
-        if (spin_switch->updateState()) {
-            x_rotation = 0.f;
-            y_rotation = 0.f;
-            z_rotation = 0.f;
-        }
-
-        if (hide_left_switch->updateState() || hide_right_switch->updateState()) {
-            leftMenuState();
-            rightMenuState();
-            if (hide_left && hide_right) either_menu_opened = false;
-            else either_menu_opened = true;
-        }
-
-        if (closeButton->updateState() && attemptClose) {
-            start_time = std::chrono::system_clock::now();
-        }
-        
-        if (zapping->updateState() && zap){
-            generateLightning();
-            zapCount++;
-            if (zapCount == 1) achieve_vars[0] = true;
-            if (zapCount == 2) achieve_vars[1] = true; // the actual numbers should be more like 1, 15, 50, 100, or something. this is just a test
-            window->clear(sf::Color::White);
-            switch (1 + sfx_i % 3) {
-                case 1:
-                    sfx_i++;
-                    sound1.play();
-                    break;
-                case 2:
-                    sfx_i++;
-                    sound2.play();
-                    break;
-                case 3:
-                    sfx_i++;
-                    sound3.play();
-                    break;
-                default:
-                    break;
-            }
-        }
+        UI_events(2, mousepos_update);
 
         window->clear();
         window->draw(background);
 
 		// dibujar objetos
         // drawMesh(box);
-		drawMesh(thunder);
+		Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
 		sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
 
-		rasterVector();
+		Engine :: rasterVector(raster_pipeline, window, window_settings);
 
         raster_pipeline.clear();
 
