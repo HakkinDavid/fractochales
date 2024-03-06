@@ -294,7 +294,7 @@ int main() {
                 box_C [4] = {255,0,0,255};
     vector<tri3> box = {tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C)}; // mimundo
     */
-    Point ** grid = storm.getGrid();
+    vector<vector<int>> * canonVertices = storm.getCanonVertices();
     vector<float> * fracs = storm.getFracs();
 
     // cosas así bien tridimensionales
@@ -656,6 +656,10 @@ int main() {
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
     };
 
+    // ============================================================
+    //                          IMPORTANT:
+    // yo deivid i need you to change this to use the canonVertices
+    // ============================================================
     auto recalculateLightningVertex = [&] (bool skipRedraw = false) {
         thunder.clear();
         const int z_index = 0;
@@ -703,13 +707,13 @@ int main() {
 
     auto generateLightning = [&] () {
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
-        for (int i = 0; i < storm.getHei(); i++) {
+        /*for (int i = 0; i < storm.getHei(); i++) {
             delete [] grid[i]; // liberar memoria usada en el rayo anterior
-        }
-        delete [] grid;
+        }*/
+        canonVertices->clear();
         fracs->clear();
         storm = Lightning(lightning_height, lightning_width, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), forcedHeight+((temperature-15)*0.02f));
-        grid = storm.getGrid();
+        canonVertices = storm.getCanonVertices();
         fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
@@ -1208,7 +1212,7 @@ int main() {
     // liberar memoria
     UI_events(-999); // delete all UI elements
     delete [] direction;
-    // delete fracs somehow
+    canonVertices->clear();
     fracs->clear();
     raster_pipeline.clear();
     thunder.clear();
