@@ -302,9 +302,9 @@ int main() {
     vector<float> * fracs = storm.getFracs();
 
     // cosas así bien tridimensionales
-	float camera_x_rotation = 0.0f, camera_y_rotation = 0.0f;
+	float camera_x_rotation, camera_y_rotation;
     sf::Time cycle_time_diff;
-    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position = {-400,0,100}, projection_offset = {1,1,0};
+    vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position, projection_offset = {1,1,0};
     mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
             screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
     vector<tri3> raster_pipeline;
@@ -645,141 +645,14 @@ int main() {
 
     generateLightning();
 
-    auto handleMovement = [&] () {
-        sf::Vector2i e [2];
-        bool changed = false;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
-			camera_position = LinearAlgebra::AddVec(camera_position, fly_up_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
-			camera_position = LinearAlgebra::SubVec(camera_position, fly_up_direction);
-            changed = true;
-		}
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
-			forward_direction = LinearAlgebra::VecxScalar(forward_direction, 4.f);
-            right_direction = LinearAlgebra::VecxScalar(right_direction, 4.f);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
-			camera_position = LinearAlgebra::AddVec(camera_position, forward_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
-			camera_position = LinearAlgebra::SubVec(camera_position, right_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
-			camera_position = LinearAlgebra::SubVec(camera_position, forward_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
-			camera_position = LinearAlgebra::AddVec(camera_position, right_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
-			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight || Controller::getAxisPosition(0, sf::Joystick::Z) >= 50.f) {
-			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp || Controller::getAxisPosition(0, sf::Joystick::R) <= -50.f) {
-			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown || Controller::getAxisPosition(0, sf::Joystick::R) >= 50.f) {
-			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-        if (Controller::isPressed(DS5::L2)) {
-            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200.f;
-            else {
-                y_rotation = 2*Physics::PI;
-            }
-        }
-        if (Controller::isPressed(DS5::R2)) {
-            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200.f;
-            else {
-                y_rotation = 0;
-            }
-        }
-        if (Controller::isPressed(DS5::L1)) {
-            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180.f;
-            else {
-                x_rotation = 2*Physics::PI;
-            }
-        }
-        if (Controller::isPressed(DS5::R1)) {
-            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180.f;
-            else {
-                x_rotation = 0;
-            }
-        }
-        if (Controller::getAxisPosition(0, sf::Joystick::PovX) >= 50.f) {
-            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation -= Physics::PI/180.f;
-            else {
-                z_rotation = 2*Physics::PI;
-            }
-        }
-        if (Controller::getAxisPosition(0, sf::Joystick::PovX) <= -50.f) {
-            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation += Physics::PI/180.f;
-            else {
-                z_rotation = 0;
-            }
-        }
-        if (Controller::isPressed(DS5::TRIANGLE)) {
-            bool silently_shown = hide_left;
-            hide_left = false;
-            e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
-            UI_events(0, e);
-            hide_left = silently_shown;
-        }
-        if (Controller::isPressed(DS5::SQUARE)) {
-            bool silently_shown = hide_left;
-            hide_left = false;
-            e[0] = sf::Vector2i(backgroundButton->getPosition().x + backgroundButton->getSize().x/2, backgroundButton->getPosition().y + backgroundButton->getSize().y/2);
-            UI_events(0, e);
-            hide_left = silently_shown;
-        }
-        if (Controller::isPressed(DS5::OPTIONS)) {
-            e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
-            UI_events(0, e);
-        }
-        if (Controller::isPressed(DS5::CREATE)) {
-            e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
-            UI_events(0, e);
-        }
-        if (Controller::isPressed(DS5::PS) || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-            start_time = std::chrono::system_clock::now();
-            yetToBoot = true;
-            camera_x_rotation = 0.0f;
-            camera_y_rotation = 0.0f;
-            camera_position = {-400,0,100};
-            x_rotation = 0.0f;
-            y_rotation = 0.0f;
-            z_rotation = 0.0f;
-            alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
-        }
-
-		if (camera_x_rotation >= 2.0f * 3.14159f) {
-			camera_x_rotation -= 2.0f * 3.14159f;
-		}
-		if (camera_x_rotation <= 0.0f) {
-			camera_x_rotation += 2.0f * 3.14159f;
-		}
-		if (camera_y_rotation >= 3.14159f / 2.0f) {
-			camera_y_rotation = 3.14100f / 2.0f;
-		}
-		if (camera_y_rotation <= -3.14159f / 2.0f) {
-			camera_y_rotation = -3.14100f / 2.0f;
-		}
-
-        if (changed) retypeInfo();
-    };
-
     auto init_ui = [&] () {
         UI_events(-999); // delete all UI elements
+        camera_position = {-400,0,100};
+        camera_x_rotation = 0.0f;
+        camera_y_rotation = 0.0f;
+        x_rotation = 0.0f;
+        y_rotation = 0.0f;
+        z_rotation = 0.0f;
         isMobileLandscape = MOBILE && (window->getSize().x > window->getSize().y);
         splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
         splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
@@ -909,6 +782,133 @@ int main() {
     };
     
     init_ui();
+
+    auto handleMovement = [&] () {
+        sf::Vector2i e [2];
+        bool changed = false;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
+			camera_position = LinearAlgebra::AddVec(camera_position, fly_up_direction);
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
+			camera_position = LinearAlgebra::SubVec(camera_position, fly_up_direction);
+            changed = true;
+		}
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
+			forward_direction = LinearAlgebra::VecxScalar(forward_direction, 4.f);
+            right_direction = LinearAlgebra::VecxScalar(right_direction, 4.f);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
+			camera_position = LinearAlgebra::AddVec(camera_position, forward_direction);
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
+			camera_position = LinearAlgebra::SubVec(camera_position, right_direction);
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
+			camera_position = LinearAlgebra::SubVec(camera_position, forward_direction);
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
+			camera_position = LinearAlgebra::AddVec(camera_position, right_direction);
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
+			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight || Controller::getAxisPosition(0, sf::Joystick::Z) >= 50.f) {
+			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp || Controller::getAxisPosition(0, sf::Joystick::R) <= -50.f) {
+			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown || Controller::getAxisPosition(0, sf::Joystick::R) >= 50.f) {
+			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
+            changed = true;
+		}
+        if (Controller::isPressed(DS5::L2)) {
+            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200.f;
+            else {
+                y_rotation = 2*Physics::PI;
+            }
+        }
+        if (Controller::isPressed(DS5::R2)) {
+            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200.f;
+            else {
+                y_rotation = 0;
+            }
+        }
+        if (Controller::isPressed(DS5::L1)) {
+            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180.f;
+            else {
+                x_rotation = 2*Physics::PI;
+            }
+        }
+        if (Controller::isPressed(DS5::R1)) {
+            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180.f;
+            else {
+                x_rotation = 0;
+            }
+        }
+        if (Controller::getAxisPosition(0, sf::Joystick::PovX) >= 50.f) {
+            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation -= Physics::PI/180.f;
+            else {
+                z_rotation = 2*Physics::PI;
+            }
+        }
+        if (Controller::getAxisPosition(0, sf::Joystick::PovX) <= -50.f) {
+            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation += Physics::PI/180.f;
+            else {
+                z_rotation = 0;
+            }
+        }
+        if (Controller::isPressed(DS5::TRIANGLE)) {
+            bool silently_shown = hide_left;
+            hide_left = false;
+            e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
+            UI_events(0, e);
+            hide_left = silently_shown;
+        }
+        if (Controller::isPressed(DS5::SQUARE)) {
+            bool silently_shown = hide_left;
+            hide_left = false;
+            e[0] = sf::Vector2i(backgroundButton->getPosition().x + backgroundButton->getSize().x/2, backgroundButton->getPosition().y + backgroundButton->getSize().y/2);
+            UI_events(0, e);
+            hide_left = silently_shown;
+        }
+        if (Controller::isPressed(DS5::OPTIONS)) {
+            e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
+            UI_events(0, e);
+        }
+        if (Controller::isPressed(DS5::CREATE)) {
+            e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
+            UI_events(0, e);
+        }
+        if (Controller::isPressed(DS5::PS) || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+            start_time = std::chrono::system_clock::now();
+            yetToBoot = true;
+            init_ui();
+        }
+
+		if (camera_x_rotation >= 2.0f * 3.14159f) {
+			camera_x_rotation -= 2.0f * 3.14159f;
+		}
+		if (camera_x_rotation <= 0.0f) {
+			camera_x_rotation += 2.0f * 3.14159f;
+		}
+		if (camera_y_rotation >= 3.14159f / 2.0f) {
+			camera_y_rotation = 3.14100f / 2.0f;
+		}
+		if (camera_y_rotation <= -3.14159f / 2.0f) {
+			camera_y_rotation = -3.14100f / 2.0f;
+		}
+
+        if (changed) retypeInfo();
+    };
 
     start_time = std::chrono::system_clock::now();
     current_timestamp = start_time;
