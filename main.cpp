@@ -598,13 +598,13 @@ int main() {
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale);
             const float thickness = (2.f);
             const vec3  vA (start_z, start_x, start_y),
-                        vB (end_z, end_x, end_y + thickness),
+                        vB (start_z, end_x, end_y + thickness),
                         vC (start_z, start_x + thickness, start_y),
-                        vD (end_z, end_x + thickness, end_y + thickness),
-                        vE (start_z + thickness, start_x, start_y),
-                        vF (end_z + thickness, end_x, end_y + thickness),
-                        vG (start_z + thickness, start_x + thickness, start_y),
-                        vH (end_z + thickness, end_x + thickness, end_y + thickness);
+                        vD (start_z, end_x + thickness, end_y + thickness),
+                        vE (end_z, start_x, start_y),
+                        vF (end_z, end_x, end_y + thickness),
+                        vG (end_z, start_x + thickness, start_y),
+                        vH (end_z, end_x + thickness, end_y + thickness);
             // frontface (a.k.a. main lightning)
             thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
             thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);
