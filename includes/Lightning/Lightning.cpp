@@ -336,12 +336,13 @@ void Lightning::fractalComp(void){
     }
 
     // Trace the main branch path in fractalGrid
-    branches[dex].swap(branches.back());
-    branches.pop_back();
-    int currX = get<0>(mainB);
-    int currY = get<1>(mainB);
-    int antX = 0, antY = 0;
+    //branches[dex].swap(branches.back()); // this is broken
+    //branches.pop_back(); // this is broken
+    int currX = mainB[0];
+    int currY = mainB[1];
+    int antX = 0, antY = wid/2;
     fractalGrid[currX][currY] = -1;
+    // while loop was stuck, make sure to adapt this back
     while(currX != 0 || currY != wid/2){
         //antX = grid[currX][currY].getPrevX();
         //antY = grid[currX][currY].getPrevY();
