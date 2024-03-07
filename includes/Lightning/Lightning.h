@@ -7,8 +7,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <tuple>
 #include <vector>
+#include <array>
 #include <utility>
 using namespace std;
 
@@ -25,8 +25,8 @@ private:
     float leeway;
     float branch;
     int lightPoints;
-    vector<tuple<int, int, int>> branches;
-    vector<vector<int>> canonVertices;
+    vector<array<int, 3>> branches;
+    vector<array<int, 3>> canonVertices;
     vector<float> fracs;
 
     float gridHeightInMeters;
@@ -48,7 +48,7 @@ public:
     bool*** getLightGrid(void);
     float*** getRandGrid(void);
     int getN(void);
-    vector<vector<int>>* getCanonVertices(void);
+    vector<array<int, 3>>* getCanonVertices(void);
     vector<float>* getFracs(void);
 
     void randomize(void);
