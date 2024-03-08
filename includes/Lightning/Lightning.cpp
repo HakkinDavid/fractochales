@@ -25,6 +25,9 @@ Lightning::Lightning(int hei, int wid, int dep, float leeway, float branch, floa
 		this->lightGrid[i] = new bool* [this->wid];
         for (int j = 0; j < this->wid; j++) {
             this->lightGrid[i][j] = new bool[this->dep];
+            for (int k = 0; k < this->dep; k++){
+                lightGrid[i][j][k] = false;
+            }
         }
 	}
     this->randGrid = new float** [this->hei];
@@ -90,7 +93,7 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
         // Determine valid neighbors based on direction
         int piece = 0;
         for(int i=0; i<3; i++){
-            if(diff[i] != 0) piece++;  
+            if(diff[i] != 0){ piece++; }  
         }
         switch(piece){
             case 1:
@@ -145,10 +148,12 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
 
         // Find the path of least resistance
         for(int i=0; i<key; i++){
-            if(neighbors[i][0] < 0 || neighbors[i][0] >= hei || neighbors[i][1] < 0 || neighbors[i][1] >= wid || neighbors[i][2] < 0 || neighbors[i][2] >= dep || lightGrid[neighbors[i][0]][neighbors[i][1]][neighbors[i][2]]){
+            if(neighbors[i][0] < 0 || neighbors[i][0] >= hei || 
+               neighbors[i][1] < 0 || neighbors[i][1] >= wid || 
+               neighbors[i][2] < 0 || neighbors[i][2] >= dep){
                 neighbors[i--].swap(neighbors[--key]);
             }
-            else if(tag && (neighbors[i][0] - x) < 1){
+            else if((tag && (neighbors[i][0] - x) < 1) || lightGrid[neighbors[i][0]][neighbors[i][1]][neighbors[i][2]]){
                 neighbors[i--].swap(neighbors[--key]);
             }
             else{
@@ -202,14 +207,14 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
 void Lightning::superTraverse(){
     vector<array<int, 3>> origins;
     float originVal[9] = {0};
-    int min = 9, key = 0, x = 0, y = 0, z = 0;
+    int min = 9, x = 0, y = 0, z = 0;
     int midwid = wid/2, middep = dep/2;
 
     // Start of lightning at top center of screen
     lightGrid[0][midwid][middep] = true;
     canonVertices.push_back({0, midwid, middep});
     lightPoints++;
-    for(int i=0; i < 9; i++){ origins.push_back({0, midwid, middep}); }
+    for(int i=0; i < 9; i++){ origins.push_back({1, midwid, middep}); }
     origins[0][1] += 1; origins[1][1] += 1; origins[2][1] += 1;
     origins[6][1] -= 1; origins[7][1] -= 1; origins[8][1] -= 1;
     origins[0][2] += 1; origins[3][2] += 1; origins[6][2] += 1;

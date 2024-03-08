@@ -34,7 +34,7 @@ private:
     float downWeight;
 
 public:
-    Lightning(int hei = 181, int wid = 257, int dep = 40, float leeway = 0.24, float branch = 0.12, float downWeight = 0, float forcedHeight = 0.75, float gridHeightInMeters = 5000);
+    Lightning(int hei = 181, int wid = 257, int dep = 181, float leeway = 0.24, float branch = 0.12, float downWeight = 0, float forcedHeight = 0.75, float gridHeightInMeters = 5000);
     ~Lightning();
 
     void setLeeway(float);
