@@ -2,6 +2,32 @@
     "tasks": [
         {
             "type": "cppbuild",
+            "label": "(No window) Playground Build",
+            "command": "g++",
+            "args": [
+                "includes/Lightning/Lightning.cpp",
+                "includes/Physics/physics.cpp",
+                "nowindow.cpp",
+                "-Iincludes/",
+                "-Iincludes/Lightning",
+                "-Iincludes/Physics",
+                "icon.res",
+                "-o",
+                "${workspaceFolder}\\test.exe",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "type": "cppbuild",
             "label": "(Windows) SFML Build",
             "command": "g++",
             "args": [

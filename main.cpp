@@ -711,7 +711,7 @@ int main() {
         fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
-        //storm.superTraverse(); 
+        storm.superTraverse(); 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         direction = storm.directionComp();
         storm.fractalComp();
