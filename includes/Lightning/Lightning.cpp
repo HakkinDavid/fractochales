@@ -145,8 +145,7 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
 
         // Find the path of least resistance
         for(int i=0; i<key; i++){
-            if(lightGrid[neighbors[i][0]][neighbors[i][0]][neighbors[i][0]] || neighbors[i][0] < 0 || neighbors[i][0] >= hei ||
-               neighbors[i][1] < 0 || neighbors[i][1] >= wid || neighbors[i][2] < 0 || neighbors[i][2] >= dep){
+            if(neighbors[i][0] < 0 || neighbors[i][0] >= hei || neighbors[i][1] < 0 || neighbors[i][1] >= wid || neighbors[i][2] < 0 || neighbors[i][2] >= dep || lightGrid[neighbors[i][0]][neighbors[i][1]][neighbors[i][2]]){
                 neighbors[i--].swap(neighbors[--key]);
             }
             else if(tag && (neighbors[i][0] - x) < 1){
@@ -322,12 +321,14 @@ void Lightning::fractalComp(void){
         int currX = branches[i][0];
         int currY = branches[i][1];
         int currLen = 0, antX = 0, antY = 0;
+        /* tf was this
         while(currX != 0 || currY != wid/2){
             //antX = grid[currX][currY].getPrevX();
             //antY = grid[currX][currY].getPrevY();
             currX = antX; currY = antY;
             currLen++;
         }
+        */
         if(currLen > mainLen){ 
             mainLen = currLen;
             mainB = branches[i];

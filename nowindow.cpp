@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include "includes/Lightning/Lightning.h"
+#include <fstream>
 
 int main () {
     Lightning storm;
@@ -49,5 +50,11 @@ int main () {
     direction = storm.directionComp();
     std::cout << " ✅\nComputando dimensión fractal";
     storm.fractalComp();
-    std::cout << " ✅\n";
+    std::cout << " ✅\nImprimiendo canonVertices";
+    std::ofstream output("outputtest.txt");
+    for (int i=0; i<canonVertices->size(); i+=2) {
+        output << " " << canonVertices->at(i)[0] << " " << canonVertices->at(i)[1] << " " << canonVertices->at(i)[2] << "; " << canonVertices->at(i+1)[0] << " " << canonVertices->at(i+1)[1] << " " << canonVertices->at(i+1)[2] << "\n";
+    }
+    output.close();
+    std::cout << " ✅";
 }
