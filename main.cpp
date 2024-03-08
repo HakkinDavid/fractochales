@@ -605,11 +605,16 @@ int main() {
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
     };
 
-    auto recalculateLightningVertex = [&thunder, &lightning_stream_obj, &lightning_stream_mtl, &lightning_color, &lightning_scale, &canonVertices, &alignmentOffset] () {
-        thunder.clear();
-        lightning_stream_obj.str(std::wstring());
-        lightning_stream_mtl.str(std::wstring());
+    auto recalculateLightningVertex =
+        [&thunder,
         #if !MOBILE
+            &lightning_stream_obj, &lightning_stream_mtl,
+        #endif
+        &lightning_color, &lightning_scale, &canonVertices, &alignmentOffset] () {
+        thunder.clear();
+        #if !MOBILE
+            lightning_stream_obj.str(std::wstring());
+            lightning_stream_mtl.str(std::wstring());
             lightning_stream_obj
                 << L"# FRACTOCHALES v"
                 << fixed << setprecision(2)
@@ -788,16 +793,24 @@ int main() {
                 }
             }
         });
-        write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(12.f/12.f), window->getSize().y*0.93f, font, L"Exportar OBJ", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(100,100,100), sf::Color(200,200,200), sf::Color::White, &hide_left, [] () { return !MOBILE; }, [&write_obj, &lightning_stream_obj, &lightning_stream_mtl] () {
-            if (write_obj) {
-                std::wofstream lightning_obj (newObjFileName(), std::wofstream::trunc);
-                std::wofstream lightning_mtl (newObjFileName(true), std::wofstream::trunc);
-                lightning_obj << lightning_stream_obj.str();
-                lightning_mtl << lightning_stream_mtl.str();
-                lightning_obj.close();
-                lightning_mtl.close();
-                new_obj_index++;
-            }
+        write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(1.f/2.f), window->getSize().y*0.89f, font, L"Exportar OBJ", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100,100,100, (MOBILE ? 63.75f : 255.f)), sf::Color(200,200,200), sf::Color(255.f,255.f,255.f, (MOBILE ? 63.75f : 255.f)), &hide_left, [] () { return !MOBILE; },
+            [
+                #if !MOBILE
+                    &lightning_stream_obj, &lightning_stream_mtl,
+                #endif
+                &write_obj
+            ] () {
+            #if !MOBILE
+                if (write_obj) {
+                    std::wofstream lightning_obj (newObjFileName(), std::wofstream::trunc);
+                    std::wofstream lightning_mtl (newObjFileName(true), std::wofstream::trunc);
+                    lightning_obj << lightning_stream_obj.str();
+                    lightning_mtl << lightning_stream_mtl.str();
+                    lightning_obj.close();
+                    lightning_mtl.close();
+                    new_obj_index++;
+                }
+            #endif
         });
         backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &scaleBG, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature] () {
             if (switchingBG) {
@@ -837,7 +850,7 @@ int main() {
             lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
         #endif
         // interruptores
-        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.88f, font, L"Giro automático", L"Giro manual", left_slider_x_size, left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left, [] () { return true; }, [&x_rotation, &y_rotation, &z_rotation] () {
+        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.89f, font, L"Giro automático", L"Giro manual", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left, [] () { return true; }, [&x_rotation, &y_rotation, &z_rotation] () {
             x_rotation = 0.f;
             y_rotation = 0.f;
             z_rotation = 0.f;
