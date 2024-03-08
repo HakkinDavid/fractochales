@@ -95,6 +95,13 @@ bool compareZOrder (tri3 &t1, tri3 &t2) {
 
 int main() {
     #if !MOBILE
+        if (!std::filesystem::exists("obj")) {
+            std::filesystem::create_directories("obj");
+            std::filesystem::create_directories("obj/output");
+        }
+        else if (!std::filesystem::exists("obj/output")) {
+            std::filesystem::create_directories("obj/output");
+        }
         while (std::filesystem::exists(newObjFileName())) {
             new_obj_index++;
         }
