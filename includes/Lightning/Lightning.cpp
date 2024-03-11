@@ -187,15 +187,17 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
         prevxyz[0] = x; prevxyz[1] = y; prevxyz[2] = z;
         canonVertices.push_back({x, y, z});
         canonVertices.push_back({neighbors[min][0], neighbors[min][1], neighbors[min][2]});
+        std::cout << prevxyz[0] << " " << prevxyz[1] << " " << prevxyz[2] << " => " << neighbors[min][0] << " " << neighbors[min][1] << " " << neighbors[min][2] << std::endl;
         if((piece != 3 && min2 == 9) || (piece == 3 && min2 == 10)){ // No branching
             x = neighbors[min][0];
             y = neighbors[min][1];
             z = neighbors[min][2];
         }
         else{                                                        // Yes branching >:)
-            traverse(neighbors[min][0], neighbors[min][1], neighbors[min][2], prevxyz);
             canonVertices.push_back({x, y, z});
             canonVertices.push_back({neighbors[min2][0], neighbors[min2][1], neighbors[min2][2]});
+            traverse(neighbors[min][0], neighbors[min][1], neighbors[min][2], prevxyz);
+            std::cout << prevxyz[0] << " " << prevxyz[1] << " " << prevxyz[2] << " => " << neighbors[min2][0] << " " << neighbors[min2][1] << " " << neighbors[min2][2] << std::endl;
             traverse(neighbors[min2][0], neighbors[min2][1], neighbors[min2][2], prevxyz);
             return;
         }
@@ -231,9 +233,11 @@ void Lightning::superTraverse(){
     canonVertices.push_back({x, y, z});
 
     traverse(x, y, z, prevxyz);
+    
 
     // Traversing loop
     do{
+        std::cout << "mimama es trABis" << std::endl;
         // Find lowest and closest to center lightning point
         x = -1; y = -1; z = -1;
         for(int i = hei-1; i >= 0; i--){
