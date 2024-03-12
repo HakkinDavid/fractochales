@@ -1,32 +1,50 @@
-// Header de librería Lightning 
+// Header de librería Lightning (Clases Point y Lightning)
 // Autor: Mauricio Alcántar Dueñas
-// Fecha: 6 de marzo de 2024
-// Versión 5.1
+// Fecha: 14 de octubre de 2023
+// Versión 1.0
 
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <tuple>
 #include <vector>
-#include <array>
 #include <utility>
 using namespace std;
 
 #ifndef LIGHTNING_H
 #define LIGHTNING_H
 
+class Point{
+private:
+    bool isLight;
+    float potential;
+    int prevX;
+    int prevY;
+
+public:
+    Point();
+    ~Point();
+
+    void setIsLight(bool);
+    void setPotential(float);
+    void setPrevX(int);
+    void setPrevY(int);
+    bool getIsLight(void);
+    float getPotential(void);
+    int getPrevX(void);
+    int getPrevY(void);
+};
+
 class Lightning{
 private:
     int hei;
     int wid;
-    int dep;
-    bool *** lightGrid = nullptr;
-    float *** randGrid = nullptr;
+    Point ** grid = nullptr;
     float leeway;
     float branch;
     int lightPoints;
-    vector<array<int, 3>> branches;
-    vector<array<int, 3>> canonVertices;
+    vector<tuple<int, int>> branches;
     vector<float> fracs;
 
     float gridHeightInMeters;
@@ -34,7 +52,7 @@ private:
     float downWeight;
 
 public:
-    Lightning(int hei = 181, int wid = 257, int dep = 181, float leeway = 0.24, float branch = 0.12, float downWeight = 0, float forcedHeight = 0.75, float gridHeightInMeters = 5000);
+    Lightning(int hei = 181, int wid = 257, float leeway = 0.24, float branch = 0.12, float downWeight = 0, float forcedHeight = 0.75, float gridHeightInMeters = 5000);
     ~Lightning();
 
     void setLeeway(float);
@@ -43,18 +61,15 @@ public:
     float getBranch(void);
     int getHei(void);
     int getWid(void);
-    int getDep(void);
     int getLightPoints(void);
-    bool*** getLightGrid(void);
-    float*** getRandGrid(void);
+    Point** getGrid(void);
     int getN(void);
-    vector<array<int, 3>>* getCanonVertices(void);
     vector<float>* getFracs(void);
 
     void randomize(void);
-    // void show(void);
+    void show(void);
 
-    void traverse(int x, int y, int z, int prevxyz[3], bool tag=false);
+    void traverse(int, int);
     void superTraverse(void);
     
     float* directionComp(void);
