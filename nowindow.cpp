@@ -33,7 +33,7 @@ int main () {
     std::cout << "Iniciando modo de depuración para Fractochales. Incluyendo Lightning.cpp";
     
     std::cout << " ✅\nRegenerando objeto tipo Lightning";
-    storm = Lightning(lightning_height, lightning_width, lightning_depth, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), forcedHeight+((temperature-15)*0.02f));
+    storm = Lightning(lightning_height, lightning_width, lightning_depth, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), /*TODO: reenable this asap: forcedHeight+((temperature-15)*0.02f)*/0);
     std::cout << " ✅\nObteniendo el puntero a los vértices canónicos";
     canonVertices = storm.getCanonVertices();
     std::cout << " ✅\nObteniendo el puntero a los cálculos fractales";

@@ -29,6 +29,8 @@ private:
     vector<array<int, 3>> canonVertices;
     vector<float> fracs;
 
+    int recSteps;
+
     float gridHeightInMeters;
     float forcedHeight;
     float downWeight;

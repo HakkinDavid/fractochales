@@ -713,7 +713,7 @@ int main() {
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
         canonVertices->clear();
         fracs->clear();
-        storm = Lightning(lightning_height, lightning_width, lightning_depth, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), forcedHeight+((temperature-15)*0.02f));
+        storm = Lightning(lightning_height, lightning_width, lightning_depth, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), /*TODO: reenable this asap: forcedHeight+((temperature-15)*0.02f)*/0);
         canonVertices = storm.getCanonVertices();
         fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
