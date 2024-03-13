@@ -651,7 +651,7 @@ int main() {
             lightning_stream_obj << L"mtllib lightning_" << new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
-        for (int v = 0; v < canonVertices->size(); v+=(full_quality ? 2 : 4)) {
+        for (int v = 0; v < canonVertices->size(); v+=2) {
             const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 1);
             const float start_z = (canonVertices->at(v)[2] * lightning_scale);
@@ -668,8 +668,10 @@ int main() {
                         vG (end_z, start_x + thickness, start_y),
                         vH (end_z, end_x + thickness, end_y + thickness);
             // frontface (a.k.a. main lightning)
-            thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
-            thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);
+            if (full_quality || v % 4 != 0) {
+                thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
+                thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);    
+            }
             if (full_quality) {
                 // backface
                 thunder.emplace_back(vE, vF, vG, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
