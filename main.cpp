@@ -656,8 +656,10 @@ int main() {
         #endif
         &lightning_color, &lightning_scale, &canonVertices, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
         thunder.clear();
-        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C));
-        thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C));
+        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
+        thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
+        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
+        thunder.push_back(tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
         #if !MOBILE
             lightning_stream_obj.str(std::wstring());
             lightning_stream_mtl.str(std::wstring());
