@@ -330,7 +330,7 @@ int main() {
     vec3 forward_direction, up_direction, right_direction, fly_up_direction, crosshair, look_direction, camera_position, projection_offset = {1,1,0};
     mat4    y_rotation_matrix, x_rotation_matrix, z_rotation_matrix, movement_matrix, world_bounds, camera_x_rotation_matrix, camera_y_rotation_matrix, camera_position_matrix, camera_view_matrix,
             screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
-    vector<tri3> raster_pipeline;
+    vector<tri3> raster_pipeline, render_triangles;
 
     const float defaultLeeway = 0.24F;
     const float defaultBranch = 0.12F;
@@ -380,6 +380,7 @@ int main() {
     bool do_spin = false;
     bool write_obj = false;
     bool isFocused = true;
+    bool shouldReexecutePipeline = true;
     
     int drawPile = 0;
     int zapCount = 0;
@@ -618,7 +619,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_scale, &canonVertices, &alignmentOffset] () {
+        &lightning_color, &lightning_scale, &canonVertices, &alignmentOffset, &shouldReexecutePipeline] () {
         thunder.clear();
         #if !MOBILE
             lightning_stream_obj.str(std::wstring());
@@ -708,6 +709,7 @@ int main() {
                 nV+=8;
             #endif
         }
+        shouldReexecutePipeline = true;
     };
 
     auto generateLightning = [&direction, &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &fracs, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight] () {
@@ -762,9 +764,9 @@ int main() {
         redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
-        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; });
-        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; });
-        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; });
+        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
+        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
+        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
         // deslizadores de aire
         crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
         humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
@@ -882,11 +884,12 @@ int main() {
 
         leftMenuState();
         rightMenuState();
+        shouldReexecutePipeline = true;
     };
     
     init_ui();
 
-    auto handleMovement = [&goUp, &goDown, &goFast, &goForward, &goLeft, &goBackward, &goRight, &lookLeft, &lookRight, &lookUp, &lookDown, &x_rotation, &y_rotation, &z_rotation, &hide_left, &camera_position, &fly_up_direction, &forward_direction, &right_direction, &camera_x_rotation, &cycle_time_diff, &camera_y_rotation, &zapping, &UI_events, &backgroundButton, &hide_right_switch, &hide_left_switch, &start_time, &yetToBoot, &init_ui, &retypeInfo] () {
+    auto handleMovement = [&shouldReexecutePipeline, &goUp, &goDown, &goFast, &goForward, &goLeft, &goBackward, &goRight, &lookLeft, &lookRight, &lookUp, &lookDown, &x_rotation, &y_rotation, &z_rotation, &hide_left, &camera_position, &fly_up_direction, &forward_direction, &right_direction, &camera_x_rotation, &cycle_time_diff, &camera_y_rotation, &zapping, &UI_events, &backgroundButton, &hide_right_switch, &hide_left_switch, &start_time, &yetToBoot, &init_ui, &retypeInfo] () {
         sf::Vector2i e [2];
         bool changed = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
@@ -938,36 +941,42 @@ int main() {
             else {
                 y_rotation = 2*Physics::PI;
             }
+            shouldReexecutePipeline = true;
         }
         if (Controller::isPressed(DS5::R2)) {
             if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200.f;
             else {
                 y_rotation = 0;
             }
+            shouldReexecutePipeline = true;
         }
         if (Controller::isPressed(DS5::L1)) {
             if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180.f;
             else {
                 x_rotation = 2*Physics::PI;
             }
+            shouldReexecutePipeline = true;
         }
         if (Controller::isPressed(DS5::R1)) {
             if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180.f;
             else {
                 x_rotation = 0;
             }
+            shouldReexecutePipeline = true;
         }
         if (Controller::getAxisPosition(0, sf::Joystick::PovX) >= 50.f) {
             if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation -= Physics::PI/180.f;
             else {
                 z_rotation = 2*Physics::PI;
             }
+            shouldReexecutePipeline = true;
         }
         if (Controller::getAxisPosition(0, sf::Joystick::PovX) <= -50.f) {
             if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation += Physics::PI/180.f;
             else {
                 z_rotation = 0;
             }
+            shouldReexecutePipeline = true;
         }
         if (Controller::isPressed(DS5::TRIANGLE)) {
             bool silently_shown = hide_left;
@@ -1010,7 +1019,10 @@ int main() {
 			camera_y_rotation = -3.14100f / 2.0f;
 		}
 
-        if (changed) retypeInfo();
+        if (changed) {
+            retypeInfo();
+            shouldReexecutePipeline = true;
+        }
     };
 
     auto screenSaver = [&background, &splash_screen] (bool undo = false) {
@@ -1111,6 +1123,7 @@ int main() {
             else {
                 y_rotation = 0;
             }
+            shouldReexecutePipeline = true;
         }
 
         sf::Vector2i mousepos_update[2];
@@ -1149,18 +1162,22 @@ int main() {
 
         UI_events(2, mousepos_update);
 
+        if (shouldReexecutePipeline) {
+            render_triangles.clear();
+            // dibujar objetos
+            // drawMesh(box);
+            Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
+
+            std::sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
+
+            Engine :: rasterVector(raster_pipeline, window_settings, render_triangles);
+            shouldReexecutePipeline = false;
+        }
+
         window->clear();
         window->draw(background);
 
-		// dibujar objetos
-        // drawMesh(box);
-		Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
-
-		std::sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
-
-		Engine :: rasterVector(raster_pipeline, window, window_settings);
-
-        raster_pipeline.clear();
+        Engine :: renderTriangles (render_triangles, window);
 
         if (!hide_right) {
             window->draw(right_menu_bg);

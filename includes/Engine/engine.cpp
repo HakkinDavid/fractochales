@@ -447,7 +447,7 @@ void Engine :: drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pi
     }
 }
 
-void Engine :: rasterVector (std::vector<tri3> & raster_pipeline, sf::RenderTarget * window, RenderSettings & window_settings) {
+void Engine :: rasterVector (std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, std::vector<tri3> & render_triangles) {
     for (const tri3 &triToRaster : raster_pipeline) {
         tri3 clipped[2];
         std::list<tri3> listTriangles;
@@ -475,19 +475,27 @@ void Engine :: rasterVector (std::vector<tri3> & raster_pipeline, sf::RenderTarg
             nNewTriangles = listTriangles.size();
         }
 
-        for (auto &Final : listTriangles) {
-            // dibujar los triángulos finales en la pantalla
-            sf::VertexArray poly(sf::Triangles, 3);
-
-            poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
-            poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
-            poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
-            poly[0].color = sf::Color(Final.color_A[0], Final.color_A[1], Final.color_A[2], Final.color_A[3]);
-            poly[1].color = sf::Color(Final.color_B[0], Final.color_B[1], Final.color_B[2], Final.color_B[3]);
-            poly[2].color = sf::Color(Final.color_C[0], Final.color_C[1], Final.color_C[2], Final.color_C[3]);
-
-            window->draw(poly);
+        while (listTriangles.size() > 0) {
+            render_triangles.emplace_back(listTriangles.front());
+            listTriangles.pop_front();
         }
+    }
+    raster_pipeline.clear();
+}
+
+void Engine :: renderTriangles (std::vector<tri3> & render_triangles, sf::RenderTarget * window) {
+    for (auto &Final : render_triangles) {
+        // dibujar los triángulos finales en la pantalla
+        sf::VertexArray poly(sf::Triangles, 3);
+
+        poly[0].position = sf::Vector2f(Final.p[0].x, Final.p[0].y);
+        poly[1].position = sf::Vector2f(Final.p[1].x, Final.p[1].y);
+        poly[2].position = sf::Vector2f(Final.p[2].x, Final.p[2].y);
+        poly[0].color = sf::Color(Final.color_A[0], Final.color_A[1], Final.color_A[2], Final.color_A[3]);
+        poly[1].color = sf::Color(Final.color_B[0], Final.color_B[1], Final.color_B[2], Final.color_B[3]);
+        poly[2].color = sf::Color(Final.color_C[0], Final.color_C[1], Final.color_C[2], Final.color_C[3]);
+
+        window->draw(poly);
     }
 }
 
