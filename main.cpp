@@ -332,6 +332,24 @@ int main() {
 
     scaleBG();
 
+    splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+
+    auto loadingScreen = [&background, &loading_percentage, &splash_screen, &splash_3d, &loading_text] (float percentage = 0) {
+        background.setColor(sf::Color((255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f)));
+        loading_percentage.setSize(sf::Vector2f(500.0f * ((float) percentage/1000.0f), 5));
+        loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+        loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
+        percentage >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (percentage - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
+        window->clear();
+        window->draw(background);
+        window->draw(splash_screen);
+        window->draw(splash_3d);
+        window->draw(loading_percentage);
+        window->draw(loading_text);
+        window->display();
+    };
+
+    loadingScreen(0);
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> thunder; // crear el vector de vértices a renderizar
@@ -1107,18 +1125,7 @@ int main() {
             current_timestamp = std::chrono::system_clock::now();
             elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - start_time).count();
             if (elapsed < 1000) {
-                background.setColor(sf::Color((255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f)));
-                loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
-                loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
-                loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
-                elapsed >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (elapsed - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
-                window->clear();
-                window->draw(background);
-                window->draw(splash_screen);
-                window->draw(splash_3d);
-                window->draw(loading_percentage);
-                window->draw(loading_text);
-                window->display();
+                loadingScreen(elapsed);
                 continue;
             }
             else {
