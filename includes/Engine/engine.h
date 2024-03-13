@@ -75,6 +75,7 @@ namespace LinearAlgebra {
     vec3 Cross(vec3 &v1, vec3 &v2);
     vec3 VectorIntersectPlane(vec3 &plane_p, vec3 &plane_n, vec3 &lineStart, vec3 &lineEnd);
     float dist (vec3 &plane_p, vec3 &plane_n, vec3 &p);
+    float distance (vec3 & p1, vec3 & p2);
     int ClipTriangleAgainstPlane(vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out_tri1, tri3 &out_tri2);
     mat4 IdentityMatrix();
     mat4 XRotationMatrix(float ThetaRad);

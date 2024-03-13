@@ -171,6 +171,10 @@ float LinearAlgebra :: dist (vec3 &plane_p, vec3 &plane_n, vec3 &p) {
     return (plane_n.x * p.x + plane_n.y * p.y + plane_n.z * p.z - Dot(plane_n, plane_p));
 };
 
+float LinearAlgebra :: distance (vec3 & p1, vec3 & p2) {
+    return sqrtf(powf(p2.x - p1.x, 2.f) + powf(p2.y - p1.y, 2.f) + powf(p2.z - p1.z, 2.f));
+}
+
 int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 &in_tri, tri3 &out_tri1, tri3 &out_tri2) {
 	plane_n = Norm(plane_n);
 
@@ -369,6 +373,8 @@ mat4 LinearAlgebra :: MatrixQuickInverse (mat4 &m) {
 
 void Engine :: drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, mat4 & world_bounds, vec3 & camera_position, mat4 & camera_view_matrix, mat4 & screen_projection_matrix, vec3 & projection_offset) {
     for (tri3 &tri : mesh) {
+        vec3 centroid = {(tri.p[0].x + tri.p[1].x + tri.p[2].x)/3.f, (tri.p[0].y + tri.p[1].y + tri.p[2].y)/3.f, (tri.p[0].z + tri.p[1].z + tri.p[2].z)/3.f};
+        //if (LinearAlgebra::distance(camera_position, centroid) >= 500.f) continue;
         tri3 projected_triangles, transformed, viewable_triangles;
 
         transformed.p[0] = LinearAlgebra::MatxVec(world_bounds, tri.p[0]);
