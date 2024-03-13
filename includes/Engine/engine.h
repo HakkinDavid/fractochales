@@ -42,6 +42,7 @@ class tri3 {
 	float color_A[4];
     float color_B[4];
     float color_C[4];
+    float camera_distance;
     tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), const float red = 255.f, const float green = 255.f, const float blue = 255.f, float alpha = 255.f);
     tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]);
     ~tri3();

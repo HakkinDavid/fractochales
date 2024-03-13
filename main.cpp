@@ -131,7 +131,7 @@ void format (wstringstream & s) {
 }
 
 bool compareZOrder (tri3 &t1, tri3 &t2) {
-    return ((t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f) > ((t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f);
+    return t1.camera_distance > t2.camera_distance;
 }
 
 int main() {
@@ -353,12 +353,9 @@ int main() {
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> thunder; // crear el vector de vértices a renderizar
-    /*
     const float box_A [4] = {0,0,255,255},
                 box_B [4] = {0,255,0,255},
                 box_C [4] = {255,0,0,255};
-    vector<tri3> box = {tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C)}; // mimundo
-    */
     vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
     vector<float> * fracs = storm.getFracs();
 
@@ -657,8 +654,9 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_scale, &canonVertices, &shouldReexecutePipeline, &full_quality] () {
+        &lightning_color, &lightning_scale, &canonVertices, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
         thunder.clear();
+        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C));
         #if !MOBILE
             lightning_stream_obj.str(std::wstring());
             lightning_stream_mtl.str(std::wstring());
@@ -1200,7 +1198,6 @@ int main() {
         if (shouldReexecutePipeline) {
             render_triangles.clear();
             // dibujar objetos
-            // drawMesh(box);
             Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
             std::sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);

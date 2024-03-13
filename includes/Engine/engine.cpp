@@ -32,6 +32,7 @@ tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float red, const float green, cons
     this->color_C[1] = green;
     this->color_C[2] = blue;
     this->color_C[3] = alpha;
+    this->camera_distance = 0;
 }
 tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]) {
     this->p[0] = p1;
@@ -49,6 +50,7 @@ tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float colo
     this->color_C[1] = color3[1];
     this->color_C[2] = color3[2];
     this->color_C[3] = color3[3];
+    this->camera_distance = 0;
 }
 tri3::~tri3() {
     this->color_A[0] = 0;
@@ -63,6 +65,7 @@ tri3::~tri3() {
     this->color_C[1] = 0;
     this->color_C[2] = 0;
     this->color_C[3] = 0;
+    this->camera_distance = 0;
 }
 bool mesh :: LoadObj(std::string Filename) {
     std::ifstream file(Filename);
@@ -374,8 +377,8 @@ mat4 LinearAlgebra :: MatrixQuickInverse (mat4 &m) {
 void Engine :: drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, mat4 & world_bounds, vec3 & camera_position, mat4 & camera_view_matrix, mat4 & screen_projection_matrix, vec3 & projection_offset) {
     for (tri3 &tri : mesh) {
         vec3 centroid = {(tri.p[0].x + tri.p[1].x + tri.p[2].x)/3.f, (tri.p[0].y + tri.p[1].y + tri.p[2].y)/3.f, (tri.p[0].z + tri.p[1].z + tri.p[2].z)/3.f};
-        //if (LinearAlgebra::distance(camera_position, centroid) >= 500.f) continue;
         tri3 projected_triangles, transformed, viewable_triangles;
+        projected_triangles.camera_distance = LinearAlgebra::distance(camera_position, centroid);
 
         transformed.p[0] = LinearAlgebra::MatxVec(world_bounds, tri.p[0]);
         transformed.p[1] = LinearAlgebra::MatxVec(world_bounds, tri.p[1]);
