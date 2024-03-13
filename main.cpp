@@ -379,6 +379,7 @@ int main() {
     bool isMobileLandscape = false;
     bool do_spin = false;
     bool write_obj = false;
+    bool isFocused = true;
     
     int drawPile = 0;
     int zapCount = 0;
@@ -1012,6 +1013,19 @@ int main() {
         if (changed) retypeInfo();
     };
 
+    auto screenSaver = [&background, &splash_screen] (bool undo = false) {
+        if (undo) {
+            background.setColor(sf::Color::White);
+        }
+        else {
+            background.setColor(sf::Color(127.5f, 127.5f, 127.5f));
+            window->clear();
+            window->draw(background);
+            window->draw(splash_screen);
+            window->display();
+        }
+    };
+
     start_time = std::chrono::system_clock::now();
     current_timestamp = start_time;
     int64_t elapsed = 0;
@@ -1025,9 +1039,10 @@ int main() {
         sf::Event event;
         
         while (window->pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed) {
                 window->close();
-            if (event.type == sf::Event::Resized) {
+            }
+            else if (event.type == sf::Event::Resized) {
                 // la ventana se reajustó (probablemente cambió de orientación en Android/iOS)
                 window->setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
                 scaleBG();
@@ -1037,6 +1052,14 @@ int main() {
                 init_ui();
                 recalculateLightningVertex();
                 retypeInfo();
+            }
+            else if (event.type == sf::Event::LostFocus) {
+                isFocused = false;
+                screenSaver();
+            }
+            else if (event.type == sf::Event::GainedFocus) {
+                isFocused = true;
+                screenSaver(true);
             }
         }
 
@@ -1077,6 +1100,10 @@ int main() {
             else {
                 window->close();
             }
+        }
+
+        if (!isFocused) {
+            continue;
         }
         
         if (do_spin) {
