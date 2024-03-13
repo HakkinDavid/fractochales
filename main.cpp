@@ -354,7 +354,6 @@ int main() {
     float lightning_depth = 181;
     float lightning_scale;
     float lightning_color [3] = {245, 230, 83};
-    float alignmentOffset;
     float* direction = nullptr;
     float x_rotation = 0.f;
     float y_rotation = 0.f;
@@ -381,12 +380,12 @@ int main() {
     bool write_obj = false;
     bool isFocused = true;
     bool shouldReexecutePipeline = true;
+    bool full_quality = false;
     
     int drawPile = 0;
     int zapCount = 0;
 
     Slider
-        * alignmentSlider = nullptr,
         * redSlider = nullptr,
         * greenSlider = nullptr,
         * blueSlider = nullptr,
@@ -420,13 +419,14 @@ int main() {
     Switch
         * hide_left_switch = nullptr,
         * hide_right_switch = nullptr,
-        * spin_switch = nullptr;
+        * spin_switch = nullptr,
+        * full_quality_switch = nullptr;
     Achieve
         * chievo1 = nullptr,
         * chievo2 = nullptr;
     
     // colocar los deslizadores que recibirán eventos en grupo
-    Slider ** all_sliders [] = {&alignmentSlider, &branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
+    Slider ** all_sliders [] = {&branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
     // colocar los botones que recibirán eventos en grupo
     Button ** all_buttons [] = 
     {
@@ -437,7 +437,7 @@ int main() {
         &closeButton
     };
     // colocar los interruptores que recibirán eventos en grupo
-    Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch};
+    Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch, &full_quality_switch};
     // colocar los logros que recibirán eventos en grupo
     Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
@@ -619,7 +619,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_scale, &canonVertices, &alignmentOffset, &shouldReexecutePipeline] () {
+        &lightning_color, &lightning_scale, &canonVertices, &shouldReexecutePipeline, &full_quality] () {
         thunder.clear();
         #if !MOBILE
             lightning_stream_obj.str(std::wstring());
@@ -651,11 +651,11 @@ int main() {
             lightning_stream_obj << L"mtllib lightning_" << new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
-        for (int v = 0; v < canonVertices->size(); v+=2) {
-            const float start_x = (alignmentOffset + canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
+        for (int v = 0; v < canonVertices->size(); v+=(full_quality ? 2 : 4)) {
+            const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 1);
             const float start_z = (canonVertices->at(v)[2] * lightning_scale);
-            const float end_x = (alignmentOffset + canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
+            const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale + 1);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale);
             const float thickness = (2.f);
@@ -670,21 +670,23 @@ int main() {
             // frontface (a.k.a. main lightning)
             thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
             thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);
-            // backface
-            thunder.emplace_back(vE, vF, vG, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
-            thunder.emplace_back(vG, vF, vH, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
-            // sideface A
-            thunder.emplace_back(vC, vD, vG, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-            thunder.emplace_back(vG, vD, vH, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-            // sideface B
-            thunder.emplace_back(vE, vF, vA, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-            thunder.emplace_back(vA, vF, vB, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-            // topface
-            thunder.emplace_back(vE, vA, vG, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-            thunder.emplace_back(vG, vA, vC, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-            // bottomface
-            thunder.emplace_back(vB, vF, vD, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-            thunder.emplace_back(vD, vF, vH, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+            if (full_quality) {
+                // backface
+                thunder.emplace_back(vE, vF, vG, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
+                thunder.emplace_back(vG, vF, vH, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
+                // sideface A
+                thunder.emplace_back(vC, vD, vG, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                thunder.emplace_back(vG, vD, vH, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                // sideface B
+                thunder.emplace_back(vE, vF, vA, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                thunder.emplace_back(vA, vF, vB, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
+                // topface
+                thunder.emplace_back(vE, vA, vG, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                thunder.emplace_back(vG, vA, vC, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                // bottomface
+                thunder.emplace_back(vB, vF, vD, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+                thunder.emplace_back(vD, vF, vH, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
+            }
             #if !MOBILE
                 lightning_stream_obj << L"v " << (vA.y) << L" " << (vA.z) << L" " << (vA.x) << endl;
                 lightning_stream_obj << L"v " << (vB.y) << L" " << (vB.z) << L" " << (vB.x) << endl;
@@ -749,7 +751,6 @@ int main() {
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
         lightning_scale = window->getSize().y/lightning_height;
-        alignmentOffset = (window->getSize().x - lightning_width*lightning_scale)/2.f;
         // inicializar interfaz
         const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
         const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);
@@ -759,14 +760,12 @@ int main() {
         const float left_button_y_size = left_menu_bg.getSize().y*(0.75f/21.6f);
         // para los deslizadores, estamos usando de posición (left_slider_x_pos, window->getSize().y * [-0.06 respecto al que está por debajo]f)
         // deslizadores constantes
-        bool shouldInvertAlignment = alignmentOffset > 0;
-        alignmentSlider = new Slider (alignmentOffset, (shouldInvertAlignment ? window->getSize().x - lightning_width*lightning_scale : 0), (shouldInvertAlignment ? 0 : window->getSize().x - lightning_width*lightning_scale), left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Alineación", false, sf::Color::Black, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
-        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.825f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
-        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.845f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
-        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.865f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
+        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
+        yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.80f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
+        zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.82f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
         // deslizadores de aire
         crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
         humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
@@ -864,6 +863,9 @@ int main() {
             x_rotation = 0.f;
             y_rotation = 0.f;
             z_rotation = 0.f;
+        });
+        full_quality_switch = new Switch (full_quality, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.84f, font, L"Calidad total", L"Optimizar", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(42, 0, 115), sf::Color(79, 0, 115), sf::Color::White, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () {
+            recalculateLightningVertex();
         });
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&leftMenuState, &rightMenuState, &hide_left, &hide_right, &either_menu_opened] () {
             leftMenuState();
