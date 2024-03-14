@@ -42,6 +42,7 @@ class tri3 {
 	float color_A[4];
     float color_B[4];
     float color_C[4];
+    float camera_distance;
     tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), const float red = 255.f, const float green = 255.f, const float blue = 255.f, float alpha = 255.f);
     tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]);
     ~tri3();
@@ -52,7 +53,7 @@ class mesh {
     public:
 	std::vector<tri3> polys;
 
-	bool LoadObj(std::string Filename);
+	bool LoadObj(std::string obj_filename);
 
 };
 
@@ -94,6 +95,7 @@ namespace Engine {
     void renderTriangles (std::vector<tri3> & render_triangles, sf::RenderTarget * window);
     void calculateMotion (vec3 & forward_direction, vec3 & look_direction, vec3 & up_direction, vec3 & right_direction, vec3 & fly_up_direction, sf::Time & cycle_time_diff);
     void calculateCameraView (mat4 & y_rotation_matrix, float & y_rotation, mat4 & x_rotation_matrix, float & x_rotation, mat4 & z_rotation_matrix, float & z_rotation, mat4 & movement_matrix, mat4 & world_bounds, vec3 & crosshair, mat4 & camera_x_rotation_matrix, float & camera_x_rotation, mat4 & camera_y_rotation_matrix, float & camera_y_rotation, vec3 & look_direction, vec3 & camera_position, mat4 & camera_position_matrix, vec3 & up_direction, mat4 & camera_view_matrix);
+    bool compareDrawOrder (tri3 &t1, tri3 &t2);
 }
 
 #endif

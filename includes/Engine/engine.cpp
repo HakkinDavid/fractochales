@@ -32,6 +32,7 @@ tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float red, const float green, cons
     this->color_C[1] = green;
     this->color_C[2] = blue;
     this->color_C[3] = alpha;
+    this->camera_distance = 0;
 }
 tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]) {
     this->p[0] = p1;
@@ -49,6 +50,7 @@ tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float colo
     this->color_C[1] = color3[1];
     this->color_C[2] = color3[2];
     this->color_C[3] = color3[3];
+    this->camera_distance = 0;
 }
 tri3::~tri3() {
     this->color_A[0] = 0;
@@ -63,37 +65,53 @@ tri3::~tri3() {
     this->color_C[1] = 0;
     this->color_C[2] = 0;
     this->color_C[3] = 0;
+    this->camera_distance = 0;
 }
-bool mesh :: LoadObj(std::string Filename) {
-    std::ifstream file(Filename);
-    if (!file.is_open())
+bool mesh :: LoadObj(std::string obj_filename) {
+    std::wifstream obj_file(obj_filename);
+    std::wifstream mtl_file(obj_filename.replace(obj_filename.end()-3, obj_filename.end(), "mtl"));
+    if (!obj_file.is_open()) {
         return false;
+    }
+
 
     std::vector<vec3> vertices;
+    std::wstring line, bit;
+    float fvalue[3] = {0}, current_color[4] = {255.f, 255.f, 255.f, 255.f};
+    int ivalue[3] = {0};
+    std::wistringstream in_line;
 
-    while (!file.eof())
-    {
-        char line[128];
-        file.getline(line, 128);
-
-        std :: stringstream stream;
-        stream << line;
-
-        char junk;
-        if (line[0] == 'v')
-        {
-            vec3 v;
-            stream >> junk >> v.x >> v.y >> v.z;
-            vertices.push_back(v);
+    if (mtl_file.is_open()) {
+        std::wstring b;
+        while (mtl_file >> b) {
+            if (b.compare(L"Kd") == 0) {
+                mtl_file >> current_color[0] >> current_color[1] >> current_color[2];
+                current_color[0] *= 255.f;
+                current_color[1] *= 255.f;
+                current_color[2] *= 255.f;
+                break;
+            }
         }
-        if (line[0] == 'f')
-        {
-            int f[3];
-            stream >> junk >> f[0] >> f[1] >> f[2];
-            polys.push_back({ vertices[f[0] - 1], vertices[f[1] - 1], vertices[f[2] - 1] });
-        }
-
+        mtl_file.close();
     }
+
+    while (getline(obj_file, line))
+    {
+        in_line.str(line);
+        if (line.size() > 2 && line.at(1) == L' ') {
+            if (line.at(0) == L'v') {
+                in_line >> bit >> fvalue[0] >> fvalue[1] >> fvalue[2];
+                vertices.emplace_back(fvalue[0], fvalue[1], fvalue[2]);
+            }
+            else if (line.at(0) == L'f') {
+                in_line >> bit >> ivalue[0] >> ivalue[1] >> ivalue[2];
+                polys.emplace_back(vertices[ivalue[0] - 1], vertices[ivalue[1] - 1], vertices[ivalue[2] - 1], current_color, current_color, current_color);
+            }
+        }
+        in_line.str(std::wstring());
+    }
+
+    obj_file.close();
 
     return true;
 }
@@ -374,8 +392,8 @@ mat4 LinearAlgebra :: MatrixQuickInverse (mat4 &m) {
 void Engine :: drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, mat4 & world_bounds, vec3 & camera_position, mat4 & camera_view_matrix, mat4 & screen_projection_matrix, vec3 & projection_offset) {
     for (tri3 &tri : mesh) {
         vec3 centroid = {(tri.p[0].x + tri.p[1].x + tri.p[2].x)/3.f, (tri.p[0].y + tri.p[1].y + tri.p[2].y)/3.f, (tri.p[0].z + tri.p[1].z + tri.p[2].z)/3.f};
-        //if (LinearAlgebra::distance(camera_position, centroid) >= 500.f) continue;
         tri3 projected_triangles, transformed, viewable_triangles;
+        projected_triangles.camera_distance = LinearAlgebra::distance(camera_position, centroid);
 
         transformed.p[0] = LinearAlgebra::MatxVec(world_bounds, tri.p[0]);
         transformed.p[1] = LinearAlgebra::MatxVec(world_bounds, tri.p[1]);
@@ -530,4 +548,8 @@ void Engine :: calculateCameraView (mat4 & y_rotation_matrix, float & y_rotation
     crosshair = LinearAlgebra::AddVec(camera_position, look_direction);
     camera_position_matrix = LinearAlgebra::PointingMatrix(camera_position, crosshair, up_direction);
     camera_view_matrix = LinearAlgebra::MatrixQuickInverse(camera_position_matrix);
+}
+
+bool Engine :: compareDrawOrder (tri3 &t1, tri3 &t2) {
+    return t1.camera_distance > t2.camera_distance;
 }

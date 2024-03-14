@@ -9,7 +9,6 @@
 #include <array>
 #include <iomanip>
 #include <sstream>
-#include <regex>
 #include "includes/Lightning/Lightning.h"
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
@@ -20,30 +19,7 @@
 #include "includes/Engine/engine.h"
 #include "includes/Physics/physics.h"
 #include "includes/Controller/controller.h"
-
-#define MOBILE false
-#if defined(WIN32)
-    #define VERSION_KIND L"Windows"
-#elif __APPLE__
-    #include <TargetConditionals.h>
-    #if TARGET_OS_IPHONE
-        #define VERSION_KIND L"iOS"
-        #define MOBILE true
-    #else
-        #define VERSION_KIND L"macOS"
-    #endif
-#elif __ANDROID__
-    #define VERSION_KIND L"Android"
-    #define MOBILE true
-#elif __linux__
-    #define VERSION_KIND L"GNU/Linux"
-#else
-    #define VERSION_KIND L"Unknown"
-#endif
-
-#ifndef VERSION
-    #define VERSION 100
-#endif
+#include "includes/Utils/utils.h"
 
 sf::RenderWindow * window = nullptr;
 RenderSettings window_settings;
@@ -52,46 +28,65 @@ wstringstream console;
 #if !MOBILE
     #include <fstream>
     #include <filesystem>
-    int new_obj_index = 0;
-
-    const std::string newObjFileName (const bool isMTL = false) {
-        return "obj/output/lightning_" + std::to_string(new_obj_index) + "." + (isMTL ? "mtl" : "obj");
-    };
 #endif
 
-wstring to_super (wstring num) {
-    const wchar_t super [10] = {
-        L'⁰', L'¹', L'²', L'³', L'⁴', L'⁵', L'⁶', L'⁷', L'⁸', L'⁹'
-    };
-    for (int i = 0; i < num.length(); i++) {
-        num[i] = super[num.at(i) - L'0'];
-    }
-    return num;
-}
+Slider
+    * redSlider = nullptr,
+    * greenSlider = nullptr,
+    * blueSlider = nullptr,
+    * crystallizateSlider = nullptr,
+    * humiditySlider = nullptr,
+    * temperatureSlider = nullptr,
+    * leewaySlider = nullptr,
+    * branchSlider = nullptr,
+    * downWeightSlider = nullptr,
+    * forcedHeightSlider = nullptr,
+    * envfactorSlider = nullptr,
+    * xRotationSlider = nullptr,
+    * yRotationSlider = nullptr,
+    * zRotationSlider = nullptr;
+Button
+    * zapping = nullptr,
+    * backgroundButton = nullptr,
+    * closeButton = nullptr,
+    * forwardButton = nullptr,
+    * leftButton = nullptr,
+    * backwardButton = nullptr,
+    * rightButton = nullptr,
+    * lookupButton = nullptr,
+    * lookdownButton = nullptr,
+    * lookleftButton = nullptr,
+    * lookrightButton = nullptr,
+    * shiftButton = nullptr,
+    * jumpButton = nullptr,
+    * runButton = nullptr,
+    * write_obj_button = nullptr;
+Switch
+    * hide_left_switch = nullptr,
+    * hide_right_switch = nullptr,
+    * spin_switch = nullptr,
+    * full_quality_switch = nullptr;
+Achieve
+    * chievo1 = nullptr,
+    * chievo2 = nullptr;
 
-void format (wstringstream & s) {
-    std::wstring temporal (s.str());
-    const std::wregex exponential (L"e([+-])([0-9]+)");
-    std::match_results<std::wstring::iterator> match;
-    int substart = 0;
+// colocar los deslizadores que recibirán eventos en grupo
+Slider ** all_sliders [] = {&branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
+// colocar los botones que recibirán eventos en grupo
+Button ** all_buttons [] = 
+{
+    &zapping, &backgroundButton, &write_obj_button,
+    #if MOBILE
+        &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton, &shiftButton, &runButton, &jumpButton,
+    #endif
+    &closeButton
+};
+// colocar los interruptores que recibirán eventos en grupo
+Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch, &full_quality_switch};
+// colocar los logros que recibirán eventos en grupo
+Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
-    // super efficient regex (each iteration, string is only analyzed after first match)
-    while (regex_search(temporal.begin() + substart, temporal.end(), match, exponential)) {
-        wstring replacement = (match[2].str() != L"00" ? L"×10" + (match[1].str() == L"-" ? wstring(L"⁻") : wstring(L"")) + (match[2].str() == L"01" && match[1] == L"+" ? wstring(L"") : to_super(match[2].str())) : L"");
-        temporal.replace(temporal.begin() + substart + match.position(0), temporal.begin() + substart + match.position(0) + match.length(0), replacement);
-        substart += match.position(0) + replacement.length();
-    }
-
-    if (temporal.back() == L'\n') {
-        temporal.pop_back();
-    }
-
-    s.str(temporal);
-}
-
-bool compareZOrder (tri3 &t1, tri3 &t2) {
-    return ((t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f) > ((t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f);
-}
+void UI_events (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0);
 
 int main() {
     #if !MOBILE
@@ -102,10 +97,10 @@ int main() {
         else if (!std::filesystem::exists("obj/output")) {
             std::filesystem::create_directories("obj/output");
         }
-        while (std::filesystem::exists(newObjFileName())) {
-            new_obj_index++;
+        while (std::filesystem::exists(utils::newLightningFileName())) {
+            utils::new_obj_index++;
         }
-        std::wstringstream lightning_stream_obj, lightning_stream_mtl;
+        std::wstringstream lightning_stream_obj, lightning_stream_mtl, lightning_stream_txt;
     #endif
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point current_timestamp;
@@ -197,30 +192,7 @@ int main() {
     watermarkText.setStyle(sf::Text::Bold);
     loading_text.setStyle(sf::Text::Bold);
 
-    wstring advice_text[] = {
-        L"Cargando las nubes",
-        L"Sintonizando a Fimbres",
-        L"Esperando el convivio",
-        L"Quitando el tercer nombre de Casta",
-        L"Comprobando los pararrayos",
-        L"Mi mamá es una figura fractal",
-        L"La velocidad máxima de un relámpago es de 100,000 km/s",
-        L"Un espectador percibe primero el relámpago y luego el trueno",
-        L"Realizamos cálculos estequiométricos para obtener las masas de los rayos",
-        L"Una figura fractal se encuentra entre dos dimensiones enteras",
-        L"¿Sabías que tenemos " + to_wstring(VERSION) + L" contribuciones de código en este programa?",
-        L"En la práctica, ningún rayo es idéntico",
-        L"Fractochales funciona en Windows, Mac, Linux, Android y iOS",
-        L"Hirales estaría orgulloso de nuestras proyecciones 3D sobre un plano 2D",
-        L"Técnicamente emulamos el trazado de rayos",
-        L"Mi mamá es un vector ortogonal",
-        L"Fractochales es la contracción de Fractales Tochos",
-        L"En cada relámpago simulamos cerca de 3 billones de electrones, a escala macroscópica y en 3D"
-    };
-
-    int advice_max_num = sizeof(advice_text) / sizeof(wstring);
-
-    loading_text.setString(advice_text[rand() % advice_max_num]);
+    loading_text.setString(utils::getRandomAdvice());
     
     wstringstream watermarkTextStream;
 
@@ -300,27 +272,32 @@ int main() {
 
     float bg_scale;
 
-    auto scaleBG = [&] () {
-        background.setScale(1.f, 1.f);
-        bg_scale = (window->getSize().x > window->getSize().y ? window->getSize().x / (*bg[bgIndex]).getSize().x : window->getSize().y / (*bg[bgIndex]).getSize().y);
-        bg_scale *= (MOBILE ? 1.5 : 1.f);
-        if (bg_scale != 1.f) {
-            background.setScale(bg_scale, bg_scale);
-        }
-        background.setPosition((window->getSize().x - ((*bg[bgIndex]).getSize().x * bg_scale))/2, (window->getSize().y - ((*bg[bgIndex]).getSize().y * bg_scale))/2);
+    utils::scaleBG(window, background, bg, bgIndex, bg_scale);
+
+    splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+
+    auto loadingScreen = [&background, &loading_percentage, &splash_screen, &splash_3d, &loading_text] (float percentage = 0) {
+        background.setColor(sf::Color((255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f)));
+        loading_percentage.setSize(sf::Vector2f(500.0f * ((float) percentage/1000.0f), 5));
+        loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+        loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
+        percentage >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (percentage - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
+        window->clear();
+        window->draw(background);
+        window->draw(splash_screen);
+        window->draw(splash_3d);
+        window->draw(loading_percentage);
+        window->draw(loading_text);
+        window->display();
     };
 
-    scaleBG();
-
+    loadingScreen(0);
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> thunder; // crear el vector de vértices a renderizar
-    /*
-    const float box_A [4] = {0,0,255,255},
-                box_B [4] = {0,255,0,255},
-                box_C [4] = {255,0,0,255};
-    vector<tri3> box = {tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_B,box_C)}; // mimundo
-    */
+    const float box_A [4] = {0,0,127.5f,255},
+                box_B [4] = {0,127.5f,0,255},
+                box_C [4] = {127.5f,0,0,255};
     vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
     vector<float> * fracs = storm.getFracs();
 
@@ -385,143 +362,7 @@ int main() {
     int drawPile = 0;
     int zapCount = 0;
 
-    Slider
-        * redSlider = nullptr,
-        * greenSlider = nullptr,
-        * blueSlider = nullptr,
-        * crystallizateSlider = nullptr,
-        * humiditySlider = nullptr,
-        * temperatureSlider = nullptr,
-        * leewaySlider = nullptr,
-        * branchSlider = nullptr,
-        * downWeightSlider = nullptr,
-        * forcedHeightSlider = nullptr,
-        * envfactorSlider = nullptr,
-        * xRotationSlider = nullptr,
-        * yRotationSlider = nullptr,
-        * zRotationSlider = nullptr;
-    Button
-        * zapping = nullptr,
-        * backgroundButton = nullptr,
-        * closeButton = nullptr,
-        * forwardButton = nullptr,
-        * leftButton = nullptr,
-        * backwardButton = nullptr,
-        * rightButton = nullptr,
-        * lookupButton = nullptr,
-        * lookdownButton = nullptr,
-        * lookleftButton = nullptr,
-        * lookrightButton = nullptr,
-        * shiftButton = nullptr,
-        * jumpButton = nullptr,
-        * runButton = nullptr,
-        * write_obj_button = nullptr;
-    Switch
-        * hide_left_switch = nullptr,
-        * hide_right_switch = nullptr,
-        * spin_switch = nullptr,
-        * full_quality_switch = nullptr;
-    Achieve
-        * chievo1 = nullptr,
-        * chievo2 = nullptr;
-    
-    // colocar los deslizadores que recibirán eventos en grupo
-    Slider ** all_sliders [] = {&branchSlider, &leewaySlider, &redSlider, &greenSlider, &blueSlider, &envfactorSlider, &downWeightSlider, &forcedHeightSlider, &crystallizateSlider, &humiditySlider, &temperatureSlider, &xRotationSlider, &yRotationSlider, &zRotationSlider};
-    // colocar los botones que recibirán eventos en grupo
-    Button ** all_buttons [] = 
-    {
-        &zapping, &backgroundButton, &write_obj_button,
-        #if MOBILE
-            &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton, &shiftButton, &runButton, &jumpButton,
-        #endif
-        &closeButton
-    };
-    // colocar los interruptores que recibirán eventos en grupo
-    Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch, &full_quality_switch};
-    // colocar los logros que recibirán eventos en grupo
-    Achieve ** all_chievos [] = {&chievo1, &chievo2};
-
     bool achieve_vars [2] = {false};
-
-    // agrupar y ejecutar los eventos correspondientes a los sliders
-    auto UI_events = [&] (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0) {
-        for (auto &i : all_sliders) {
-            switch (type) {
-                case 0: // cuando usuario clickea
-                    if (!((*i)->checkDragging(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkDragging(mouse_arr[1], 1);
-                break;
-                case 1: // cuando usuario desclickea
-                    (*i)->setIsDragging(false, mouse_arr_index);
-                break;
-                case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    if (!((*i)->updatePercentage(mouse_arr[0])) && mouse_arr[0] != mouse_arr[1]) (*i)->updatePercentage(mouse_arr[1]);
-                break;
-                case 3: // dibujar
-                    (*i)->draw(*window);
-                break;
-                case -999:
-                    delete (*i);
-                break;
-                default:
-                break;
-            }
-        }
-        for (auto &i : all_buttons) {
-            switch (type) {
-                case 0: // cuando usuario clickea
-                    if (!((*i)->checkClicking(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkClicking(mouse_arr[1], 1);
-                break;
-                case 1: // cuando usuario desclickea
-                    (*i)->setIsClicking(false, mouse_arr_index);
-                break;
-                case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    (*i)->updateState();
-                break;
-                case 3: // dibujar
-                    (*i)->draw(*window);
-                break;
-                case -999:
-                    delete (*i);
-                break;
-                default:
-                break;
-            }
-        }
-        for (auto &i : all_switches) {
-            switch (type) {
-                case 0: // cuando usuario clickea
-                    if (!((*i)->checkClicking(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkClicking(mouse_arr[1], 1);
-                break;
-                case 1: // cuando usuario desclickea
-                    (*i)->setIsClicking(false, 0);
-                break;
-                case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
-                    (*i)->updateState();
-                break;
-                case 3: // dibujar
-                    (*i)->draw(*window);
-                break;
-                case -999:
-                    delete (*i);
-                break;
-                default:
-                break;
-            }
-        }
-        int j = 0;
-        for (auto &i : all_chievos) {
-            switch (type) {
-                case 3: // dibujar
-                    (*i)->draw(*window);
-                break;
-                case -999:
-                    delete (*i);
-                break;
-                default:
-                break;
-            }
-        }
-    };
 
     auto leftMenuState = [&] () {
         if (hide_left) {
@@ -587,9 +428,9 @@ int main() {
 
         title_data << bgTitle[bgIndex];
 
-        format(thunder_data);
-        format(thunder_physics_data);
-        format(title_data);
+        utils::format_wstringstream(thunder_data);
+        utils::format_wstringstream(thunder_physics_data);
+        utils::format_wstringstream(title_data);
         
         text.setString(thunder_data.str());
         currentTitle.setString(title_data.str());
@@ -619,45 +460,36 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_scale, &canonVertices, &shouldReexecutePipeline, &full_quality] () {
+        &lightning_color, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
         thunder.clear();
+        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
+        thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
+        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
+        thunder.push_back(tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
         #if !MOBILE
             lightning_stream_obj.str(std::wstring());
             lightning_stream_mtl.str(std::wstring());
             lightning_stream_obj
-                << L"# FRACTOCHALES v"
-                << fixed << setprecision(2)
-                << (float) VERSION / 100
-                << L" generated lightning OBJ file"
-                << endl
-                << L"# © David Emmanuel Santana Romero" << endl << L"# © Mauricio Alcántar Dueñas" << endl << L"# © Diego Emilio Casta Valle"
-                << endl
-                << L"# DISCLAIMER: Files generated by our software may be used for any purpose as long as we are explicitly credited in the projects, media and papers that make use of these." << endl << endl;
+                << utils::getFileHeader();
             lightning_stream_mtl
-                << L"# FRACTOCHALES v"
-                << fixed << setprecision(2)
-                << (float) VERSION / 100
-                << L" generated lightning MTL file"
-                << endl
-                << L"# © David Emmanuel Santana Romero" << endl << L"# © Mauricio Alcántar Dueñas" << endl << L"# © Diego Emilio Casta Valle"
-                << endl
-                << L"# DISCLAIMER: Files generated by our software may be used for any purpose as long as we are explicitly credited in the projects, media and papers that make use of these." << endl << endl
+                << utils::getFileHeader(1)
                 << L"newmtl lightning" << endl
                 << L"Ka 1.000000 1.000000 1.000000" << endl
                 << L"Kd " << lightning_color[0]/255.f << L" " << lightning_color[1]/255.f << L" " << lightning_color[2]/255.f << endl
                 << L"Ks " << lightning_color[0]/255.f << L" " << lightning_color[1]/255.f << L" " << lightning_color[2]/255.f << endl
                 << L"Ns 1000" << endl << L"Ni 1.000000" << endl
                 << L"d 0.9500000" << endl << L"illum 0";
-            lightning_stream_obj << L"mtllib lightning_" << new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
+            lightning_stream_obj << L"mtllib lightning_" << utils::new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
+        const float z_offset = (lightning_depth/2.f) * lightning_scale;
         for (int v = 0; v < canonVertices->size(); v+=2) {
             const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 1);
-            const float start_z = (canonVertices->at(v)[2] * lightning_scale);
+            const float start_z = (canonVertices->at(v)[2] * lightning_scale) - z_offset;
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale + 1);
-            const float end_z = (canonVertices->at(v+1)[2] * lightning_scale);
+            const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
             const float thickness = (2.f);
             const vec3  vA (start_z, start_x, start_y),
                         vB (start_z, end_x, end_y + thickness),
@@ -716,11 +548,23 @@ int main() {
         shouldReexecutePipeline = true;
     };
 
-    auto generateLightning = [&direction, &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &fracs, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight] () {
+    auto generateLightning = [&lightning_stream_txt, &direction, &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &fracs, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
         canonVertices->clear();
         fracs->clear();
-        storm = Lightning(lightning_height, lightning_width, lightning_depth, leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f), branch-(crystallizate*0.3125f)+(temperature*0.00066f), downWeight+(crystallizate*humidity), /*TODO: reenable this asap: forcedHeight+((temperature-15)*0.02f)*/0);
+        lightning_stream_txt.str(std::wstring());
+        const float final_leeway = leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f),
+                    final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
+                    final_downWeight = downWeight+(crystallizate*humidity),
+                    final_forcedHeight = 0; // forcedHeight+((temperature-15)*0.02f);
+        storm = Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
+        lightning_stream_txt << utils::getFileHeader(2)
+        << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
+        << L"Leeway: " << fixed << setprecision(8) << final_leeway << endl
+        << L"Branching: " << final_branch << endl
+        << L"Vertical specific conductance: " << final_downWeight << endl
+        << L"Minimum height: " << final_forcedHeight << endl
+        << L"Electrons per meter of reach: " << current_environmental_factor << endl;
         canonVertices = storm.getCanonVertices();
         fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
@@ -731,6 +575,9 @@ int main() {
         storm.fractalComp();
         recalculateLightningVertex();
         retypeInfo();
+        lightning_stream_txt
+        << L"Electrons involved: " << storm.getInvolvedElectrons(current_environmental_factor) << endl
+        << L"Electronic mass: " << scientific << setprecision(8) << e_mass << L"kg" << endl;
     };
 
     generateLightning();
@@ -807,29 +654,32 @@ int main() {
         write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(1.f/2.f), window->getSize().y*0.89f, font, L"Exportar OBJ", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100,100,100, (MOBILE ? 63.75f : 255.f)), sf::Color(200,200,200), sf::Color(255.f,255.f,255.f, (MOBILE ? 63.75f : 255.f)), &hide_left, [] () { return !MOBILE; },
             [
                 #if !MOBILE
-                    &lightning_stream_obj, &lightning_stream_mtl,
+                    &lightning_stream_obj, &lightning_stream_mtl, &lightning_stream_txt,
                 #endif
                 &write_obj
             ] () {
             #if !MOBILE
                 if (write_obj) {
-                    std::wofstream lightning_obj (newObjFileName(), std::wofstream::trunc);
-                    std::wofstream lightning_mtl (newObjFileName(true), std::wofstream::trunc);
+                    std::wofstream lightning_obj (utils::newLightningFileName(), std::wofstream::trunc);
+                    std::wofstream lightning_mtl (utils::newLightningFileName(1), std::wofstream::trunc);
+                    std::wofstream lightning_txt (utils::newLightningFileName(2), std::wofstream::trunc);
                     lightning_obj << lightning_stream_obj.str();
-                    lightning_mtl << lightning_stream_mtl.str();
                     lightning_obj.close();
+                    lightning_mtl << lightning_stream_mtl.str();
                     lightning_mtl.close();
-                    new_obj_index++;
+                    lightning_txt << lightning_stream_txt.str();
+                    lightning_txt.close();
+                    utils::new_obj_index++;
                 }
             #endif
         });
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &scaleBG, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature] () {
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature, &bg_scale] () {
             if (switchingBG) {
                 bgIndex++;
                 if (bg[bgIndex] == nullptr) bgIndex = 0;
                 background.setTexture(*bg[bgIndex]);
 
-                scaleBG();
+                utils::scaleBG(window, background, bg, bgIndex, bg_scale);
 
                 current_environmental_factor = environmental_factors[bgIndex];
                 leeway = leeway_in_environment[bgIndex];
@@ -893,7 +743,7 @@ int main() {
     
     init_ui();
 
-    auto handleMovement = [&shouldReexecutePipeline, &goUp, &goDown, &goFast, &goForward, &goLeft, &goBackward, &goRight, &lookLeft, &lookRight, &lookUp, &lookDown, &x_rotation, &y_rotation, &z_rotation, &hide_left, &camera_position, &fly_up_direction, &forward_direction, &right_direction, &camera_x_rotation, &cycle_time_diff, &camera_y_rotation, &zapping, &UI_events, &backgroundButton, &hide_right_switch, &hide_left_switch, &start_time, &yetToBoot, &init_ui, &retypeInfo] () {
+    auto handleMovement = [&shouldReexecutePipeline, &goUp, &goDown, &goFast, &goForward, &goLeft, &goBackward, &goRight, &lookLeft, &lookRight, &lookUp, &lookDown, &x_rotation, &y_rotation, &z_rotation, &hide_left, &camera_position, &fly_up_direction, &forward_direction, &right_direction, &camera_x_rotation, &cycle_time_diff, &camera_y_rotation, &zapping, &backgroundButton, &hide_right_switch, &hide_left_switch, &start_time, &yetToBoot, &init_ui, &retypeInfo] () {
         sf::Vector2i e [2];
         bool changed = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
@@ -1061,7 +911,7 @@ int main() {
             else if (event.type == sf::Event::Resized) {
                 // la ventana se reajustó (probablemente cambió de orientación en Android/iOS)
                 window->setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
-                scaleBG();
+                utils::scaleBG(window, background, bg, bgIndex, bg_scale);
                 window_settings.x_res = event.size.width;
                 window_settings.y_res = event.size.height;
                 screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
@@ -1083,18 +933,7 @@ int main() {
             current_timestamp = std::chrono::system_clock::now();
             elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - start_time).count();
             if (elapsed < 1000) {
-                background.setColor(sf::Color((255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f), (255.f * ((float) elapsed)/1000.f)));
-                loading_percentage.setSize(sf::Vector2f(500.0f * ((float) elapsed/1000.0f), 5));
-                loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
-                loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
-                elapsed >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (elapsed - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
-                window->clear();
-                window->draw(background);
-                window->draw(splash_screen);
-                window->draw(splash_3d);
-                window->draw(loading_percentage);
-                window->draw(loading_text);
-                window->display();
+                loadingScreen(elapsed);
                 continue;
             }
             else {
@@ -1169,10 +1008,9 @@ int main() {
         if (shouldReexecutePipeline) {
             render_triangles.clear();
             // dibujar objetos
-            // drawMesh(box);
             Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
-            std::sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
+            std::sort(raster_pipeline.begin(), raster_pipeline.end(), Engine::compareDrawOrder);
 
             Engine :: rasterVector(raster_pipeline, window_settings, render_triangles);
             shouldReexecutePipeline = false;
@@ -1213,4 +1051,83 @@ int main() {
     thunder.clear();
     delete window;
     return 0;
+}
+
+void UI_events (int type, sf::Vector2i mouse_arr[2], int mouse_arr_index) {
+    for (auto &i : all_sliders) {
+        switch (type) {
+            case 0: // cuando usuario clickea
+                if (!((*i)->checkDragging(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkDragging(mouse_arr[1], 1);
+            break;
+            case 1: // cuando usuario desclickea
+                (*i)->setIsDragging(false, mouse_arr_index);
+            break;
+            case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
+                if (!((*i)->updatePercentage(mouse_arr[0])) && mouse_arr[0] != mouse_arr[1]) (*i)->updatePercentage(mouse_arr[1]);
+            break;
+            case 3: // dibujar
+                (*i)->draw(*window);
+            break;
+            case -999:
+                delete (*i);
+            break;
+            default:
+            break;
+        }
+    }
+    for (auto &i : all_buttons) {
+        switch (type) {
+            case 0: // cuando usuario clickea
+                if (!((*i)->checkClicking(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkClicking(mouse_arr[1], 1);
+            break;
+            case 1: // cuando usuario desclickea
+                (*i)->setIsClicking(false, mouse_arr_index);
+            break;
+            case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
+                (*i)->updateState();
+            break;
+            case 3: // dibujar
+                (*i)->draw(*window);
+            break;
+            case -999:
+                delete (*i);
+            break;
+            default:
+            break;
+        }
+    }
+    for (auto &i : all_switches) {
+        switch (type) {
+            case 0: // cuando usuario clickea
+                if (!((*i)->checkClicking(mouse_arr[0], 0)) && mouse_arr[0] != mouse_arr[1]) (*i)->checkClicking(mouse_arr[1], 1);
+            break;
+            case 1: // cuando usuario desclickea
+                (*i)->setIsClicking(false, 0);
+            break;
+            case 2: // cuando hay que actualizar el estado ... NO SE USA PORQUE ALGUNOS EVENTOS REQUIEREN REDIBUJADO O TRATAMIENTO ESPECIAL
+                (*i)->updateState();
+            break;
+            case 3: // dibujar
+                (*i)->draw(*window);
+            break;
+            case -999:
+                delete (*i);
+            break;
+            default:
+            break;
+        }
+    }
+    int j = 0;
+    for (auto &i : all_chievos) {
+        switch (type) {
+            case 3: // dibujar
+                (*i)->draw(*window);
+            break;
+            case -999:
+                delete (*i);
+            break;
+            default:
+            break;
+        }
+    }
 }
