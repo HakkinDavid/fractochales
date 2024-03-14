@@ -9,7 +9,6 @@
 #include <array>
 #include <iomanip>
 #include <sstream>
-#include <regex>
 #include "includes/Lightning/Lightning.h"
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
