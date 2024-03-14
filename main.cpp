@@ -88,10 +88,6 @@ Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
 void UI_events (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0);
 
-bool compareZOrder (tri3 &t1, tri3 &t2) {
-    return t1.camera_distance > t2.camera_distance;
-}
-
 int main() {
     #if !MOBILE
         if (!std::filesystem::exists("obj")) {
@@ -1014,7 +1010,7 @@ int main() {
             // dibujar objetos
             Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
-            std::sort(raster_pipeline.begin(), raster_pipeline.end(), compareZOrder);
+            std::sort(raster_pipeline.begin(), raster_pipeline.end(), Engine::compareDrawOrder);
 
             Engine :: rasterVector(raster_pipeline, window_settings, render_triangles);
             shouldReexecutePipeline = false;

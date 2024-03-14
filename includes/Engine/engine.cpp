@@ -549,3 +549,7 @@ void Engine :: calculateCameraView (mat4 & y_rotation_matrix, float & y_rotation
     camera_position_matrix = LinearAlgebra::PointingMatrix(camera_position, crosshair, up_direction);
     camera_view_matrix = LinearAlgebra::MatrixQuickInverse(camera_position_matrix);
 }
+
+bool Engine :: compareDrawOrder (tri3 &t1, tri3 &t2) {
+    return t1.camera_distance > t2.camera_distance;
+}
