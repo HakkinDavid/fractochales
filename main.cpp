@@ -353,9 +353,9 @@ int main() {
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> thunder; // crear el vector de vértices a renderizar
-    const float box_A [4] = {0,0,255,255},
-                box_B [4] = {0,255,0,255},
-                box_C [4] = {255,0,0,255};
+    const float box_A [4] = {0,0,127.5f,255},
+                box_B [4] = {0,127.5f,0,255},
+                box_C [4] = {127.5f,0,0,255};
     vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
     vector<float> * fracs = storm.getFracs();
 
@@ -654,7 +654,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_scale, &canonVertices, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
+        &lightning_color, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
         thunder.clear();
         thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
         thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
@@ -676,13 +676,14 @@ int main() {
             lightning_stream_obj << L"mtllib lightning_" << new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
+        const float z_offset = (lightning_depth/2.f) * lightning_scale;
         for (int v = 0; v < canonVertices->size(); v+=2) {
             const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 1);
-            const float start_z = (canonVertices->at(v)[2] * lightning_scale);
+            const float start_z = (canonVertices->at(v)[2] * lightning_scale) - z_offset;
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale + 1);
-            const float end_z = (canonVertices->at(v+1)[2] * lightning_scale);
+            const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
             const float thickness = (2.f);
             const vec3  vA (start_z, start_x, start_y),
                         vB (start_z, end_x, end_y + thickness),
