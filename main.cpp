@@ -344,7 +344,7 @@ int main() {
     float leeway = defaultLeeway;
     float branch = defaultBranch;
     float forcedHeight = 0.75F;
-    float downWeight = 0;
+    float downWeight = 0.1F;
     float crystallizate = 0;
     float humidity = 0.9F;
     float temperature = 15.0F;
