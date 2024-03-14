@@ -25,11 +25,11 @@ private:
     float leeway;
     float branch;
     int lightPoints;
-    vector<array<int, 3>> branches;
+    vector<array<int, 6>> branches;
     vector<array<int, 3>> canonVertices;
     vector<float> fracs;
 
-    int recSteps;
+    //int recSteps;
 
     float gridHeightInMeters;
     float forcedHeight;

@@ -18,7 +18,7 @@ Lightning::Lightning(int hei, int wid, int dep, float leeway, float branch, floa
     this->gridHeightInMeters = gridHeightInMeters;
     this->forcedHeight = forcedHeight;
     this->downWeight = downWeight;
-    this->recSteps = 0;
+    //this->recSteps = 0;
 
     this->lightPoints = 0;
     this->lightGrid = new bool** [this->hei];
@@ -82,72 +82,29 @@ void Lightning::randomize(void){
 } */
 
 void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
-    if (++recSteps >= 4500) return;
+    //if (++recSteps >= 4500) return;
     while(x >= 0 && x < hei && y >= 0 && y < wid && z >= 0 && z < dep){
         int diff[3] = { x - prevxyz[0], y - prevxyz[1], z - prevxyz[2] }; 
         vector<array<int, 3>> neighbors;
         array<int, 3> minVal, min2Val;
         float neighborVal[10] = {0};
-        int key = 9, min = 9, min2 = 9;
+        int key = 0, min = 0, min2 = 0;
 
         if(!lightGrid[x][y][z]){ lightPoints++; }
         lightGrid[x][y][z] = true;
 
         // Determine valid neighbors based on direction
-        int piece = 0;
-        for(int i=0; i<3; i++){
-            if(diff[i] != 0){ piece++; }  
-        }
-        switch(piece){
-            case 1:
-            {
-                int a = -1, b = 0;
-                for(int i=0; i<9; i++){ neighbors.push_back({x+diff[0], y+diff[1], z+diff[2]}); }
-                for(int i=0; i<3; i++){
-                    if(diff[i] == 0){
-                        if(a != -1){ b = i; break; }
-                        else{ a = i; }
+        for(int i=-1; i<=1; i++){
+            for(int j=-1; j<=1; j++){
+                for(int k=-1; k<=1; k++){
+                    if((diff[0]*i + diff[1]*j + diff[2]*k) > 0){
+                        neighbors.push_back({x+i, y+j, z+k});
                     }
                 }
-                neighbors[0][a] += 1; neighbors[1][a] += 1; neighbors[2][a] += 1;
-                neighbors[6][a] -= 1; neighbors[7][a] -= 1; neighbors[8][a] -= 1;
-                neighbors[0][b] += 1; neighbors[3][b] += 1; neighbors[6][b] += 1;
-                neighbors[2][b] -= 1; neighbors[5][b] -= 1; neighbors[8][b] -= 1;
-                break;
             }
-            case 2:
-            {
-                int a = 0, b = -1, c = 0;
-                for(int i=0; i<9; i++){ neighbors.push_back({x+diff[0], y+diff[1], z+diff[2]}); }
-                for(int i=0; i<3; i++){
-                    if(diff[i] == 0){ a = i; }
-                    else if(b != -1){ c = i; }
-                    else{ b = i; }
-                }
-                neighbors[0][a] += 1; neighbors[1][a] += 1; neighbors[2][a] += 1;
-                neighbors[6][a] -= 1; neighbors[7][a] -= 1; neighbors[8][a] -= 1;
-                neighbors[0][b] -= diff[b]; neighbors[3][b] -= diff[b]; neighbors[6][b] -= diff[b]; 
-                neighbors[2][c] -= diff[c]; neighbors[5][c] -= diff[c]; neighbors[8][c] -= diff[c]; 
-                break;
-            }
-            case 3:
-            {
-                neighbors.push_back({x+diff[0], y+diff[1], z+diff[2]});
-                neighbors.push_back({x, y+diff[1], z+diff[2]});
-                neighbors.push_back({x+diff[0], y, z+diff[2]});
-                neighbors.push_back({x+diff[0], y+diff[1], z});
-                neighbors.push_back({x, y, z+diff[2]});
-                neighbors.push_back({x+diff[0], y, z});
-                neighbors.push_back({x, y+diff[1], z});
-                neighbors.push_back({x-diff[0], y+diff[1], z+diff[2]});
-                neighbors.push_back({x+diff[0], y-diff[1], z+diff[2]});
-                neighbors.push_back({x+diff[0], y+diff[1], z-diff[2]});
-                key++; min++; min2++;
-                break;
-            }
-            default:
-            break;
         }
+        key = neighbors.size();
+        min = key; min2 = key;
 
         // Find the path of least resistance
         for(int i=0; i<key; i++){
@@ -170,12 +127,11 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
                     neighborVal[i] -= downWeight;
                 }
                 if(neighborVal[i] > 0){
-                    if((piece != 3 && min == 9) || (piece == 3 && min == 10) || neighborVal[i] > neighborVal[min]){ min = i; }
+                    if((min >= key) || neighborVal[i] > neighborVal[min]){ min = i; }
                 }
             }
         }
-        if((piece != 3 && min == 9) || (piece == 3 && min == 10)) {
-            branches.push_back({x, y, z});
+        if((min >= key)) {
             return;
         } // End of branch
 
@@ -183,13 +139,13 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
         // Check for branching opportunities
         for(int i=0; i<key; i++){
             if(i != min && neighborVal[i] >= neighborVal[min]-branch){
-                if((piece != 3 && min2 == 9) || (piece == 3 && min2 == 10) || neighborVal[i] > neighborVal[min2]){ min2 = i; }
+                if((min2 >= key) || neighborVal[i] > neighborVal[min2]){ min2 = i; }
             }
         }
 
         // Wipe neighbors
         minVal[0] = neighbors[min][0]; minVal[1] = neighbors[min][1]; minVal[2] = neighbors[min][2]; 
-        if((piece != 3 && min2 < 9) || (piece == 3 && min2 < 10)){
+        if((min2 < key)){
             min2Val[0] = neighbors[min2][0]; min2Val[1] = neighbors[min2][1]; min2Val[2] = neighbors[min2][2];
         }
         neighbors.clear();
@@ -198,18 +154,12 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
         prevxyz[0] = x; prevxyz[1] = y; prevxyz[2] = z;
         canonVertices.push_back({x, y, z});
         canonVertices.push_back(minVal);
-        if((piece != 3 && min2 == 9) || (piece == 3 && min2 == 10)){ // No branching
-            x = minVal[0];
-            y = minVal[1];
-            z = minVal[2];
+        if((min2 < key)){ 
+            branches.push_back({min2Val[0], min2Val[1], min2Val[2], x, y, z});
         }
-        else{                                                        // Yes branching >:)
-            canonVertices.push_back({x, y, z});
-            canonVertices.push_back(min2Val);
-            traverse(minVal[0], minVal[1], minVal[2], prevxyz);
-            traverse(min2Val[0], min2Val[1], min2Val[2], prevxyz);
-            return;
-        }
+        x = minVal[0];
+        y = minVal[1];
+        z = minVal[2];
 
     } // end while loop
 
@@ -242,51 +192,39 @@ void Lightning::superTraverse(){
     canonVertices.push_back({x, y, z});
 
     traverse(x, y, z, prevxyz);
-    
 
     // Traversing loop
     do{
-        // Find lowest and closest to center lightning point
-        x = -1; y = -1; z = -1;
-        for(int i = hei-1; i >= 0; i--){
-            for(int j = wid-1; j >= 0; j--){
-                for(int k = dep-1; k >= 0; k--){
-                    if(lightGrid[i][j][k]){ 
-                        x = i; 
-                        if(sqrt((j-midwid)^2 + (k-middep)^2) < sqrt((y-midwid)^2 + (z-middep)^2)){ y = j; z = k; }
-                    }
-                }
-            }
-            if(x != -1){ break; }
-        }
+        // Check last point
+        x = canonVertices.back()[0];
 
-        // Lowest point isn't low enough
+        // Last point isn't low enough
         if(x < hei*forcedHeight){
-            // If lowest point is a branch ending, delete branch
-            int dex = branches.size();
-            for(int i=0; i < branches.size(); i++){
-                if(branches[i][0] == x && branches[i][1] == y && branches[i][2] == z){ dex = i; }
-            }
-            if(dex != branches.size()){
-                branches[dex].swap(branches.back());
-                branches.pop_back();
+            //Backtrack
+            canonVertices.pop_back();
+            canonVertices.pop_back();
+            lightPoints--;
+
+            if(canonVertices.size() == 0){
+                randomize();
+                superTraverse();
+                return;
             }
 
-            // Find its estranged dad
-            for(int i=canonVertices.size(); i>0; i--){
-                if(i%2 == 1){
-                    if(canonVertices[i][0] == x && canonVertices[i][1] == y && canonVertices[i][2] == z){
-                        for(int j=0; j<3; j++){ prevxyz[j] = canonVertices[i-1][j]; }
-                        break;
-                    }
-                }
+            x = canonVertices.back()[0];
+            y = canonVertices.back()[1];
+            z = canonVertices.back()[2];
+            prevxyz[0] = canonVertices[canonVertices.size()-2][0];
+            prevxyz[1] = canonVertices[canonVertices.size()-2][1];
+            prevxyz[2] = canonVertices[canonVertices.size()-2][2];
+
+            if(x == branches.back()[3] && y == branches.back()[4] && z == branches.back()[5]){
+                branches.pop_back();
             }
 
             // Force to continue going down
             randGrid[x][y][z] = 2;
-            canonVertices.push_back({prevxyz[0], prevxyz[1], prevxyz[2]});
-            canonVertices.push_back({x, y, z});
-            traverse(x, y, z, prevxyz, true);
+            traverse(x, y, z, prevxyz);
         }
 
     } while(x < hei*forcedHeight); // Loop if not low enough
@@ -323,7 +261,7 @@ float* Lightning::directionComp(void){
 void Lightning::fractalComp(void){
     float avgLen = 0, S = exp(1), N = exp(1);
     int mainLen = 0, dex = 0;
-    array<int, 3> mainB = {0,0,0};
+    array<int, 6> mainB = {0,0,0};
     vector<int> branLens;
 
     // Auxiliary int grid
