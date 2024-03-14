@@ -351,7 +351,7 @@ int main() {
     bool write_obj = false;
     bool isFocused = true;
     bool shouldReexecutePipeline = true;
-    bool full_quality = false;
+    bool full_quality = true;
     
     int drawPile = 0;
     int zapCount = 0;
@@ -460,15 +460,15 @@ int main() {
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale + 1);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
-            const float thickness = (2.f);
-            const vec3  vA (start_z, start_x, start_y),
-                        vB (start_z, end_x, end_y + thickness),
-                        vC (start_z, start_x + thickness, start_y),
-                        vD (start_z, end_x + thickness, end_y + thickness),
-                        vE (end_z, start_x, start_y),
-                        vF (end_z, end_x, end_y + thickness),
-                        vG (end_z, start_x + thickness, start_y),
-                        vH (end_z, end_x + thickness, end_y + thickness);
+            const float thickness = 2.f;
+            const vec3  vA (start_z - thickness/2.f, start_x + thickness/2.f, start_y + thickness/2.f),
+                        vB (end_z - thickness/2.f, end_x + thickness/2.f, end_y - thickness/2.f),
+                        vC (start_z - thickness/2.f, start_x - thickness/2.f, start_y + thickness/2.f),
+                        vD (end_z - thickness/2.f, end_x - thickness/2.f, end_y - thickness/2.f),
+                        vE (start_z + thickness/2.f, start_x + thickness/2.f, start_y + thickness/2.f),
+                        vF (end_z + thickness/2.f, end_x + thickness/2.f, end_y - thickness/2.f),
+                        vG (start_z + thickness/2.f, start_x - thickness/2.f, start_y + thickness/2.f),
+                        vH (end_z + thickness/2.f, end_x - thickness/2.f, end_y - thickness/2.f);
             // frontface (a.k.a. main lightning)
             if (full_quality || v % 4 != 0) {
                 thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
