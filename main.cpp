@@ -526,7 +526,7 @@ int main() {
         const float final_leeway = leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f),
                     final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
                     final_downWeight = downWeight+(crystallizate*humidity),
-                    final_forcedHeight = 0; // forcedHeight+((temperature-15)*0.02f);
+                    final_forcedHeight = forcedHeight+((temperature-15)*0.02f);
         storm = Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
         lightning_stream_txt << utils::getFileHeader(2)
         << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
