@@ -67,36 +67,51 @@ tri3::~tri3() {
     this->color_C[3] = 0;
     this->camera_distance = 0;
 }
-bool mesh :: LoadObj(std::string Filename) {
-    std::ifstream file(Filename);
-    if (!file.is_open())
+bool mesh :: LoadObj(std::string obj_filename) {
+    std::wifstream obj_file(obj_filename);
+    std::wifstream mtl_file(obj_filename.replace(obj_filename.end()-3, obj_filename.end(), "mtl"));
+    if (!obj_file.is_open()) {
         return false;
+    }
+
 
     std::vector<vec3> vertices;
+    std::wstring line, bit;
+    float fvalue[3] = {0}, current_color[4] = {255.f, 255.f, 255.f, 255.f};
+    int ivalue[3] = {0};
+    std::wistringstream in_line;
 
-    while (!file.eof())
-    {
-        char line[128];
-        file.getline(line, 128);
-
-        std :: stringstream stream;
-        stream << line;
-
-        char junk;
-        if (line[0] == 'v')
-        {
-            vec3 v;
-            stream >> junk >> v.x >> v.y >> v.z;
-            vertices.push_back(v);
+    if (mtl_file.is_open()) {
+        std::wstring b;
+        while (mtl_file >> b) {
+            if (b.compare(L"Kd") == 0) {
+                mtl_file >> current_color[0] >> current_color[1] >> current_color[2];
+                current_color[0] *= 255.f;
+                current_color[1] *= 255.f;
+                current_color[2] *= 255.f;
+                break;
+            }
         }
-        if (line[0] == 'f')
-        {
-            int f[3];
-            stream >> junk >> f[0] >> f[1] >> f[2];
-            polys.push_back({ vertices[f[0] - 1], vertices[f[1] - 1], vertices[f[2] - 1] });
-        }
-
+        mtl_file.close();
     }
+
+    while (getline(obj_file, line))
+    {
+        in_line.str(line);
+        if (line.size() > 2 && line.at(1) == L' ') {
+            if (line.at(0) == L'v') {
+                in_line >> bit >> fvalue[0] >> fvalue[1] >> fvalue[2];
+                vertices.emplace_back(fvalue[0], fvalue[1], fvalue[2]);
+            }
+            else if (line.at(0) == L'f') {
+                in_line >> bit >> ivalue[0] >> ivalue[1] >> ivalue[2];
+                polys.emplace_back(vertices[ivalue[0] - 1], vertices[ivalue[1] - 1], vertices[ivalue[2] - 1], current_color, current_color, current_color);
+            }
+        }
+        in_line.str(std::wstring());
+    }
+
+    obj_file.close();
 
     return true;
 }

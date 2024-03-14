@@ -53,7 +53,7 @@ class mesh {
     public:
 	std::vector<tri3> polys;
 
-	bool LoadObj(std::string Filename);
+	bool LoadObj(std::string obj_filename);
 
 };
 
