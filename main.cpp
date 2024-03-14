@@ -9,6 +9,7 @@
 #include <array>
 #include <iomanip>
 #include <sstream>
+#include <functional>
 #include "includes/Lightning/Lightning.h"
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
@@ -87,6 +88,11 @@ Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch
 Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
 void UI_events (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0);
+void loadingScreen (sf::Sprite &background, sf::RectangleShape &loading_percentage, sf::Sprite &splash_screen, sf::Sprite &splash_3d, sf::Text &loading_text, float percentage);
+void leftMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg);
+void rightMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg);
+void handleMovement (bool &shouldReexecutePipeline, bool &goUp, bool &goDown, bool &goFast, bool &goForward, bool &goLeft, bool &goBackward, bool &goRight, bool &lookLeft, bool &lookRight, bool &lookUp, bool &lookDown, float &x_rotation, float &y_rotation, float &z_rotation, bool &hide_left, vec3 &camera_position, vec3 &fly_up_direction, vec3 &forward_direction, vec3 &right_direction, float &camera_x_rotation, sf::Time &cycle_time_diff, float &camera_y_rotation, std::chrono::system_clock::time_point &start_time, bool &yetToBoot, const std::function<void()> &init_ui, const std::function<void()> &retypeInfo);
+void screenSaver (sf::Sprite &background, sf::Sprite &splash_screen, bool undo = false);
 
 int main() {
     #if !MOBILE
@@ -276,22 +282,7 @@ int main() {
 
     splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
 
-    auto loadingScreen = [&background, &loading_percentage, &splash_screen, &splash_3d, &loading_text] (float percentage = 0) {
-        background.setColor(sf::Color((255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f)));
-        loading_percentage.setSize(sf::Vector2f(500.0f * ((float) percentage/1000.0f), 5));
-        loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
-        loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
-        percentage >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (percentage - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
-        window->clear();
-        window->draw(background);
-        window->draw(splash_screen);
-        window->draw(splash_3d);
-        window->draw(loading_percentage);
-        window->draw(loading_text);
-        window->display();
-    };
-
-    loadingScreen(0);
+    loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> thunder; // crear el vector de vértices a renderizar
@@ -363,30 +354,6 @@ int main() {
     int zapCount = 0;
 
     bool achieve_vars [2] = {false};
-
-    auto leftMenuState = [&] () {
-        if (hide_left) {
-            hide_left_switch->changePosition(0, hide_left_switch->getPosition().y);
-        }
-        else {
-            if (!MOBILE) hide_left_switch->changePosition(left_menu_bg.getSize().x, hide_left_switch->getPosition().y);
-        }
-        if (MOBILE && !hide_right) {
-            hide_left_switch->changePosition(-hide_left_switch->getSize().x, hide_left_switch->getPosition().y);
-        }
-    };
-
-    auto rightMenuState = [&] () {
-        if (hide_right) {
-            hide_right_switch->changePosition(window->getSize().x - hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
-        }
-        else {
-            if (!MOBILE) hide_right_switch->changePosition(window->getSize().x - right_menu_bg.getSize().x - hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
-        }
-        if (MOBILE && !hide_left) {
-            hide_right_switch->changePosition(window->getSize().x + hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
-        }
-    };
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
@@ -719,15 +686,15 @@ int main() {
         full_quality_switch = new Switch (full_quality, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.84f, font, L"Calidad total", L"Optimizar", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(42, 0, 115), sf::Color(79, 0, 115), sf::Color::White, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () {
             recalculateLightningVertex();
         });
-        hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&leftMenuState, &rightMenuState, &hide_left, &hide_right, &either_menu_opened] () {
-            leftMenuState();
-            rightMenuState();
+        hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&left_menu_bg, &right_menu_bg, &hide_left, &hide_right, &either_menu_opened] () {
+            leftMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
+            rightMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
             if (hide_left && hide_right) either_menu_opened = false;
             else either_menu_opened = true;
         });
-        hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&leftMenuState, &rightMenuState, &hide_left, &hide_right, &either_menu_opened] () {
-            leftMenuState();
-            rightMenuState();
+        hide_right_switch = new Switch (hide_right, window->getSize().x - (MOBILE ? 100 : 50), window->getSize().y*0.375f, font, L">", L"<", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&left_menu_bg, &right_menu_bg, &hide_left, &hide_right, &either_menu_opened] () {
+            leftMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
+            rightMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
             if (hide_left && hide_right) either_menu_opened = false;
             else either_menu_opened = true;
         });
@@ -736,161 +703,12 @@ int main() {
         chievo1 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[0]; });
         chievo2 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[1]; });
 
-        leftMenuState();
-        rightMenuState();
+        leftMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
+        rightMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
         shouldReexecutePipeline = true;
     };
     
     init_ui();
-
-    auto handleMovement = [&shouldReexecutePipeline, &goUp, &goDown, &goFast, &goForward, &goLeft, &goBackward, &goRight, &lookLeft, &lookRight, &lookUp, &lookDown, &x_rotation, &y_rotation, &z_rotation, &hide_left, &camera_position, &fly_up_direction, &forward_direction, &right_direction, &camera_x_rotation, &cycle_time_diff, &camera_y_rotation, &zapping, &backgroundButton, &hide_right_switch, &hide_left_switch, &start_time, &yetToBoot, &init_ui, &retypeInfo] () {
-        sf::Vector2i e [2];
-        bool changed = false;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
-			camera_position = LinearAlgebra::AddVec(camera_position, fly_up_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
-			camera_position = LinearAlgebra::SubVec(camera_position, fly_up_direction);
-            changed = true;
-		}
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
-			forward_direction = LinearAlgebra::VecxScalar(forward_direction, 4.f);
-            right_direction = LinearAlgebra::VecxScalar(right_direction, 4.f);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
-			camera_position = LinearAlgebra::AddVec(camera_position, forward_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
-			camera_position = LinearAlgebra::SubVec(camera_position, right_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
-			camera_position = LinearAlgebra::SubVec(camera_position, forward_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
-			camera_position = LinearAlgebra::AddVec(camera_position, right_direction);
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
-			camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight || Controller::getAxisPosition(0, sf::Joystick::Z) >= 50.f) {
-			camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp || Controller::getAxisPosition(0, sf::Joystick::R) <= -50.f) {
-			camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown || Controller::getAxisPosition(0, sf::Joystick::R) >= 50.f) {
-			camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
-            changed = true;
-		}
-        if (Controller::isPressed(DS5::L2)) {
-            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200.f;
-            else {
-                y_rotation = 2*Physics::PI;
-            }
-            shouldReexecutePipeline = true;
-        }
-        if (Controller::isPressed(DS5::R2)) {
-            if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200.f;
-            else {
-                y_rotation = 0;
-            }
-            shouldReexecutePipeline = true;
-        }
-        if (Controller::isPressed(DS5::L1)) {
-            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180.f;
-            else {
-                x_rotation = 2*Physics::PI;
-            }
-            shouldReexecutePipeline = true;
-        }
-        if (Controller::isPressed(DS5::R1)) {
-            if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180.f;
-            else {
-                x_rotation = 0;
-            }
-            shouldReexecutePipeline = true;
-        }
-        if (Controller::getAxisPosition(0, sf::Joystick::PovX) >= 50.f) {
-            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation -= Physics::PI/180.f;
-            else {
-                z_rotation = 2*Physics::PI;
-            }
-            shouldReexecutePipeline = true;
-        }
-        if (Controller::getAxisPosition(0, sf::Joystick::PovX) <= -50.f) {
-            if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation += Physics::PI/180.f;
-            else {
-                z_rotation = 0;
-            }
-            shouldReexecutePipeline = true;
-        }
-        if (Controller::isPressed(DS5::TRIANGLE)) {
-            bool silently_shown = hide_left;
-            hide_left = false;
-            e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
-            UI_events(0, e);
-            hide_left = silently_shown;
-        }
-        if (Controller::isPressed(DS5::SQUARE)) {
-            bool silently_shown = hide_left;
-            hide_left = false;
-            e[0] = sf::Vector2i(backgroundButton->getPosition().x + backgroundButton->getSize().x/2, backgroundButton->getPosition().y + backgroundButton->getSize().y/2);
-            UI_events(0, e);
-            hide_left = silently_shown;
-        }
-        if (Controller::isPressed(DS5::OPTIONS)) {
-            e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
-            UI_events(0, e);
-        }
-        if (Controller::isPressed(DS5::CREATE)) {
-            e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
-            UI_events(0, e);
-        }
-        if (Controller::isPressed(DS5::PS) || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-            start_time = std::chrono::system_clock::now();
-            yetToBoot = true;
-            init_ui();
-        }
-
-		if (camera_x_rotation >= 2.0f * 3.14159f) {
-			camera_x_rotation -= 2.0f * 3.14159f;
-		}
-		if (camera_x_rotation <= 0.0f) {
-			camera_x_rotation += 2.0f * 3.14159f;
-		}
-		if (camera_y_rotation >= 3.14159f / 2.0f) {
-			camera_y_rotation = 3.14100f / 2.0f;
-		}
-		if (camera_y_rotation <= -3.14159f / 2.0f) {
-			camera_y_rotation = -3.14100f / 2.0f;
-		}
-
-        if (changed) {
-            retypeInfo();
-            shouldReexecutePipeline = true;
-        }
-    };
-
-    auto screenSaver = [&background, &splash_screen] (bool undo = false) {
-        if (undo) {
-            background.setColor(sf::Color::White);
-        }
-        else {
-            background.setColor(sf::Color(127.5f, 127.5f, 127.5f));
-            window->clear();
-            window->draw(background);
-            window->draw(splash_screen);
-            window->display();
-        }
-    };
 
     start_time = std::chrono::system_clock::now();
     current_timestamp = start_time;
@@ -921,11 +739,11 @@ int main() {
             }
             else if (event.type == sf::Event::LostFocus) {
                 isFocused = false;
-                screenSaver();
+                screenSaver(background, splash_screen);
             }
             else if (event.type == sf::Event::GainedFocus) {
                 isFocused = true;
-                screenSaver(true);
+                screenSaver(background, splash_screen, true);
             }
         }
 
@@ -933,7 +751,7 @@ int main() {
             current_timestamp = std::chrono::system_clock::now();
             elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - start_time).count();
             if (elapsed < 1000) {
-                loadingScreen(elapsed);
+                loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, elapsed);
                 continue;
             }
             else {
@@ -1000,7 +818,7 @@ int main() {
 
         // controles de movimiento
         Engine :: calculateMotion(forward_direction, look_direction, up_direction, right_direction, fly_up_direction, cycle_time_diff);
-        handleMovement();
+        handleMovement(shouldReexecutePipeline, goUp, goDown, goFast, goForward, goLeft, goBackward, goRight, lookLeft, lookRight, lookUp, lookDown, x_rotation, y_rotation, z_rotation, hide_left, camera_position, fly_up_direction, forward_direction, right_direction, camera_x_rotation, cycle_time_diff, camera_y_rotation, start_time, yetToBoot, init_ui, retypeInfo);
         Engine :: calculateCameraView (y_rotation_matrix, y_rotation, x_rotation_matrix, x_rotation, z_rotation_matrix, z_rotation, movement_matrix, world_bounds, crosshair, camera_x_rotation_matrix, camera_x_rotation, camera_y_rotation_matrix, camera_y_rotation, look_direction, camera_position, camera_position_matrix, up_direction, camera_view_matrix);
 
         UI_events(2, mousepos_update);
@@ -1131,3 +949,191 @@ void UI_events (int type, sf::Vector2i mouse_arr[2], int mouse_arr_index) {
         }
     }
 }
+
+void loadingScreen (sf::Sprite &background, sf::RectangleShape &loading_percentage, sf::Sprite &splash_screen, sf::Sprite &splash_3d, sf::Text &loading_text, float percentage = 0) {
+    background.setColor(sf::Color((255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f), (255.f * ((float) percentage)/1000.f)));
+    loading_percentage.setSize(sf::Vector2f(500.0f * ((float) percentage/1000.0f), 5));
+    loading_percentage.setPosition(sf::Vector2f((window->getSize().x - loading_percentage.getLocalBounds().width)/2, splash_screen.getLocalBounds().height + (window->getSize().y - splash_screen.getLocalBounds().height)/2));
+    loading_text.setPosition(sf::Vector2f((window->getSize().x - loading_text.getLocalBounds().width)/2, loading_percentage.getPosition().y + 10));
+    percentage >= 500 ? splash_3d.setColor(sf::Color(255, 255, 255, 255.f * (percentage - 500.f) / 500.f)) : splash_3d.setColor(sf::Color(255, 255, 255, 0));
+    window->clear();
+    window->draw(background);
+    window->draw(splash_screen);
+    window->draw(splash_3d);
+    window->draw(loading_percentage);
+    window->draw(loading_text);
+    window->display();
+};
+
+void leftMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg) {
+    if (hide_left) {
+        hide_left_switch->changePosition(0, hide_left_switch->getPosition().y);
+    }
+    else {
+        if (!MOBILE) hide_left_switch->changePosition(left_menu_bg.getSize().x, hide_left_switch->getPosition().y);
+    }
+    if (MOBILE && !hide_right) {
+        hide_left_switch->changePosition(-hide_left_switch->getSize().x, hide_left_switch->getPosition().y);
+    }
+};
+
+void rightMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg) {
+    if (hide_right) {
+        hide_right_switch->changePosition(window->getSize().x - hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
+    }
+    else {
+        if (!MOBILE) hide_right_switch->changePosition(window->getSize().x - right_menu_bg.getSize().x - hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
+    }
+    if (MOBILE && !hide_left) {
+        hide_right_switch->changePosition(window->getSize().x + hide_right_switch->getSize().x, hide_right_switch->getPosition().y);
+    }
+};
+
+void handleMovement (bool &shouldReexecutePipeline, bool &goUp, bool &goDown, bool &goFast, bool &goForward, bool &goLeft, bool &goBackward, bool &goRight, bool &lookLeft, bool &lookRight, bool &lookUp, bool &lookDown, float &x_rotation, float &y_rotation, float &z_rotation, bool &hide_left, vec3 &camera_position, vec3 &fly_up_direction, vec3 &forward_direction, vec3 &right_direction, float &camera_x_rotation, sf::Time &cycle_time_diff, float &camera_y_rotation, std::chrono::system_clock::time_point &start_time, bool &yetToBoot, const std::function<void()> &init_ui, const std::function<void()> &retypeInfo) {
+    sf::Vector2i e [2];
+    bool changed = false;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || goUp || Controller::isPressed(DS5::CROSS)) {
+        camera_position = LinearAlgebra::AddVec(camera_position, fly_up_direction);
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || goDown || Controller::isPressed(DS5::R3)) {
+        camera_position = LinearAlgebra::SubVec(camera_position, fly_up_direction);
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || goFast || Controller::isPressed(DS5::L3)) {
+        forward_direction = LinearAlgebra::VecxScalar(forward_direction, 4.f);
+        right_direction = LinearAlgebra::VecxScalar(right_direction, 4.f);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || goForward || Controller::getAxisPosition(0, sf::Joystick::Y) <= -50.f) {
+        camera_position = LinearAlgebra::AddVec(camera_position, forward_direction);
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || goLeft || Controller::getAxisPosition(0, sf::Joystick::X) <= -50.f) {
+        camera_position = LinearAlgebra::SubVec(camera_position, right_direction);
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || goBackward || Controller::getAxisPosition(0, sf::Joystick::Y) >= 50.f) {
+        camera_position = LinearAlgebra::SubVec(camera_position, forward_direction);
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || goRight || Controller::getAxisPosition(0, sf::Joystick::X) >= 50.f) {
+        camera_position = LinearAlgebra::AddVec(camera_position, right_direction);
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || lookLeft || Controller::getAxisPosition(0, sf::Joystick::Z) <= -50.f) {
+        camera_x_rotation -= 2.0f * cycle_time_diff.asSeconds();
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || lookRight || Controller::getAxisPosition(0, sf::Joystick::Z) >= 50.f) {
+        camera_x_rotation += 2.0f * cycle_time_diff.asSeconds();
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || lookUp || Controller::getAxisPosition(0, sf::Joystick::R) <= -50.f) {
+        camera_y_rotation += 2.0f * cycle_time_diff.asSeconds();
+        changed = true;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || lookDown || Controller::getAxisPosition(0, sf::Joystick::R) >= 50.f) {
+        camera_y_rotation -= 2.0f * cycle_time_diff.asSeconds();
+        changed = true;
+    }
+    if (Controller::isPressed(DS5::L2)) {
+        if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation -= (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::U) + 100)/200.f;
+        else {
+            y_rotation = 2*Physics::PI;
+        }
+        shouldReexecutePipeline = true;
+    }
+    if (Controller::isPressed(DS5::R2)) {
+        if (y_rotation <= 2*Physics::PI && y_rotation >= 0) y_rotation += (Physics::PI/45.f) * (Controller::getAxisPosition(0, sf::Joystick::V) + 100)/200.f;
+        else {
+            y_rotation = 0;
+        }
+        shouldReexecutePipeline = true;
+    }
+    if (Controller::isPressed(DS5::L1)) {
+        if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation -= Physics::PI/180.f;
+        else {
+            x_rotation = 2*Physics::PI;
+        }
+        shouldReexecutePipeline = true;
+    }
+    if (Controller::isPressed(DS5::R1)) {
+        if (x_rotation <= 2*Physics::PI && x_rotation >= 0) x_rotation += Physics::PI/180.f;
+        else {
+            x_rotation = 0;
+        }
+        shouldReexecutePipeline = true;
+    }
+    if (Controller::getAxisPosition(0, sf::Joystick::PovX) >= 50.f) {
+        if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation -= Physics::PI/180.f;
+        else {
+            z_rotation = 2*Physics::PI;
+        }
+        shouldReexecutePipeline = true;
+    }
+    if (Controller::getAxisPosition(0, sf::Joystick::PovX) <= -50.f) {
+        if (z_rotation <= 2*Physics::PI && z_rotation >= 0) z_rotation += Physics::PI/180.f;
+        else {
+            z_rotation = 0;
+        }
+        shouldReexecutePipeline = true;
+    }
+    if (Controller::isPressed(DS5::TRIANGLE)) {
+        bool silently_shown = hide_left;
+        hide_left = false;
+        e[0] = sf::Vector2i(zapping->getPosition().x + zapping->getSize().x/2, zapping->getPosition().y + zapping->getSize().y/2);
+        UI_events(0, e);
+        hide_left = silently_shown;
+    }
+    if (Controller::isPressed(DS5::SQUARE)) {
+        bool silently_shown = hide_left;
+        hide_left = false;
+        e[0] = sf::Vector2i(backgroundButton->getPosition().x + backgroundButton->getSize().x/2, backgroundButton->getPosition().y + backgroundButton->getSize().y/2);
+        UI_events(0, e);
+        hide_left = silently_shown;
+    }
+    if (Controller::isPressed(DS5::OPTIONS)) {
+        e[0] = sf::Vector2i(hide_right_switch->getPosition().x + hide_right_switch->getSize().x/2, hide_right_switch->getPosition().y + hide_right_switch->getSize().y/2);
+        UI_events(0, e);
+    }
+    if (Controller::isPressed(DS5::CREATE)) {
+        e[0] = sf::Vector2i(hide_left_switch->getPosition().x + hide_left_switch->getSize().x/2, hide_left_switch->getPosition().y + hide_left_switch->getSize().y/2);
+        UI_events(0, e);
+    }
+    if (Controller::isPressed(DS5::PS) || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+        start_time = std::chrono::system_clock::now();
+        yetToBoot = true;
+        init_ui();
+    }
+
+    if (camera_x_rotation >= 2.0f * 3.14159f) {
+        camera_x_rotation -= 2.0f * 3.14159f;
+    }
+    if (camera_x_rotation <= 0.0f) {
+        camera_x_rotation += 2.0f * 3.14159f;
+    }
+    if (camera_y_rotation >= 3.14159f / 2.0f) {
+        camera_y_rotation = 3.14100f / 2.0f;
+    }
+    if (camera_y_rotation <= -3.14159f / 2.0f) {
+        camera_y_rotation = -3.14100f / 2.0f;
+    }
+
+    if (changed) {
+        retypeInfo();
+        shouldReexecutePipeline = true;
+    }
+};
+
+void screenSaver (sf::Sprite &background, sf::Sprite &splash_screen, bool undo) {
+    if (undo) {
+        background.setColor(sf::Color::White);
+    }
+    else {
+        background.setColor(sf::Color(127.5f, 127.5f, 127.5f));
+        window->clear();
+        window->draw(background);
+        window->draw(splash_screen);
+        window->display();
+    }
+};
