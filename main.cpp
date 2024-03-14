@@ -10,6 +10,12 @@
 #include <iomanip>
 #include <sstream>
 #include <functional>
+
+#if !MOBILE
+    #include <fstream>
+    #include <filesystem>
+#endif
+
 #include "includes/Lightning/Lightning.h"
 #include "includes/SFML/Graphics.hpp"
 #include "includes/SFML/Audio.hpp"
@@ -22,14 +28,11 @@
 #include "includes/Controller/controller.h"
 #include "includes/Utils/utils.h"
 
+
 sf::RenderWindow * window = nullptr;
 RenderSettings window_settings;
 wstringstream console;
 
-#if !MOBILE
-    #include <fstream>
-    #include <filesystem>
-#endif
 
 Slider
     * redSlider = nullptr,
