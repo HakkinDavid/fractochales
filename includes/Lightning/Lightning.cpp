@@ -208,6 +208,7 @@ void Lightning::superTraverse(){
             if(canonVertices.size() == 0){
                 randomize();
                 superTraverse();
+                std::cout << "FUCK!!" << std::endl;
                 return;
             }
 
@@ -228,7 +229,7 @@ void Lightning::superTraverse(){
         }
 
     } while(x < hei*forcedHeight); // Loop if not low enough
-    
+
 }
 
 //directionComp should be called before fractalComp
