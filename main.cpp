@@ -456,10 +456,10 @@ int main() {
         #endif
         for (int v = 0; v < canonVertices->size(); v+=2) {
             const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
-            const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 1);
+            const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 2);
             const float start_z = (canonVertices->at(v)[2] * lightning_scale) - z_offset;
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
-            const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale + 1);
+            const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
             const vec3  vA (start_z - lightning_thickness, start_x + lightning_thickness, start_y + lightning_thickness),
                         vB (end_z - lightning_thickness, end_x + lightning_thickness, end_y - lightning_thickness),
