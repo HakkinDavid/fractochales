@@ -68,8 +68,7 @@ Button
 Switch
     * hide_left_switch = nullptr,
     * hide_right_switch = nullptr,
-    * spin_switch = nullptr,
-    * full_quality_switch = nullptr;
+    * spin_switch = nullptr;
 Achieve
     * chievo1 = nullptr,
     * chievo2 = nullptr;
@@ -86,7 +85,7 @@ Button ** all_buttons [] =
     &closeButton
 };
 // colocar los interruptores que recibirán eventos en grupo
-Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch, &full_quality_switch};
+Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch};
 // colocar los logros que recibirán eventos en grupo
 Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
