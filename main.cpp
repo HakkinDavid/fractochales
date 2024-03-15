@@ -351,7 +351,6 @@ int main() {
     bool write_obj = false;
     bool isFocused = true;
     bool shouldReexecutePipeline = true;
-    bool full_quality = true;
     
     int drawPile = 0;
     int zapCount = 0;
@@ -426,7 +425,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_thickness, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
+        &lightning_color, &lightning_thickness, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C] () {
         thunder.clear();
         thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
         thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
@@ -638,9 +637,6 @@ int main() {
             x_rotation = 0.f;
             y_rotation = 0.f;
             z_rotation = 0.f;
-        });
-        full_quality_switch = new Switch (full_quality, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.84f, font, L"Calidad total", L"Optimizar", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(42, 0, 115), sf::Color(79, 0, 115), sf::Color::White, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () {
-            recalculateLightningVertex();
         });
         hide_left_switch = new Switch (hide_left, 0, window->getSize().y*0.375f, font, L"<", L">", (MOBILE ? 100 : 50), window->getSize().y*0.25f, sf::Color(90, 90, 90, 90), sf::Color(90, 90, 90, 90), sf::Color::White, nullptr, [] () { return true; }, [&left_menu_bg, &right_menu_bg, &hide_left, &hide_right, &either_menu_opened] () {
             leftMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
