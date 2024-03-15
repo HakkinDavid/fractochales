@@ -7,7 +7,22 @@
 using namespace std;
 
 // LIGHTNING CLASS
-Lightning::Lightning(int hei, int wid, int dep, float leeway, float branch, float downWeight, float forcedHeight, float gridHeightInMeters) {
+Lightning::Lightning() {
+    this->hei = 0.f;
+    this->wid = 0.f;
+    this->dep = 0.f;
+    this->leeway = 0.f;
+    this->branch = 0.f;
+    this->gridHeightInMeters = 0.f;
+    this->forcedHeight = 0.f;
+    this->downWeight = 0.f;
+    this->lightGrid = nullptr;
+    this->randGrid = nullptr;
+}
+
+void Lightning::reinstantiate (int hei, int wid, int dep, float leeway, float branch, float downWeight, float forcedHeight, float gridHeightInMeters) {
+
+    freeMemory();
 
     //FUCK AROUND WITH THESE NUMBERS AND FIND OUT
     this->hei = hei;
@@ -18,33 +33,46 @@ Lightning::Lightning(int hei, int wid, int dep, float leeway, float branch, floa
     this->gridHeightInMeters = gridHeightInMeters;
     this->forcedHeight = forcedHeight;
     this->downWeight = downWeight;
-    //this->recSteps = 0;
 
     this->lightPoints = 0;
+
     this->lightGrid = new bool** [this->hei];
-    for (int i = 0; i < this->hei; i++) {
-		this->lightGrid[i] = new bool* [this->wid];
-        for (int j = 0; j < this->wid; j++) {
-            this->lightGrid[i][j] = new bool[this->dep];
-            for (int k = 0; k < this->dep; k++){
-                lightGrid[i][j][k] = false;
-            }
-        }
-	}
     this->randGrid = new float** [this->hei];
     for (int i = 0; i < this->hei; i++) {
-		this->randGrid[i] = new float* [this->wid];
+		this->lightGrid[i] = new bool* [this->wid];
+        this->randGrid[i] = new float* [this->wid];
         for (int j = 0; j < this->wid; j++) {
+            this->lightGrid[i][j] = new bool[this->dep];
             this->randGrid[i][j] = new float[this->dep];
             for (int k = 0; k < this->dep; k++){
+                lightGrid[i][j][k] = false;
                 randGrid[i][j][k] = 0.f;
             }
         }
 	}
-
 }
 
-Lightning::~Lightning(){
+void Lightning::freeMemory () {
+    short int access_light = (lightGrid != nullptr);
+    short int access_rand = (randGrid != nullptr);
+    if (access_light) access_light += (lightGrid[0] != nullptr);
+    if (access_light == 2) access_light += (lightGrid[0][0] != nullptr);
+    if (access_rand) access_rand += (randGrid[0] != nullptr);
+    if (access_rand == 2) access_rand += (randGrid[0][0] != nullptr);
+    for (int i = 0; i < this->hei && (access_light >= 2 || access_rand >= 2); i++) {
+        for (int j = 0; j < this->wid && (access_light == 3 || access_rand == 3); j++) {
+            if (access_light == 3) delete [] lightGrid[i][j];
+            if (access_rand == 3) delete [] randGrid[i][j];
+        }
+        if (access_light >= 2) delete [] lightGrid[i];
+        if (access_rand >= 2) delete [] randGrid[i];
+	}
+    if (access_light >= 1) delete [] lightGrid;
+    if (access_rand >= 1) delete [] randGrid;
+}
+
+Lightning::~Lightning() {
+    freeMemory();    
 }
 
 void Lightning::setLeeway(float l){ this->leeway = l; }
@@ -59,7 +87,6 @@ bool*** Lightning::getLightGrid(void){ return lightGrid; }
 float*** Lightning::getRandGrid(void){ return randGrid; }
 int Lightning::getN(void){ return branches.size(); }
 vector<array<int, 3>>* Lightning::getCanonVertices(void){ return &canonVertices; }
-vector<float>* Lightning::getFracs(void){ return &fracs; }
 
 void Lightning::randomize(void){
     srand(time(NULL));
@@ -233,124 +260,6 @@ void Lightning::superTraverse(){
 
     } while(x < hei*forcedHeight); // Loop if not low enough
 
-}
-
-//directionComp should be called before fractalComp
-//or the main branch wont be accounted for
-float* Lightning::directionComp(void){
-    int n = branches.size();
-    int xi = 0, yi = 0;
-    int Ex = 0, Ey = 0, Ex2 = 0, Ey2 = 0, Exy = 0;
-    float numer = 0;
-    float* direction = new float[3]; // Array pointer to return
-
-    for(int i=0; i < n; i++){   // Calculate sums
-        xi = branches[i][0];
-        yi = branches[i][1];
-        Ex += xi;
-        Ey += yi;
-        Ex2 += xi * xi;
-        Ey2 += yi * yi;
-        Exy += xi * yi;
-    }
-
-    numer = (n*Exy - Ex*Ey);
-    direction[0] = numer / (float)(n*Ex2 - Ex*Ex); // a1, slope
-    direction[1] = ((float)Ey/n) - direction[0]*((float)Ex/n); // a0, displacement
-    direction[2] = numer / (sqrt(n*Ex2 - Ex*Ex) * sqrt(n*Ey2 - Ey*Ey)); // r, correlation coefficient (THIS SHOULD NOT BE SQUARED YET) ... its square is a different number (determination coefficient)
-
-    return direction; // a1, a0, r
-}
-
-void Lightning::fractalComp(void){
-    float avgLen = 0, S = exp(1), N = exp(1);
-    int mainLen = 0, dex = 0;
-    array<int, 6> mainB = {0,0,0};
-    vector<int> branLens;
-
-    // Auxiliary int grid
-    int ** fractalGrid = new int* [hei];
-    for(int i=0; i < hei; i++){
-		fractalGrid[i] = new int[wid];
-        for(int j=0; j < wid; j++){ fractalGrid[i][j] = 0; }
-	}
-
-    // Find main branch and main branch length
-    for(int i=0; i < branches.size(); i++){
-        int currX = branches[i][0];
-        int currY = branches[i][1];
-        int currLen = 0, antX = 0, antY = 0;
-        /* tf was this
-        while(currX != 0 || currY != wid/2){
-            //antX = grid[currX][currY].getPrevX();
-            //antY = grid[currX][currY].getPrevY();
-            currX = antX; currY = antY;
-            currLen++;
-        }
-        */
-        if(currLen > mainLen){ 
-            mainLen = currLen;
-            mainB = branches[i];
-            dex = i;
-        }
-    }
-
-    // Trace the main branch path in fractalGrid
-    //branches[dex].swap(branches.back()); // this is broken
-    //branches.pop_back(); // this is broken
-    int currX = mainB[0];
-    int currY = mainB[1];
-    int antX = 0, antY = wid/2;
-    fractalGrid[currX][currY] = -1;
-    // while loop was stuck, make sure to adapt this back
-    while(currX != 0 || currY != wid/2){
-        //antX = grid[currX][currY].getPrevX();
-        //antY = grid[currX][currY].getPrevY();
-        currX = antX; currY = antY;
-        fractalGrid[currX][currY] = -1;
-    }
-
-    // Find secondary branches and calculate average length
-    for(int i=0; i < branches.size(); i++){
-        currX = branches[i][0];
-        currY = branches[i][1];
-        int currLen = 0;
-        antX = 0; antY = 0;
-        while(fractalGrid[currX][currY] > -1){
-            fractalGrid[currX][currY] = currLen++;
-            //antX = grid[currX][currY].getPrevX();
-            //antY = grid[currX][currY].getPrevY();
-            currX = antX; currY = antY;
-            if(fractalGrid[currX][currY] >= currLen){ break; }
-            if(fractalGrid[currX][currY] < 0){ 
-                fractalGrid[currX][currY] -= 1;
-                branLens.push_back(currLen);
-            }
-        }
-    }
-    for(int i=0; i < branLens.size(); i++){ avgLen += branLens[i]; }
-    if(branLens.size() != 0){ avgLen /= (float)branLens.size(); } // Dont divide by zero
-
-    // Set values of N and S
-    if(branLens.size() > 1){ N = branLens.size(); }
-    if(avgLen != 0){ 
-        if((mainLen/avgLen) > 1){ S = mainLen/avgLen; } // Never divide by zero
-    }
-
-    //Calculate fractality using Maclaurin Series
-    float er = 100, logN = 0, logS = 0;
-    int i = 1;
-    N = (1.0/N) - 1;
-    S = (1.0/S) - 1;
-    while(er > 0.00001){
-        logN += (pow(-1, i+1)) * (pow(N, i)/i);
-        logS += (pow(-1, i+1)) * (pow(S, i)/i);
-        fracs.emplace_back(logN/logS);
-        if(i > 1){
-            er = abs((fracs[i-1] - fracs[i-2]) * 100 / fracs[i-1]);
-        }
-        i++;
-    }
 }
 
 float Lightning::getGridHeightInMeters () {

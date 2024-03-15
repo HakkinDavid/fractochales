@@ -293,7 +293,6 @@ int main() {
                 box_B [4] = {0,127.5f,0,255},
                 box_C [4] = {127.5f,0,0,255};
     vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
-    vector<float> * fracs = storm.getFracs();
 
     // cosas así bien tridimensionales
 	float camera_x_rotation, camera_y_rotation;
@@ -325,7 +324,6 @@ int main() {
     float lightning_depth = 181;
     float lightning_scale;
     float lightning_color [3] = {245, 230, 83};
-    float* direction = nullptr;
     float x_rotation = 0.f;
     float y_rotation = 0.f;
     float z_rotation = 0.f;
@@ -379,10 +377,6 @@ int main() {
         thunder_data << "Ramas: " << storm.getN() << endl
         << "Electrones involucrados:\n\t" << storm.getInvolvedElectrons(current_environmental_factor) << endl
         << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl
-        //<< L"Ajuste de mínimos cuadrados:\n\tx = " << fixed << setprecision(4) << direction[1] << " " << (direction[0] > 0 ? "+" : "-") << " " << fixed << setprecision(4) << abs(direction[0]) << "y" << endl
-        //<< L"Coeficiente de correlación (R): " << fixed << setprecision(4) << direction[2] << endl
-        //<< L"Coeficiente de determinación (R²): " << fixed << setprecision(4) << direction[2]*direction[2] << endl
-        //<< L"Dimensión fractal: " << fixed << setprecision(6) << fracs->back() << endl
         << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
         << L"FPS: " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
         if (Controller::isConnected(0)) thunder_data << L"Control conectado: " << Controller::getName(0) << endl;
@@ -470,14 +464,12 @@ int main() {
         shouldReexecutePipeline = true;
     };
 
-    auto generateLightning = [&direction,
+    auto generateLightning = [
     #if !MOBILE
         &lightning_stream_txt,
     #endif
-    &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &fracs, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
-        if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
+    &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
         canonVertices->clear();
-        fracs->clear();
         #if !MOBILE
             lightning_stream_txt.str(std::wstring());
         #endif
@@ -485,7 +477,7 @@ int main() {
                     final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
                     final_downWeight = downWeight+(crystallizate*humidity),
                     final_forcedHeight = forcedHeight+((temperature-15)*0.02f);
-        storm = Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
+        storm.reinstantiate(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
         #if !MOBILE
             lightning_stream_txt << utils::getFileHeader(2)
             << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
@@ -496,13 +488,10 @@ int main() {
             << L"Electrons per meter of reach: " << current_environmental_factor << endl;
         #endif
         canonVertices = storm.getCanonVertices();
-        fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
         storm.superTraverse(); 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
-        direction = storm.directionComp();
-        storm.fractalComp();
         recalculateLightningVertex();
         retypeInfo();
         #if !MOBILE
@@ -829,9 +818,7 @@ int main() {
     }
     // liberar memoria
     UI_events(-999); // delete all UI elements
-    delete [] direction;
     canonVertices->clear();
-    fracs->clear();
     raster_pipeline.clear();
     thunder.clear();
     delete window;

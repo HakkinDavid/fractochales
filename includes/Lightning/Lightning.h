@@ -27,17 +27,17 @@ private:
     int lightPoints;
     vector<array<int, 6>> branches;
     vector<array<int, 3>> canonVertices;
-    vector<float> fracs;
-
-    //int recSteps;
 
     float gridHeightInMeters;
     float forcedHeight;
     float downWeight;
 
 public:
-    Lightning(int hei = 181, int wid = 257, int dep = 181, float leeway = 0.24, float branch = 0.12, float downWeight = 0, float forcedHeight = 0.75, float gridHeightInMeters = 5000);
+    Lightning();
     ~Lightning();
+
+    void reinstantiate (int hei = 181, int wid = 257, int dep = 181, float leeway = 0.24, float branch = 0.12, float downWeight = 0, float forcedHeight = 0.75, float gridHeightInMeters = 5000);
+    void freeMemory ();
 
     void setLeeway(float);
     void setBranch(float);
@@ -59,8 +59,6 @@ public:
     void traverse(int x, int y, int z, int prevxyz[3], bool tag=false);
     void superTraverse(void);
     
-    float* directionComp(void);
-    void fractalComp(void);
     float getGridHeightInMeters(void);
 
     unsigned long getInvolvedElectrons (float &environmental_factor);
