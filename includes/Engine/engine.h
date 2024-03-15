@@ -90,6 +90,10 @@ namespace LinearAlgebra {
 }
 
 namespace Engine {
+    void drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3]);
+    vec3 * createPrismVertices (const vec3 & start, const vec3 & end, const float & thickness);
+    void appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3]);
+    void drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], std::wstringstream & obj_stream, int & vertices_offset);
     void drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, mat4 & world_bounds, vec3 & camera_position, mat4 & camera_view_matrix, mat4 & screen_projection_matrix, vec3 & projection_offset);
     void rasterVector (std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, std::vector<tri3> & render_triangles);
     void renderTriangles (std::vector<tri3> & render_triangles, sf::RenderTarget * window);

@@ -330,7 +330,7 @@ int main() {
     float y_rotation = 0.f;
     float z_rotation = 0.f;
     float lightning_thickness = 2.f;
-    float z_offset = (lightning_depth/2.f) * lightning_scale;
+    float z_offset = 0;
     bool zap = false;
     bool switchingBG = false;
     bool attemptClose = false;
@@ -451,7 +451,7 @@ int main() {
                 << L"Ks " << lightning_color[0]/255.f << L" " << lightning_color[1]/255.f << L" " << lightning_color[2]/255.f << endl
                 << L"Ns 1000" << endl << L"Ni 1.000000" << endl
                 << L"d 0.9500000" << endl << L"illum 0";
-            lightning_stream_obj << L"mtllib " << utils::newLightningFileName(1) << endl << L"usemtl lightning" << endl;
+            lightning_stream_obj << L"mtllib lightning_" << utils::new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
         for (int v = 0; v < canonVertices->size(); v+=2) {
@@ -461,57 +461,11 @@ int main() {
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
-            const vec3  vA (start_z - lightning_thickness, start_x + lightning_thickness, start_y + lightning_thickness),
-                        vB (end_z - lightning_thickness, end_x + lightning_thickness, end_y - lightning_thickness),
-                        vC (start_z - lightning_thickness, start_x - lightning_thickness, start_y + lightning_thickness),
-                        vD (end_z - lightning_thickness, end_x - lightning_thickness, end_y - lightning_thickness),
-                        vE (start_z + lightning_thickness, start_x + lightning_thickness, start_y + lightning_thickness),
-                        vF (end_z + lightning_thickness, end_x + lightning_thickness, end_y - lightning_thickness),
-                        vG (start_z + lightning_thickness, start_x - lightning_thickness, start_y + lightning_thickness),
-                        vH (end_z + lightning_thickness, end_x - lightning_thickness, end_y - lightning_thickness);
-            // frontface (a.k.a. main lightning)
-            thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
-            thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);
-            if (full_quality) {
-                // backface
-                thunder.emplace_back(vE, vF, vG, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
-                thunder.emplace_back(vG, vF, vH, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
-                // sideface A
-                thunder.emplace_back(vC, vD, vG, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-                thunder.emplace_back(vG, vD, vH, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-                // sideface B
-                thunder.emplace_back(vE, vF, vA, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-                thunder.emplace_back(vA, vF, vB, lightning_color[0]/1.5f, lightning_color[1]/1.5f, lightning_color[2]/1.5f);
-                // topface
-                thunder.emplace_back(vE, vA, vG, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-                thunder.emplace_back(vG, vA, vC, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-                // bottomface
-                thunder.emplace_back(vB, vF, vD, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-                thunder.emplace_back(vD, vF, vH, lightning_color[0]/1.25f, lightning_color[1]/1.25f, lightning_color[2]/1.25f);
-            }
-            #if !MOBILE
-                lightning_stream_obj << L"v " << (vA.y) << L" " << (vA.z) << L" " << (vA.x) << endl;
-                lightning_stream_obj << L"v " << (vB.y) << L" " << (vB.z) << L" " << (vB.x) << endl;
-                lightning_stream_obj << L"v " << (vC.y) << L" " << (vC.z) << L" " << (vC.x) << endl;
-                lightning_stream_obj << L"v " << (vD.y) << L" " << (vD.z) << L" " << (vD.x) << endl;
-                lightning_stream_obj << L"v " << (vE.y) << L" " << (vE.z) << L" " << (vE.x) << endl;
-                lightning_stream_obj << L"v " << (vF.y) << L" " << (vF.z) << L" " << (vF.x) << endl;
-                lightning_stream_obj << L"v " << (vG.y) << L" " << (vG.z) << L" " << (vG.x) << endl;
-                lightning_stream_obj << L"v " << (vH.y) << L" " << (vH.z) << L" " << (vH.x) << endl;
-                lightning_stream_obj << L"f " << 1 + nV << L" " << 2 + nV << L" " << 3 + nV << endl;
-                lightning_stream_obj << L"f " << 3 + nV << L" " << 2 + nV << L" " << 4 + nV << endl;
-                lightning_stream_obj << L"f " << 5 + nV << L" " << 6 + nV << L" " << 7 + nV << endl;
-                lightning_stream_obj << L"f " << 7 + nV << L" " << 6 + nV << L" " << 8 + nV << endl;
-                lightning_stream_obj << L"f " << 3 + nV << L" " << 4 + nV << L" " << 7 + nV << endl;
-                lightning_stream_obj << L"f " << 7 + nV << L" " << 4 + nV << L" " << 8 + nV << endl;
-                lightning_stream_obj << L"f " << 5 + nV << L" " << 6 + nV << L" " << 1 + nV << endl;
-                lightning_stream_obj << L"f " << 1 + nV << L" " << 6 + nV << L" " << 2 + nV << endl;
-                lightning_stream_obj << L"f " << 5 + nV << L" " << 1 + nV << L" " << 7 + nV << endl;
-                lightning_stream_obj << L"f " << 7 + nV << L" " << 1 + nV << L" " << 3 + nV << endl;
-                lightning_stream_obj << L"f " << 2 + nV << L" " << 6 + nV << L" " << 4 + nV << endl;
-                lightning_stream_obj << L"f " << 4 + nV << L" " << 6 + nV << L" " << 8 + nV << endl;
-                nV+=8;
-            #endif
+            Engine :: drawPrism (thunder, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color
+                #if !MOBILE
+                    , lightning_stream_obj, nV
+                #endif
+            );
         }
         shouldReexecutePipeline = true;
     };
@@ -579,7 +533,7 @@ int main() {
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
         lightning_scale = window->getSize().y/lightning_height;
         lightning_thickness = 2.f;
-        z_offset = (lightning_depth/2.f) * lightning_scale;
+        z_offset = ((float) lightning_depth/2.f) * lightning_scale;
         // inicializar interfaz
         const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
         const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);

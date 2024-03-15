@@ -553,3 +553,72 @@ void Engine :: calculateCameraView (mat4 & y_rotation_matrix, float & y_rotation
 bool Engine :: compareDrawOrder (tri3 &t1, tri3 &t2) {
     return t1.camera_distance > t2.camera_distance;
 }
+
+vec3 * Engine :: createPrismVertices (const vec3 & start, const vec3 & end, const float & thickness) {
+    vec3 * returnable_vertices = new vec3 [8];
+        returnable_vertices[0] = vec3(start.z - thickness, start.x + thickness, start.y + thickness);
+        returnable_vertices[1] = vec3(end.z - thickness, end.x + thickness, end.y - thickness);
+        returnable_vertices[2] = vec3(start.z - thickness, start.x - thickness, start.y + thickness);
+        returnable_vertices[3] = vec3(end.z - thickness, end.x - thickness, end.y - thickness);
+        returnable_vertices[4] = vec3(start.z + thickness, start.x + thickness, start.y + thickness);
+        returnable_vertices[5] = vec3(end.z + thickness, end.x + thickness, end.y - thickness);
+        returnable_vertices[6] = vec3(start.z + thickness, start.x - thickness, start.y + thickness);
+        returnable_vertices[7] = vec3(end.z + thickness, end.x - thickness, end.y - thickness);
+    return returnable_vertices;
+}
+
+void Engine :: appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3]) {
+    // frontface
+    output.emplace_back(vertex[0], vertex[1], vertex[2], color[0], color[1], color[2]);
+    output.emplace_back(vertex[2], vertex[1], vertex[3], color[0], color[1], color[2]);
+    // backface
+    output.emplace_back(vertex[4], vertex[5], vertex[6], color[0]/2.f, color[1]/2.f, color[2]/2.f);
+    output.emplace_back(vertex[6], vertex[5], vertex[7], color[0]/2.f, color[1]/2.f, color[2]/2.f);
+    // sideface A
+    output.emplace_back(vertex[2], vertex[3], vertex[6], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    output.emplace_back(vertex[6], vertex[3], vertex[7], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    // sideface B
+    output.emplace_back(vertex[4], vertex[5], vertex[0], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    output.emplace_back(vertex[0], vertex[5], vertex[1], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    // topface
+    output.emplace_back(vertex[4], vertex[0], vertex[6], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    output.emplace_back(vertex[6], vertex[0], vertex[2], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    // bottomface
+    output.emplace_back(vertex[1], vertex[5], vertex[3], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    output.emplace_back(vertex[3], vertex[5], vertex[7], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+}
+
+void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3]) {
+    vec3 * vertex = createPrismVertices (start, end, thickness);
+    appendPrism (output, vertex, color);
+    delete [] vertex;
+}
+
+void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], std::wstringstream & obj_stream, int & vertices_offset) {
+    vec3 * vertex = createPrismVertices (start, end, thickness);
+    appendPrism (output, vertex, color);
+
+    obj_stream << L"v " << (vertex[0].y) << L" " << (vertex[0].z) << L" " << (vertex[0].x) << std::endl;
+    obj_stream << L"v " << (vertex[1].y) << L" " << (vertex[1].z) << L" " << (vertex[1].x) << std::endl;
+    obj_stream << L"v " << (vertex[2].y) << L" " << (vertex[2].z) << L" " << (vertex[2].x) << std::endl;
+    obj_stream << L"v " << (vertex[3].y) << L" " << (vertex[3].z) << L" " << (vertex[3].x) << std::endl;
+    obj_stream << L"v " << (vertex[4].y) << L" " << (vertex[4].z) << L" " << (vertex[4].x) << std::endl;
+    obj_stream << L"v " << (vertex[5].y) << L" " << (vertex[5].z) << L" " << (vertex[5].x) << std::endl;
+    obj_stream << L"v " << (vertex[6].y) << L" " << (vertex[6].z) << L" " << (vertex[6].x) << std::endl;
+    obj_stream << L"v " << (vertex[7].y) << L" " << (vertex[7].z) << L" " << (vertex[7].x) << std::endl;
+    obj_stream << L"f " << 1 + vertices_offset << L" " << 2 + vertices_offset << L" " << 3 + vertices_offset << std::endl;
+    obj_stream << L"f " << 3 + vertices_offset << L" " << 2 + vertices_offset << L" " << 4 + vertices_offset << std::endl;
+    obj_stream << L"f " << 5 + vertices_offset << L" " << 6 + vertices_offset << L" " << 7 + vertices_offset << std::endl;
+    obj_stream << L"f " << 7 + vertices_offset << L" " << 6 + vertices_offset << L" " << 8 + vertices_offset << std::endl;
+    obj_stream << L"f " << 3 + vertices_offset << L" " << 4 + vertices_offset << L" " << 7 + vertices_offset << std::endl;
+    obj_stream << L"f " << 7 + vertices_offset << L" " << 4 + vertices_offset << L" " << 8 + vertices_offset << std::endl;
+    obj_stream << L"f " << 5 + vertices_offset << L" " << 6 + vertices_offset << L" " << 1 + vertices_offset << std::endl;
+    obj_stream << L"f " << 1 + vertices_offset << L" " << 6 + vertices_offset << L" " << 2 + vertices_offset << std::endl;
+    obj_stream << L"f " << 5 + vertices_offset << L" " << 1 + vertices_offset << L" " << 7 + vertices_offset << std::endl;
+    obj_stream << L"f " << 7 + vertices_offset << L" " << 1 + vertices_offset << L" " << 3 + vertices_offset << std::endl;
+    obj_stream << L"f " << 2 + vertices_offset << L" " << 6 + vertices_offset << L" " << 4 + vertices_offset << std::endl;
+    obj_stream << L"f " << 4 + vertices_offset << L" " << 6 + vertices_offset << L" " << 8 + vertices_offset << std::endl;
+    vertices_offset+=8;
+
+    delete [] vertex;
+}
