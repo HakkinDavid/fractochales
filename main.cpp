@@ -327,7 +327,7 @@ int main() {
     float y_rotation = 0.f;
     float z_rotation = 0.f;
     float lightning_thickness = 2.f;
-    float z_offset = 0;
+    float x_offset = 0, y_offset = 0, z_offset = 0;
     bool zap = false;
     bool switchingBG = false;
     bool attemptClose = false;
@@ -424,7 +424,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_thickness, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C] () {
+        &lightning_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C] () {
         thunder.clear();
         thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
         thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
@@ -447,11 +447,11 @@ int main() {
             int nV = 0;
         #endif
         for (int v = 0; v < canonVertices->size(); v+=2) {
-            const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
-            const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 2);
+            const float start_x = (canonVertices->at(v)[1] * lightning_scale) - x_offset;
+            const float start_y = y_offset - (canonVertices->at(v)[0] * lightning_scale + 2);
             const float start_z = (canonVertices->at(v)[2] * lightning_scale) - z_offset;
-            const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
-            const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale - 2);
+            const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - x_offset;
+            const float end_y = y_offset - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
             Engine :: drawPrism (thunder, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color
                 #if !MOBILE
@@ -518,9 +518,11 @@ int main() {
         right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
-        lightning_scale = window->getSize().y/lightning_height;
+        lightning_scale = ((float) window->getSize().y)/((float) lightning_height);
         lightning_thickness = 2.f;
-        z_offset = ((float) lightning_depth/2.f) * lightning_scale;
+        x_offset = (((float) lightning_width)/2.f) * ((float) lightning_scale);
+        y_offset = (((float) lightning_height)/2.f) * ((float) lightning_scale);
+        z_offset = (((float) lightning_depth)/2.f) * ((float) lightning_scale);
         // inicializar interfaz
         const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
         const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);
