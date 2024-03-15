@@ -451,7 +451,7 @@ int main() {
                 << L"Ks " << lightning_color[0]/255.f << L" " << lightning_color[1]/255.f << L" " << lightning_color[2]/255.f << endl
                 << L"Ns 1000" << endl << L"Ni 1.000000" << endl
                 << L"d 0.9500000" << endl << L"illum 0";
-            lightning_stream_obj << L"mtllib lightning_" << utils::new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
+            lightning_stream_obj << L"mtllib " << utils::newLightningFileName(1) << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
         for (int v = 0; v < canonVertices->size(); v+=2) {
