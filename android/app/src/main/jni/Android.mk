@@ -13,6 +13,7 @@ LOCAL_SRC_FILES += ../../../../../includes/Switch/switch.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Achieve/achieve.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Engine/engine.cpp
 LOCAL_SRC_FILES += ../../../../../includes/Controller/controller.cpp
+LOCAL_SRC_FILES += ../../../../../includes/Utils/utils.cpp
 LOCAL_SHARED_LIBRARIES := sfml-system
 LOCAL_SHARED_LIBRARIES += sfml-window
 LOCAL_SHARED_LIBRARIES += sfml-graphics

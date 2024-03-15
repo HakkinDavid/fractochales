@@ -516,23 +516,31 @@ int main() {
         shouldReexecutePipeline = true;
     };
 
-    auto generateLightning = [&lightning_stream_txt, &direction, &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &fracs, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
+    auto generateLightning = [&direction,
+    #if !MOBILE
+        &lightning_stream_txt,
+    #endif
+    &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &fracs, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
         if (direction != nullptr) delete [] direction; // liberar memoria usada por el direction previo
         canonVertices->clear();
         fracs->clear();
-        lightning_stream_txt.str(std::wstring());
+        #if !MOBILE
+            lightning_stream_txt.str(std::wstring());
+        #endif
         const float final_leeway = leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f),
                     final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
                     final_downWeight = downWeight+(crystallizate*humidity),
                     final_forcedHeight = forcedHeight+((temperature-15)*0.02f);
         storm = Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
-        lightning_stream_txt << utils::getFileHeader(2)
-        << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
-        << L"Leeway: " << fixed << setprecision(8) << final_leeway << endl
-        << L"Branching: " << final_branch << endl
-        << L"Vertical specific conductance: " << final_downWeight << endl
-        << L"Minimum height: " << final_forcedHeight << endl
-        << L"Electrons per meter of reach: " << current_environmental_factor << endl;
+        #if !MOBILE
+            lightning_stream_txt << utils::getFileHeader(2)
+            << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
+            << L"Leeway: " << fixed << setprecision(8) << final_leeway << endl
+            << L"Branching: " << final_branch << endl
+            << L"Vertical specific conductance: " << final_downWeight << endl
+            << L"Minimum height: " << final_forcedHeight << endl
+            << L"Electrons per meter of reach: " << current_environmental_factor << endl;
+        #endif
         canonVertices = storm.getCanonVertices();
         fracs = storm.getFracs();
         storm.randomize(); // aleatorizar los valores resistivos en el entorno
@@ -543,9 +551,11 @@ int main() {
         storm.fractalComp();
         recalculateLightningVertex();
         retypeInfo();
-        lightning_stream_txt
-        << L"Electrons involved: " << storm.getInvolvedElectrons(current_environmental_factor) << endl
-        << L"Electronic mass: " << scientific << setprecision(8) << e_mass << L"kg" << endl;
+        #if !MOBILE
+            lightning_stream_txt
+            << L"Electrons involved: " << storm.getInvolvedElectrons(current_environmental_factor) << endl
+            << L"Electronic mass: " << scientific << setprecision(8) << e_mass << L"kg" << endl;
+        #endif
     };
 
     generateLightning();
