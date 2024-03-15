@@ -36,6 +36,9 @@ Lightning::Lightning(int hei, int wid, int dep, float leeway, float branch, floa
 		this->randGrid[i] = new float* [this->wid];
         for (int j = 0; j < this->wid; j++) {
             this->randGrid[i][j] = new float[this->dep];
+            for (int k = 0; k < this->dep; k++){
+                randGrid[i][j][k] = 0.f;
+            }
         }
 	}
 

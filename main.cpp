@@ -329,8 +329,8 @@ int main() {
     float x_rotation = 0.f;
     float y_rotation = 0.f;
     float z_rotation = 0.f;
-    const float lightning_thickness = 2.f;
-    const float z_offset = (lightning_depth/2.f) * lightning_scale;
+    float lightning_thickness = 2.f;
+    float z_offset = (lightning_depth/2.f) * lightning_scale;
     bool zap = false;
     bool switchingBG = false;
     bool attemptClose = false;
@@ -470,10 +470,8 @@ int main() {
                         vG (start_z + lightning_thickness, start_x - lightning_thickness, start_y + lightning_thickness),
                         vH (end_z + lightning_thickness, end_x - lightning_thickness, end_y - lightning_thickness);
             // frontface (a.k.a. main lightning)
-            if (full_quality || v % 4 != 0) {
-                thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
-                thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);    
-            }
+            thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
+            thunder.emplace_back(vC, vB, vD, lightning_color[0], lightning_color[1], lightning_color[2]);
             if (full_quality) {
                 // backface
                 thunder.emplace_back(vE, vF, vG, lightning_color[0]/2.f, lightning_color[1]/2.f, lightning_color[2]/2.f);
@@ -570,6 +568,8 @@ int main() {
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
         lightning_scale = window->getSize().y/lightning_height;
+        lightning_thickness = 2.f;
+        z_offset = (lightning_depth/2.f) * lightning_scale;
         // inicializar interfaz
         const float left_slider_x_pos = left_menu_bg.getPosition().x + left_menu_bg.getSize().x*(1.f/6.f);
         const float left_slider_x_size = left_menu_bg.getSize().x*(2.f/3.f);
