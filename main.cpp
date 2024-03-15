@@ -329,6 +329,8 @@ int main() {
     float x_rotation = 0.f;
     float y_rotation = 0.f;
     float z_rotation = 0.f;
+    const float lightning_thickness = 2.f;
+    const float z_offset = (lightning_depth/2.f) * lightning_scale;
     bool zap = false;
     bool switchingBG = false;
     bool attemptClose = false;
@@ -430,7 +432,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
+        &lightning_color, &lightning_thickness, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &full_quality, &box_A, &box_B, &box_C] () {
         thunder.clear();
         thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
         thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
@@ -452,7 +454,6 @@ int main() {
             lightning_stream_obj << L"mtllib lightning_" << utils::new_obj_index << L".mtl" << endl << L"usemtl lightning" << endl;
             int nV = 0;
         #endif
-        const float z_offset = (lightning_depth/2.f) * lightning_scale;
         for (int v = 0; v < canonVertices->size(); v+=2) {
             const float start_x = (canonVertices->at(v)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float start_y = window_settings.y_res/2.f - (canonVertices->at(v)[0] * lightning_scale + 1);
@@ -460,15 +461,14 @@ int main() {
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - window_settings.x_res/2.f;
             const float end_y = window_settings.y_res/2.f - (canonVertices->at(v+1)[0] * lightning_scale + 1);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
-            const float thickness = 2.f;
-            const vec3  vA (start_z - thickness/2.f, start_x + thickness/2.f, start_y + thickness/2.f),
-                        vB (end_z - thickness/2.f, end_x + thickness/2.f, end_y - thickness/2.f),
-                        vC (start_z - thickness/2.f, start_x - thickness/2.f, start_y + thickness/2.f),
-                        vD (end_z - thickness/2.f, end_x - thickness/2.f, end_y - thickness/2.f),
-                        vE (start_z + thickness/2.f, start_x + thickness/2.f, start_y + thickness/2.f),
-                        vF (end_z + thickness/2.f, end_x + thickness/2.f, end_y - thickness/2.f),
-                        vG (start_z + thickness/2.f, start_x - thickness/2.f, start_y + thickness/2.f),
-                        vH (end_z + thickness/2.f, end_x - thickness/2.f, end_y - thickness/2.f);
+            const vec3  vA (start_z - lightning_thickness, start_x + lightning_thickness, start_y + lightning_thickness),
+                        vB (end_z - lightning_thickness, end_x + lightning_thickness, end_y - lightning_thickness),
+                        vC (start_z - lightning_thickness, start_x - lightning_thickness, start_y + lightning_thickness),
+                        vD (end_z - lightning_thickness, end_x - lightning_thickness, end_y - lightning_thickness),
+                        vE (start_z + lightning_thickness, start_x + lightning_thickness, start_y + lightning_thickness),
+                        vF (end_z + lightning_thickness, end_x + lightning_thickness, end_y - lightning_thickness),
+                        vG (start_z + lightning_thickness, start_x - lightning_thickness, start_y + lightning_thickness),
+                        vH (end_z + lightning_thickness, end_x - lightning_thickness, end_y - lightning_thickness);
             // frontface (a.k.a. main lightning)
             if (full_quality || v % 4 != 0) {
                 thunder.emplace_back(vA, vB, vC, lightning_color[0], lightning_color[1], lightning_color[2]);
