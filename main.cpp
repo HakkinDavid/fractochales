@@ -271,6 +271,7 @@ int main() {
     const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
     const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
     const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
+    const float environment_origin_color [][3] = { {100.f, 100.f, 100.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {112.f, 56.f, 144.f}, {70.59f, 34.9f, 36.47f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
 
     const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
 
@@ -287,7 +288,7 @@ int main() {
     loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
-    vector<tri3> thunder; // crear el vector de vértices a renderizar
+    vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
     const float box_A [4] = {0,0,127.5f,255},
                 box_B [4] = {0,127.5f,0,255},
                 box_C [4] = {127.5f,0,0,255};
@@ -420,16 +421,31 @@ int main() {
     };
 
     auto recalculateLightningVertex =
-        [&thunder,
+        [&drawableVetexArray,
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C] () {
-        thunder.clear();
-        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
-        thunder.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
-        thunder.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
-        thunder.push_back(tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
+        &lightning_color, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C] () {
+        drawableVetexArray.clear();
+        drawableVetexArray.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
+        drawableVetexArray.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
+        drawableVetexArray.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
+        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
+        switch (bgIndex) {
+            case 1:
+            case 2:
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex]);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex]);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex]);
+            break;
+            case voidIndex:
+            break;
+            default:
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex]);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex]);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex]);
+            break;
+        }
         #if !MOBILE
             lightning_stream_obj.str(std::wstring());
             lightning_stream_mtl.str(std::wstring());
@@ -453,7 +469,7 @@ int main() {
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - x_offset;
             const float end_y = y_offset - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
-            Engine :: drawPrism (thunder, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color
+            Engine :: drawPrism (drawableVetexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color
                 #if !MOBILE
                     , lightning_stream_obj, nV
                 #endif
@@ -596,7 +612,7 @@ int main() {
                 }
             #endif
         });
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature, &bg_scale] () {
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature, &bg_scale, &recalculateLightningVertex] () {
             if (switchingBG) {
                 bgIndex++;
                 if (bg[bgIndex] == nullptr) bgIndex = 0;
@@ -612,6 +628,8 @@ int main() {
                 crystallizate = 0;
                 humidity = 0.9F;
                 temperature = 15.0F;
+
+                recalculateLightningVertex();
             }
         });
         closeButton = new Button (attemptClose, window->getSize().x-(MOBILE ? 150 : 75), 0, font, L"X", (MOBILE ? 150 : 75), (MOBILE ? 100 : 50), sf::Color::Red, sf::Color::Red, sf::Color::White, nullptr, [] () { return true; }, [&attemptClose, &start_time] () {
@@ -779,7 +797,7 @@ int main() {
         if (shouldReexecutePipeline) {
             render_triangles.clear();
             // dibujar objetos
-            Engine :: drawMesh(thunder, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
+            Engine :: drawMesh(drawableVetexArray, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
             std::sort(raster_pipeline.begin(), raster_pipeline.end(), Engine::compareDrawOrder);
 
@@ -817,7 +835,7 @@ int main() {
     UI_events(-999); // delete all UI elements
     canonVertices->clear();
     raster_pipeline.clear();
-    thunder.clear();
+    drawableVetexArray.clear();
     delete window;
     return 0;
 }

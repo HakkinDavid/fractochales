@@ -556,6 +556,17 @@ bool Engine :: compareDrawOrder (tri3 &t1, tri3 &t2) {
 
 vec3 * Engine :: createPrismVertices (const vec3 & start, const vec3 & end, const float & thickness) {
     vec3 * returnable_vertices = new vec3 [8];
+    if (start.y == end.y) {
+        returnable_vertices[0] = vec3(start.z - thickness, start.x + thickness, start.y + thickness);
+        returnable_vertices[1] = vec3(start.z - thickness, start.x + thickness, start.y - thickness);
+        returnable_vertices[2] = vec3(end.z - thickness, end.x - thickness, end.y + thickness);
+        returnable_vertices[3] = vec3(end.z - thickness, end.x - thickness, end.y - thickness);
+        returnable_vertices[4] = vec3(start.z + thickness, start.x + thickness, start.y + thickness);
+        returnable_vertices[5] = vec3(start.z + thickness, start.x + thickness, start.y - thickness);
+        returnable_vertices[6] = vec3(end.z + thickness, end.x - thickness, end.y + thickness);
+        returnable_vertices[7] = vec3(end.z + thickness, end.x - thickness, end.y - thickness);
+    }
+    else {
         returnable_vertices[0] = vec3(start.z - thickness, start.x + thickness, start.y + thickness);
         returnable_vertices[1] = vec3(end.z - thickness, end.x + thickness, end.y - thickness);
         returnable_vertices[2] = vec3(start.z - thickness, start.x - thickness, start.y + thickness);
@@ -564,6 +575,7 @@ vec3 * Engine :: createPrismVertices (const vec3 & start, const vec3 & end, cons
         returnable_vertices[5] = vec3(end.z + thickness, end.x + thickness, end.y - thickness);
         returnable_vertices[6] = vec3(start.z + thickness, start.x - thickness, start.y + thickness);
         returnable_vertices[7] = vec3(end.z + thickness, end.x - thickness, end.y - thickness);
+    }
     return returnable_vertices;
 }
 
