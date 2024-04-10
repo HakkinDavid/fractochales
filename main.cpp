@@ -289,9 +289,12 @@ int main() {
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
-    const float box_A [4] = {0,0,127.5f,255},
-                box_B [4] = {0,127.5f,0,255},
-                box_C [4] = {127.5f,0,0,255};
+    const float box_A [4] = {255,0,0,255},
+                box_B [4] = {51,153,255,255},
+                box_C [4] = {51,51,255,255},
+                box_D [4] = {153,51,255,255},
+                box_E [4] = {51,255,153,255},
+                box_F [4] = {51,255,255,255};
     vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
 
     // cosas así bien tridimensionales
@@ -425,12 +428,25 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C] () {
+        &lightning_color, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
         drawableVetexArray.clear();
-        drawableVetexArray.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
-        drawableVetexArray.push_back(tri3(vec3(1000,-1000,500),vec3(1000,-1000,-500),vec3(1000,1000,500),box_A,box_A,box_A));
-        drawableVetexArray.push_back(tri3(vec3(1000,1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
-        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,-500),vec3(1000,-1000,-500),vec3(-1000,1000,-500),box_B,box_B,box_B));
+        drawableVetexArray.push_back(tri3(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A));
+        drawableVetexArray.push_back(tri3(vec3(1000,-1000,1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A));
+
+        drawableVetexArray.push_back(tri3(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B));
+        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B));
+
+        drawableVetexArray.push_back(tri3(vec3(1000,1000,-1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C));
+        drawableVetexArray.push_back(tri3(vec3(-1000,1000,1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C));
+
+        drawableVetexArray.push_back(tri3(vec3(1000,-1000,-1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D));
+        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D));
+
+        drawableVetexArray.push_back(tri3(vec3(1000,1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E));
+        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E));
+
+        drawableVetexArray.push_back(tri3(vec3(-1000,1000,-1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F));
+        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F));
         switch (bgIndex) {
             case 1:
             case 2:
