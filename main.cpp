@@ -254,6 +254,9 @@ int main() {
     sf::Texture cloud_texture;
     cloud_texture.loadFromFile("images/cloud.png");
 
+    sf::Texture water_texture;
+    water_texture.loadFromFile("images/watertexture.png");
+
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
@@ -295,12 +298,12 @@ int main() {
     Lightning storm;
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
-    const float box_A [4] = {255,0,0,255},
-                box_B [4] = {51,153,255,255},
-                box_C [4] = {51,51,255,255},
-                box_D [4] = {153,51,255,255},
-                box_E [4] = {51,255,153,255},
-                box_F [4] = {51,255,255,255};
+    const float box_A [4] = {255,0,0,127.5},
+                box_B [4] = {51,153,255,127.5},
+                box_C [4] = {51,51,255,127.5},
+                box_D [4] = {153,51,255,127.5},
+                box_E [4] = {51,255,153,127.5},
+                box_F [4] = {51,255,255,127.5};
     vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
 
     // cosas así bien tridimensionales
@@ -434,7 +437,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_texture, &cloud_texture, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &water_texture, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
         drawableVetexArray.clear();
         drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A);
         drawableVetexArray.emplace_back(vec3(1000,-1000,1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A);
@@ -456,9 +459,9 @@ int main() {
         switch (bgIndex) {
             case 1:
             case 2:
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex]);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex]);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex]);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
             break;
             case voidIndex:
             break;
