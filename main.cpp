@@ -248,6 +248,12 @@ int main() {
     sf::Texture black;
     black.loadFromFile("images/black.png");
 
+    sf::Texture lightning_texture;
+    lightning_texture.loadFromFile("images/lightning.png");
+
+    sf::Texture cloud_texture;
+    cloud_texture.loadFromFile("images/cloud.png");
+
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
@@ -428,25 +434,25 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
         drawableVetexArray.clear();
-        drawableVetexArray.push_back(tri3(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A));
-        drawableVetexArray.push_back(tri3(vec3(1000,-1000,1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A));
+        drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A);
+        drawableVetexArray.emplace_back(vec3(1000,-1000,1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A);
 
-        drawableVetexArray.push_back(tri3(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B));
-        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B));
+        drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B);
+        drawableVetexArray.emplace_back(vec3(-1000,-1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B);
 
-        drawableVetexArray.push_back(tri3(vec3(1000,1000,-1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C));
-        drawableVetexArray.push_back(tri3(vec3(-1000,1000,1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C));
+        drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C);
+        drawableVetexArray.emplace_back(vec3(-1000,1000,1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C);
 
-        drawableVetexArray.push_back(tri3(vec3(1000,-1000,-1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D));
-        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D));
+        drawableVetexArray.emplace_back(vec3(1000,-1000,-1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D);
+        drawableVetexArray.emplace_back(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D);
 
-        drawableVetexArray.push_back(tri3(vec3(1000,1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E));
-        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E));
+        drawableVetexArray.emplace_back(vec3(1000,1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E);
+        drawableVetexArray.emplace_back(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E);
 
-        drawableVetexArray.push_back(tri3(vec3(-1000,1000,-1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F));
-        drawableVetexArray.push_back(tri3(vec3(-1000,-1000,1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F));
+        drawableVetexArray.emplace_back(vec3(-1000,1000,-1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F);
+        drawableVetexArray.emplace_back(vec3(-1000,-1000,1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F);
         switch (bgIndex) {
             case 1:
             case 2:
@@ -457,9 +463,9 @@ int main() {
             case voidIndex:
             break;
             default:
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex]);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex]);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex]);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
             break;
         }
         #if !MOBILE
@@ -485,10 +491,11 @@ int main() {
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - x_offset;
             const float end_y = y_offset - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
-            Engine :: drawPrism (drawableVetexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color
+            Engine :: drawPrism (drawableVetexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color,
                 #if !MOBILE
-                    , lightning_stream_obj, nV
+                    lightning_stream_obj, nV,
                 #endif
+                &lightning_texture
             );
         }
         shouldReexecutePipeline = true;

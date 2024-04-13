@@ -43,6 +43,8 @@ class tri3 {
     float color_B[4];
     float color_C[4];
     float camera_distance;
+    sf::Texture * texture;
+    sf::Vector2f texCoords[3];
     tri3(vec3 p1 = vec3(), vec3 p2 = vec3(), vec3 p3 = vec3(), const float red = 255.f, const float green = 255.f, const float blue = 255.f, float alpha = 255.f);
     tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]);
     ~tri3();
@@ -90,10 +92,10 @@ namespace LinearAlgebra {
 }
 
 namespace Engine {
-    void drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3]);
+    void drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], sf::Texture * texture = nullptr);
     vec3 * createPrismVertices (const vec3 & start, const vec3 & end, const float & thickness);
-    void appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3]);
-    void drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], std::wstringstream & obj_stream, int & vertices_offset);
+    void appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3], sf::Texture * texture = nullptr);
+    void drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], std::wstringstream & obj_stream, int & vertices_offset, sf::Texture * texture = nullptr);
     void drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, mat4 & world_bounds, vec3 & camera_position, mat4 & camera_view_matrix, mat4 & screen_projection_matrix, vec3 & projection_offset);
     void rasterVector (std::vector<tri3> & raster_pipeline, RenderSettings & window_settings, std::vector<tri3> & render_triangles);
     void renderTriangles (std::vector<tri3> & render_triangles, sf::RenderTarget * window);

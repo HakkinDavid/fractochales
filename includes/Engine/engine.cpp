@@ -33,6 +33,10 @@ tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float red, const float green, cons
     this->color_C[2] = blue;
     this->color_C[3] = alpha;
     this->camera_distance = 0;
+    this->texture = nullptr;
+    this->texCoords[0] = sf::Vector2f(0.f,0.f);
+    this->texCoords[1] = sf::Vector2f(0.f,500.f);
+    this->texCoords[2] = sf::Vector2f(500.f,0.f);
 }
 tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float color2 [4], const float color3 [4]) {
     this->p[0] = p1;
@@ -51,6 +55,10 @@ tri3 :: tri3(vec3 p1, vec3 p2, vec3 p3, const float color1 [4], const float colo
     this->color_C[2] = color3[2];
     this->color_C[3] = color3[3];
     this->camera_distance = 0;
+    this->texture = nullptr;
+    this->texCoords[0] = sf::Vector2f(0.f,0.f);
+    this->texCoords[1] = sf::Vector2f(0.f,500.f);
+    this->texCoords[2] = sf::Vector2f(500.f,0.f);
 }
 tri3::~tri3() {
     this->color_A[0] = 0;
@@ -66,6 +74,7 @@ tri3::~tri3() {
     this->color_C[2] = 0;
     this->color_C[3] = 0;
     this->camera_distance = 0;
+    this->texture = nullptr;
 }
 bool mesh :: LoadObj(std::string obj_filename) {
     std::wifstream obj_file(obj_filename);
@@ -237,6 +246,9 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri1.color_A[3] = in_tri.color_A[3];
         out_tri1.color_B[3] = in_tri.color_B[3];
         out_tri1.color_C[3] = in_tri.color_C[3];
+        out_tri1.texCoords[0] = in_tri.texCoords[0];
+        out_tri1.texCoords[1] = in_tri.texCoords[1];
+        out_tri1.texCoords[2] = in_tri.texCoords[2];
 
 		out_tri1.p[0] = *inside_points[0];
 
@@ -261,6 +273,9 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri1.color_A[3] = in_tri.color_A[3];
         out_tri1.color_B[3] = in_tri.color_B[3];
         out_tri1.color_C[3] = in_tri.color_C[3];
+        out_tri1.texCoords[0] = in_tri.texCoords[0];
+        out_tri1.texCoords[1] = in_tri.texCoords[1];
+        out_tri1.texCoords[2] = in_tri.texCoords[2];
 
 		out_tri2.color_A[0] = in_tri.color_A[0];
         out_tri2.color_B[0] = in_tri.color_B[0];
@@ -274,6 +289,9 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri2.color_A[3] = in_tri.color_A[3];
         out_tri2.color_B[3] = in_tri.color_B[3];
         out_tri2.color_C[3] = in_tri.color_C[3];
+        out_tri2.texCoords[0] = in_tri.texCoords[0];
+        out_tri2.texCoords[1] = in_tri.texCoords[1];
+        out_tri2.texCoords[2] = in_tri.texCoords[2];
 
 		out_tri1.p[0] = *inside_points[0];
 		out_tri1.p[1] = *inside_points[1];
@@ -394,6 +412,10 @@ void Engine :: drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pi
         vec3 centroid = {(tri.p[0].x + tri.p[1].x + tri.p[2].x)/3.f, (tri.p[0].y + tri.p[1].y + tri.p[2].y)/3.f, (tri.p[0].z + tri.p[1].z + tri.p[2].z)/3.f};
         tri3 projected_triangles, transformed, viewable_triangles;
         projected_triangles.camera_distance = LinearAlgebra::distance(camera_position, centroid);
+        projected_triangles.texture = tri.texture;
+        projected_triangles.texCoords[0] = tri.texCoords[0];
+        projected_triangles.texCoords[1] = tri.texCoords[1];
+        projected_triangles.texCoords[2] = tri.texCoords[2];
 
         transformed.p[0] = LinearAlgebra::MatxVec(world_bounds, tri.p[0]);
         transformed.p[1] = LinearAlgebra::MatxVec(world_bounds, tri.p[1]);
@@ -495,6 +517,10 @@ void Engine :: rasterVector (std::vector<tri3> & raster_pipeline, RenderSettings
 
                 for (int w = 0; w < nTrisToAdd; w++)
                     listTriangles.push_back(clipped[w]);
+                    listTriangles.back().texture = triToRaster.texture;
+                    listTriangles.back().texCoords[0] = triToRaster.texCoords[0];
+                    listTriangles.back().texCoords[1] = triToRaster.texCoords[1];
+                    listTriangles.back().texCoords[2] = triToRaster.texCoords[2];
             }
             nNewTriangles = listTriangles.size();
         }
@@ -518,8 +544,11 @@ void Engine :: renderTriangles (std::vector<tri3> & render_triangles, sf::Render
         poly[0].color = sf::Color(Final.color_A[0], Final.color_A[1], Final.color_A[2], Final.color_A[3]);
         poly[1].color = sf::Color(Final.color_B[0], Final.color_B[1], Final.color_B[2], Final.color_B[3]);
         poly[2].color = sf::Color(Final.color_C[0], Final.color_C[1], Final.color_C[2], Final.color_C[3]);
+        poly[0].texCoords = Final.texCoords[0];
+        poly[1].texCoords = Final.texCoords[1];
+        poly[2].texCoords = Final.texCoords[2];
 
-        window->draw(poly);
+        window->draw(poly, Final.texture);
     }
 }
 
@@ -579,36 +608,84 @@ vec3 * Engine :: createPrismVertices (const vec3 & start, const vec3 & end, cons
     return returnable_vertices;
 }
 
-void Engine :: appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3]) {
+void Engine :: appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3], sf::Texture * texture) {
     // frontface
     output.emplace_back(vertex[0], vertex[1], vertex[2], color[0], color[1], color[2]);
+    output.back().texture = texture;
+    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
     output.emplace_back(vertex[2], vertex[1], vertex[3], color[0], color[1], color[2]);
+    output.back().texture = texture;
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[0] = sf::Vector2f(500.f, 500.f);
     // backface
     output.emplace_back(vertex[4], vertex[5], vertex[6], color[0]/2.f, color[1]/2.f, color[2]/2.f);
+    output.back().texture = texture;
+    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
     output.emplace_back(vertex[6], vertex[5], vertex[7], color[0]/2.f, color[1]/2.f, color[2]/2.f);
+    output.back().texture = texture;
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[0] = sf::Vector2f(500.f, 500.f);
     // sideface A
     output.emplace_back(vertex[2], vertex[3], vertex[6], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    output.back().texture = texture;
+    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
     output.emplace_back(vertex[6], vertex[3], vertex[7], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    output.back().texture = texture;
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[0] = sf::Vector2f(500.f, 500.f);
     // sideface B
     output.emplace_back(vertex[4], vertex[5], vertex[0], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    output.back().texture = texture;
+    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
     output.emplace_back(vertex[0], vertex[5], vertex[1], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
+    output.back().texture = texture;
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[0] = sf::Vector2f(500.f, 500.f);
     // topface
     output.emplace_back(vertex[4], vertex[0], vertex[6], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    output.back().texture = texture;
+    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
     output.emplace_back(vertex[6], vertex[0], vertex[2], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    output.back().texture = texture;
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[0] = sf::Vector2f(500.f, 500.f);
     // bottomface
     output.emplace_back(vertex[1], vertex[5], vertex[3], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    output.back().texture = texture;
+    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
     output.emplace_back(vertex[3], vertex[5], vertex[7], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
+    output.back().texture = texture;
+    output.back().texCoords[2] = sf::Vector2f(500.f, 0.f);
+    output.back().texCoords[1] = sf::Vector2f(0.f,500.f);
+    output.back().texCoords[0] = sf::Vector2f(500.f, 500.f);
 }
 
-void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3]) {
+void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], sf::Texture * texture) {
     vec3 * vertex = createPrismVertices (start, end, thickness);
-    appendPrism (output, vertex, color);
+    appendPrism (output, vertex, color, texture);
     delete [] vertex;
 }
 
-void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], std::wstringstream & obj_stream, int & vertices_offset) {
+void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], std::wstringstream & obj_stream, int & vertices_offset, sf::Texture * texture) {
     vec3 * vertex = createPrismVertices (start, end, thickness);
-    appendPrism (output, vertex, color);
+    appendPrism (output, vertex, color, texture);
 
     obj_stream << L"v " << (vertex[0].y) << L" " << (vertex[0].z) << L" " << (vertex[0].x) << std::endl;
     obj_stream << L"v " << (vertex[1].y) << L" " << (vertex[1].z) << L" " << (vertex[1].x) << std::endl;
