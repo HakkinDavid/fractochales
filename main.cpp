@@ -437,25 +437,9 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_texture, &cloud_texture, &water_texture, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &water_texture, &bg, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
         drawableVetexArray.clear();
-        drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A);
-        drawableVetexArray.emplace_back(vec3(1000,-1000,1000),vec3(1000,-1000,-1000),vec3(1000,1000,1000),box_A,box_A,box_A);
-
-        drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B);
-        drawableVetexArray.emplace_back(vec3(-1000,-1000,-1000),vec3(1000,-1000,-1000),vec3(-1000,1000,-1000),box_B,box_B,box_B);
-
-        drawableVetexArray.emplace_back(vec3(1000,1000,-1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C);
-        drawableVetexArray.emplace_back(vec3(-1000,1000,1000),vec3(1000,1000,1000),vec3(-1000,1000,-1000),box_C,box_C,box_C);
-
-        drawableVetexArray.emplace_back(vec3(1000,-1000,-1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D);
-        drawableVetexArray.emplace_back(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,-1000,-1000),box_D,box_D,box_D);
-
-        drawableVetexArray.emplace_back(vec3(1000,1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E);
-        drawableVetexArray.emplace_back(vec3(-1000,-1000,1000),vec3(1000,-1000,1000),vec3(-1000,1000,1000),box_E,box_E,box_E);
-
-        drawableVetexArray.emplace_back(vec3(-1000,1000,-1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F);
-        drawableVetexArray.emplace_back(vec3(-1000,-1000,1000),vec3(-1000,-1000,-1000),vec3(-1000,1000,1000),box_F,box_F,box_F);
+        Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &cloud_texture);
         switch (bgIndex) {
             case 1:
             case 2:
