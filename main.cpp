@@ -257,6 +257,12 @@ int main() {
     sf::Texture water_texture;
     water_texture.loadFromFile("images/watertexture.png");
 
+    sf::Texture wood_texture;
+    wood_texture.loadFromFile("images/wooden.jpg");
+
+    sf::Texture space_texture;
+    space_texture.loadFromFile("images/space_box.jpg");
+
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
@@ -280,7 +286,7 @@ int main() {
     const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
     const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
     const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
-    const float environment_origin_color [][3] = { {100.f, 100.f, 100.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {112.f, 56.f, 144.f}, {70.59f, 34.9f, 36.47f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
+    const float environment_origin_color [][3] = { {100.f, 100.f, 100.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {112.f, 56.f, 144.f}, {48.f, 18.f, 104.f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
 
     const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
 
@@ -437,19 +443,31 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_texture, &cloud_texture, &water_texture, &bg, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &bg, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
         drawableVetexArray.clear();
-        Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &cloud_texture);
         switch (bgIndex) {
             case 1:
-            case 2:
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
             break;
+            case 2:
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
+            break;
+            case 4:
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
+            break;
             case voidIndex:
             break;
             default:
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &cloud_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
