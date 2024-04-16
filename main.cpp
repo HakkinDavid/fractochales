@@ -263,6 +263,9 @@ int main() {
     sf::Texture space_texture;
     space_texture.loadFromFile("images/space_box.jpg");
 
+    sf::Texture prismatic_spec;
+    prismatic_spec.loadFromFile("images/prismatic_spec.png");
+
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
@@ -445,6 +448,7 @@ int main() {
         #endif
         &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &bg, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
         drawableVetexArray.clear();
+        const float test_color[3] = {255.f, 255.f, 255.f};
         switch (bgIndex) {
             case 1:
                 Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &water_texture);

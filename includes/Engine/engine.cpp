@@ -609,77 +609,80 @@ vec3 * Engine :: createPrismVertices (const vec3 & start, const vec3 & end, cons
 }
 
 void Engine :: appendPrism (std::vector<tri3> & output, const vec3 * vertex, const float color [3], sf::Texture * texture) {
-    // frontface
-    float texture_size[2] = {0.f};
+    float texture_size[4] = {0.f};
     if (texture != nullptr) {
         texture_size[0] = texture->getSize().x;
         texture_size[1] = texture->getSize().y;
+        texture_size[2] = texture_size[0]/4.f;
+        texture_size[3] = texture_size[1]/3.f;
     }
+    // frontface
     output.emplace_back(vertex[0], vertex[1], vertex[2], color[0], color[1], color[2]);
     output.back().texture = texture;
-    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
+    output.back().texCoords[0].x = texture_size[2]; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = texture_size[2]; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = texture_size[3];
     output.emplace_back(vertex[2], vertex[1], vertex[3], color[0], color[1], color[2]);
     output.back().texture = texture;
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[0] = sf::Vector2f(texture_size[0], texture_size[1]);
+    output.back().texCoords[0].x = texture_size[2]*2; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = texture_size[2]; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = texture_size[3]*2;
     // backface
     output.emplace_back(vertex[4], vertex[5], vertex[6], color[0]/2.f, color[1]/2.f, color[2]/2.f);
     output.back().texture = texture;
-    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
+    output.back().texCoords[0].x = texture_size[2]*4; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = texture_size[2]*4; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]*3; output.back().texCoords[2].y = texture_size[3];
     output.emplace_back(vertex[6], vertex[5], vertex[7], color[0]/2.f, color[1]/2.f, color[2]/2.f);
     output.back().texture = texture;
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[0] = sf::Vector2f(texture_size[0], texture_size[1]);
-    // sideface A
+    output.back().texCoords[0].x = texture_size[2]*3; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = texture_size[2]*4; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]*3; output.back().texCoords[2].y = texture_size[3]*2;
+    // sideface R
     output.emplace_back(vertex[2], vertex[3], vertex[6], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
     output.back().texture = texture;
-    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
+    output.back().texCoords[0].x = texture_size[2]*2; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = texture_size[2]*2; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]*3; output.back().texCoords[2].y = texture_size[3];
     output.emplace_back(vertex[6], vertex[3], vertex[7], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
     output.back().texture = texture;
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[0] = sf::Vector2f(texture_size[0], texture_size[1]);
-    // sideface B
+    output.back().texCoords[0].x = texture_size[2]*3; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = texture_size[2]*2; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]*3; output.back().texCoords[2].y = texture_size[3]*2;
+    // sideface L
     output.emplace_back(vertex[4], vertex[5], vertex[0], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
     output.back().texture = texture;
-    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
+    output.back().texCoords[0].x = 0.f; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = 0.f; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]; output.back().texCoords[2].y = texture_size[3];
     output.emplace_back(vertex[0], vertex[5], vertex[1], color[0]/1.5f, color[1]/1.5f, color[2]/1.5f);
     output.back().texture = texture;
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[0] = sf::Vector2f(texture_size[0], texture_size[1]);
+    output.back().texCoords[0].x = texture_size[2]; output.back().texCoords[0].y = texture_size[3];
+    output.back().texCoords[1].x = 0.f; output.back().texCoords[1].y = texture_size[3]*2;
+    output.back().texCoords[2].x = texture_size[2]; output.back().texCoords[2].y = texture_size[3]*2;
     // topface
     output.emplace_back(vertex[4], vertex[0], vertex[6], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
     output.back().texture = texture;
-    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
+    output.back().texCoords[0].x = texture_size[2]; output.back().texCoords[0].y = 0.f;
+    output.back().texCoords[1].x = texture_size[2]; output.back().texCoords[1].y = texture_size[3];
+    output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = 0.f;
     output.emplace_back(vertex[6], vertex[0], vertex[2], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
     output.back().texture = texture;
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[0] = sf::Vector2f(texture_size[0], texture_size[1]);
+    output.back().texCoords[0].x = texture_size[2]*2; output.back().texCoords[0].y = 0.f;
+    output.back().texCoords[1].x = texture_size[2]; output.back().texCoords[1].y = texture_size[3];
+    output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = texture_size[3];
+    
     // bottomface
     output.emplace_back(vertex[1], vertex[5], vertex[3], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
     output.back().texture = texture;
-    output.back().texCoords[0] = sf::Vector2f(0.f, 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
+    output.back().texCoords[0].x = texture_size[2]; output.back().texCoords[0].y = texture_size[3]*2;
+    output.back().texCoords[1].x = texture_size[2]; output.back().texCoords[1].y = texture_size[3]*3;
+    output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = texture_size[3]*2;
     output.emplace_back(vertex[3], vertex[5], vertex[7], color[0]/1.25f, color[1]/1.25f, color[2]/1.25f);
     output.back().texture = texture;
-    output.back().texCoords[2] = sf::Vector2f(texture_size[0], 0.f);
-    output.back().texCoords[1] = sf::Vector2f(0.f,texture_size[1]);
-    output.back().texCoords[0] = sf::Vector2f(texture_size[0], texture_size[1]);
+    output.back().texCoords[0].x = texture_size[2]*2; output.back().texCoords[0].y = texture_size[3]*2;
+    output.back().texCoords[1].x = texture_size[2]; output.back().texCoords[1].y = texture_size[3]*3;
+    output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = texture_size[3]*3;
 }
 
 void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], sf::Texture * texture) {
