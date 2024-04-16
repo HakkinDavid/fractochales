@@ -38,28 +38,28 @@ android {
     externalNativeBuild {
         ndkBuild {
             path "src/main/jni/Android.mk"
-
         }
     }
     namespace 'com.fractochales.android'
-    applicationVariants.all { variant ->
-        variant.mergeResourcesProvider.configure{ doLast {
-            copy {
-                from (["../../fonts"])
-                into ("src/main/assets/fonts")
-            }
-            copy {
-                from (["../../images"])
-                into ("src/main/assets/images")
-            }
-            copy {
-                from (["../../sfx"])
-                into ("src/main/assets/sfx")
-            }
-        }}
-    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+task copyAssets {
+    copy {
+        from "../../fonts"
+        into "src/main/assets/fonts"
+    }
+    copy {
+        from "../../images"
+        into "src/main/assets/images"
+    }
+    copy {
+        from "../../sfx"
+        into "src/main/assets/sfx"
+    }
+}
+
+preBuild.dependsOn(copyAssets)
