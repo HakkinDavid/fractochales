@@ -320,8 +320,8 @@ int main() {
             screen_projection_matrix = LinearAlgebra::ProjectionMatrix(window_settings.FOV, float(window_settings.y_res) / float(window_settings.x_res), 0.1f, 1000.0f);
     vector<tri3> raster_pipeline, render_triangles;
 
-    const float defaultLeeway = 0.15F;
-    const float defaultBranch = 0.02F;
+    const float defaultLeeway = 0.18F;
+    const float defaultBranch = 0.01F;
 
     auto t0 = std::chrono::system_clock::now();
     long double time;
@@ -332,7 +332,7 @@ int main() {
     float leeway = defaultLeeway;
     float branch = defaultBranch;
     float forcedHeight = 0.75F;
-    float downWeight = 0.1F;
+    float downWeight = 0.13F;
     float crystallizate = 0;
     float humidity = 0.9F;
     float temperature = 15.0F;

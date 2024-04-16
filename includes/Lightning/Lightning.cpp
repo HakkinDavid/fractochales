@@ -273,6 +273,8 @@ void Lightning::superTraverse(){
             prevxyz[0] = branches[i][3];
             prevxyz[1] = branches[i][4];
             prevxyz[2] = branches[i][5];
+            canonVertices.push_back({x, y, z});
+            canonVertices.push_back({prevxyz[0], prevxyz[1], prevxyz[2]});
             int prevDiff[3] = {x - prevxyz[0], y - prevxyz[1], z - prevxyz[2]};
             int newDiff[3] = {0};
 
@@ -335,7 +337,7 @@ void Lightning::superTraverse(){
                 z += newDiff[2];
                 canonVertices.push_back({x, y, z});
                 for(int c=0; c < 3; c++) prevDiff[c] = newDiff[c];
-                k += 2^(j+1) - 1;
+                k += 3^(j+1) - 1;
             }
         }
     }
