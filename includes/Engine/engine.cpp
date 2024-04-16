@@ -249,6 +249,7 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri1.texCoords[0] = in_tri.texCoords[0];
         out_tri1.texCoords[1] = in_tri.texCoords[1];
         out_tri1.texCoords[2] = in_tri.texCoords[2];
+        out_tri1.texture = in_tri.texture;
 
 		out_tri1.p[0] = *inside_points[0];
 
@@ -276,6 +277,7 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri1.texCoords[0] = in_tri.texCoords[0];
         out_tri1.texCoords[1] = in_tri.texCoords[1];
         out_tri1.texCoords[2] = in_tri.texCoords[2];
+        out_tri1.texture = in_tri.texture;
 
 		out_tri2.color_A[0] = in_tri.color_A[0];
         out_tri2.color_B[0] = in_tri.color_B[0];
@@ -292,6 +294,7 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri2.texCoords[0] = in_tri.texCoords[0];
         out_tri2.texCoords[1] = in_tri.texCoords[1];
         out_tri2.texCoords[2] = in_tri.texCoords[2];
+        out_tri2.texture = in_tri.texture;
 
 		out_tri1.p[0] = *inside_points[0];
 		out_tri1.p[1] = *inside_points[1];
@@ -517,10 +520,6 @@ void Engine :: rasterVector (std::vector<tri3> & raster_pipeline, RenderSettings
 
                 for (int w = 0; w < nTrisToAdd; w++)
                     listTriangles.push_back(clipped[w]);
-                    listTriangles.back().texture = triToRaster.texture;
-                    listTriangles.back().texCoords[0] = triToRaster.texCoords[0];
-                    listTriangles.back().texCoords[1] = triToRaster.texCoords[1];
-                    listTriangles.back().texCoords[2] = triToRaster.texCoords[2];
             }
             nNewTriangles = listTriangles.size();
         }
