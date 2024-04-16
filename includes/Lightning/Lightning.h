@@ -10,6 +10,7 @@
 #include <vector>
 #include <array>
 #include <utility>
+#include "../Engine/engine.h"
 using namespace std;
 
 #ifndef LIGHTNING_H
@@ -25,6 +26,7 @@ private:
     float leeway;
     float branch;
     int lightPoints;
+    vector<int> directions;
     vector<array<int, 6>> branches;
     vector<array<int, 3>> canonVertices;
 

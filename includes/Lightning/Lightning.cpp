@@ -35,6 +35,7 @@ void Lightning::reinstantiate (int hei, int wid, int dep, float leeway, float br
     this->downWeight = downWeight;
 
     this->lightPoints = 0;
+    this->directions.clear();
 
     this->lightGrid = new bool** [this->hei];
     this->randGrid = new float** [this->hei];
@@ -111,7 +112,7 @@ void Lightning::randomize(void){
     }
 } */
 
-void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
+void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){ //note: were not using tag for literally anything rn
     //if (++recSteps >= 4500) return;
     while(x >= 0 && x < hei && y >= 0 && y < wid && z >= 0 && z < dep){
         int diff[3] = { x - prevxyz[0], y - prevxyz[1], z - prevxyz[2] }; 
@@ -122,6 +123,8 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
 
         if(!lightGrid[x][y][z]){ lightPoints++; }
         lightGrid[x][y][z] = true;
+
+        directions.push_back(diff[0]*9 + diff[1]*3 + diff[2]);
 
         // Determine valid neighbors based on direction
         for(int i=-1; i<=1; i++){
@@ -164,7 +167,6 @@ void Lightning::traverse(int x, int y, int z, int prevxyz[3], bool tag){
         if((min >= key)) {
             return;
         } // End of branch
-
 
         // Check for branching opportunities
         for(int i=0; i<key; i++){
@@ -233,6 +235,7 @@ void Lightning::superTraverse(){
             //Backtrack
             canonVertices.pop_back();
             canonVertices.pop_back();
+            directions.pop_back();
             lightPoints--;
 
             if(canonVertices.size() == 0){
@@ -259,6 +262,83 @@ void Lightning::superTraverse(){
         }
 
     } while(x < hei*forcedHeight); // Loop if not low enough
+
+    // Self-similar branching loop
+    int gen = 1; //lets just do it one time for now
+    for(int j=0; j < gen; j++){
+        for(int i=0; i < branches.size(); i++){
+            x = branches[i][0];
+            y = branches[i][1];
+            z = branches[i][2];
+            prevxyz[0] = branches[i][3];
+            prevxyz[1] = branches[i][4];
+            prevxyz[2] = branches[i][5];
+            int prevDiff[3] = {x - prevxyz[0], y - prevxyz[1], z - prevxyz[2]};
+            int newDiff[3] = {0};
+
+            // Create transformation matrix
+            vec3 xBasis(prevDiff[0], prevDiff[1], prevDiff[2]);
+            vector<array<int, 3>> yCand;
+            for(int a=-1; a<=1; a++){
+                for(int b=-1; b<=1; b++){
+                    for(int c=-1; c<=1; c++){
+                        if((xBasis.x*a + xBasis.y*b + xBasis.z*c) == 0){
+                            yCand.push_back({a, b, c});
+                        }
+                    }
+                }
+            }
+            int r = rand() % yCand.size();
+            vec3 yBasis(yCand[r][0], yCand[r][1], yCand[r][2]);
+            yCand.clear();
+            vec3 zBasis = LinearAlgebra::Cross(xBasis, yBasis);
+            mat4 T;
+            T.m[0][0] = xBasis.x; T.m[0][1] = yBasis.x; T.m[0][2] = zBasis.x;
+            T.m[1][0] = xBasis.y; T.m[1][1] = yBasis.y; T.m[1][2] = zBasis.y;
+            T.m[2][0] = xBasis.z; T.m[2][1] = yBasis.z; T.m[2][2] = zBasis.z;
+
+            // Traverse directions 
+            for(int k=0; k < directions.size(); k++){
+                // Decode xyz directions
+                newDiff[0] = static_cast<int>(round(directions[k] / 9.0F));
+                newDiff[1] = static_cast<int>(round(directions[k] / 3.0F)) % 3;
+                if(newDiff[1] == 2) newDiff[1] = -1; //we cant trust these compilers, man
+                if(newDiff[1] == -2) newDiff[1] = 1;
+                newDiff[2] = directions[k] % 3;
+                if(newDiff[2] == 2) newDiff[2] = -1; 
+                if(newDiff[2] == -2) newDiff[2] = 1;
+
+                // Transform to branch direction
+                vec3 d(newDiff[0], newDiff[1], newDiff[2]);
+                d = LinearAlgebra::MatxVec(T, d);
+                newDiff[0] = d.x; newDiff[1] = d.y; newDiff[2] = d.z;
+                for(int c=0; c < 3; c++){
+                    if(newDiff[c] > 0) newDiff[c] = 1;
+                    else if(newDiff[c] < 0) newDiff[c] = -1;
+                }
+
+                // Perform all necessary checks
+                if(x+newDiff[0] < 0 || x+newDiff[0] >= hei ||
+                   y+newDiff[1] < 0 || y+newDiff[1] >= wid ||
+                   z+newDiff[2] < 0 || z+newDiff[2] >= dep){
+                    break; // End branch if out of bounds
+                }
+                if(lightGrid[x+newDiff[0]][y+newDiff[1]][z+newDiff[2]] || // Already lit up
+                  (prevDiff[0]*newDiff[0] + prevDiff[1]*newDiff[1] + prevDiff[2]*newDiff[2]) <= 0){ // Creates sharp angle
+                    continue; 
+                }
+
+                // Add to lightning
+                canonVertices.push_back({x, y, z});
+                x += newDiff[0];
+                y += newDiff[1];
+                z += newDiff[2];
+                canonVertices.push_back({x, y, z});
+                for(int c=0; c < 3; c++) prevDiff[c] = newDiff[c];
+                k += 2^(j+1) - 1;
+            }
+        }
+    }
 
 }
 
