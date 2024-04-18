@@ -2,32 +2,6 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "(No window) Playground Build",
-            "command": "g++",
-            "args": [
-                "includes/Lightning/Lightning.cpp",
-                "includes/Physics/physics.cpp",
-                "nowindow.cpp",
-                "-Iincludes/",
-                "-Iincludes/Lightning",
-                "-Iincludes/Physics",
-                "icon.res",
-                "-o",
-                "${workspaceFolder}\\test.exe",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "type": "cppbuild",
             "label": "(Windows) SFML Build",
             "command": "g++",
             "args": [
@@ -73,7 +47,8 @@
                 "-lvorbisfile",
                 "-lvorbis",
                 "-logg",
-                "-mwindows"
+                // TODO: REACTIVAR ESTA BANDERA PARA NO ABRIR UNA TERMINAL
+                //"-mwindows"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -144,7 +119,8 @@
                 "-framework",
                 "vorbisenc",
                 "-framework",
-                "vorbisfile"
+                "vorbisfile",
+                "-mwindows"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
