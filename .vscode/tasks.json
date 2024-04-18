@@ -47,8 +47,7 @@
                 "-lvorbisfile",
                 "-lvorbis",
                 "-logg",
-                // TODO: REACTIVAR ESTA BANDERA PARA NO ABRIR UNA TERMINAL
-                //"-mwindows"
+                "-mwindows"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

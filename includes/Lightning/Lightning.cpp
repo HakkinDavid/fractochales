@@ -241,7 +241,6 @@ void Lightning::superTraverse(){
             if(canonVertices.size() == 0){
                 randomize();
                 superTraverse();
-                std::cout << "FUCK!!" << std::endl;
                 return;
             }
 
@@ -252,7 +251,7 @@ void Lightning::superTraverse(){
             prevxyz[1] = canonVertices[canonVertices.size()-2][1];
             prevxyz[2] = canonVertices[canonVertices.size()-2][2];
 
-            if(x == branches.back()[3] && y == branches.back()[4] && z == branches.back()[5]){
+            if(branches.size() > 0 && x == branches.back()[3] && y == branches.back()[4] && z == branches.back()[5]){
                 branches.pop_back();
             }
 
