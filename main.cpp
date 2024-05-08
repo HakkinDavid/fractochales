@@ -456,19 +456,19 @@ int main() {
         const float test_color[3] = {255.f, 255.f, 255.f};
         switch (bgIndex) {
             case 1:
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
             break;
             case 2:
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &wood_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &wood_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
             break;
             case 4:
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &space_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &space_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
@@ -476,7 +476,7 @@ int main() {
             case voidIndex:
             break;
             default:
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1000.f, 0.f), vec3(0.f, -1000.f, 0.f), 1000.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &cloud_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);

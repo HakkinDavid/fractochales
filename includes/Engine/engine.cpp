@@ -684,6 +684,7 @@ void Engine :: appendPrism (std::vector<tri3> & output, const vec3 * vertex, con
     output.back().texCoords[2].x = texture_size[2]*2; output.back().texCoords[2].y = texture_size[3]*3;
 }
 
+// height change = vertical ; height no-change = horizontal
 void Engine :: drawPrism (std::vector<tri3> & output, const vec3 start, const vec3 end, const float thickness, const float color[3], sf::Texture * texture) {
     vec3 * vertex = createPrismVertices (start, end, thickness);
     appendPrism (output, vertex, color, texture);
