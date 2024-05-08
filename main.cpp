@@ -14,6 +14,11 @@
 #if !MOBILE
     #include <fstream>
     #include <filesystem>
+    #if __APPLE__
+        namespace fs = std::__fs::filesystem;
+    #else
+        namespace fs = std::filesystem;
+    #endif
 #endif
 
 #include "includes/Lightning/Lightning.h"
@@ -98,14 +103,14 @@ void screenSaver (sf::Sprite &background, sf::Sprite &splash_screen, bool undo =
 
 int main() {
     #if !MOBILE
-        if (!std::filesystem::exists("obj")) {
-            std::filesystem::create_directories("obj");
-            std::filesystem::create_directories("obj/output");
+        if (!fs::exists("obj")) {
+            fs::create_directories("obj");
+            fs::create_directories("obj/output");
         }
-        else if (!std::filesystem::exists("obj/output")) {
-            std::filesystem::create_directories("obj/output");
+        else if (!fs::exists("obj/output")) {
+            fs::create_directories("obj/output");
         }
-        while (std::filesystem::exists(utils::newLightningFileName())) {
+        while (fs::exists(utils::newLightningFileName())) {
             utils::new_obj_index++;
         }
         std::wstringstream lightning_stream_obj, lightning_stream_mtl, lightning_stream_txt;
