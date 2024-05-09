@@ -309,7 +309,7 @@ int main() {
     splash_screen.setPosition(sf::Vector2f((window->getSize().x - splash_screen.getLocalBounds().width)/2, (window->getSize().y - splash_screen.getLocalBounds().height)/2));
 
     loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
-    Lightning storm;
+    Lightning * storm = new Lightning();
     wstringstream thunder_data, thunder_physics_data, title_data;
     vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
     const float box_A [4] = {255,0,0,127.5},
@@ -318,7 +318,7 @@ int main() {
                 box_D [4] = {153,51,255,127.5},
                 box_E [4] = {51,255,153,127.5},
                 box_F [4] = {51,255,255,127.5};
-    vector<array<int, 3>> * canonVertices = storm.getCanonVertices();
+    vector<array<int, 3>> * canonVertices = storm->getCanonVertices();
 
     // cosas así bien tridimensionales
 	float camera_x_rotation, camera_y_rotation;
@@ -388,7 +388,7 @@ int main() {
 
     auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &storm, &thunder_data, &thunder_physics_data, &title_data, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &isMobileLandscape] () {
         acceleration = Physics::mean_a(0, vf, time);
-        e_mass = storm.getElectronicMass(current_environmental_factor);
+        e_mass = storm->getElectronicMass(current_environmental_factor);
         force = Physics::F(e_mass, acceleration);
         delta_y = Physics::delta_x(acceleration, time);
         Ecf = Physics::Ec(e_mass, vf);
@@ -399,8 +399,8 @@ int main() {
         thunder_physics_data.str(std::wstring());
         title_data.str(std::wstring());
         console.str(std::wstring());
-        thunder_data << "Ramas: " << storm.getN() << endl
-        << "Electrones involucrados:\n\t" << storm.getInvolvedElectrons(current_environmental_factor) << endl
+        thunder_data << "Ramas: " << storm->getN() << endl
+        << "Electrones involucrados:\n\t" << storm->getInvolvedElectrons(current_environmental_factor) << endl
         << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl
         << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
         << L"FPS: " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
@@ -528,7 +528,8 @@ int main() {
                     final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
                     final_downWeight = downWeight+(crystallizate*humidity),
                     final_forcedHeight = forcedHeight+((temperature-15)*0.02f);
-        storm.reinstantiate(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
+        if (storm != nullptr) delete storm;
+        storm = new Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
         #if !MOBILE
             lightning_stream_txt << utils::getFileHeader(2)
             << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
@@ -538,16 +539,16 @@ int main() {
             << L"Minimum height: " << final_forcedHeight << endl
             << L"Electrons per meter of reach: " << current_environmental_factor << endl;
         #endif
-        canonVertices = storm.getCanonVertices();
-        storm.randomize(); // aleatorizar los valores resistivos en el entorno
+        canonVertices = storm->getCanonVertices();
+        storm->randomize(); // aleatorizar los valores resistivos en el entorno
         t0 = std::chrono::system_clock::now();
-        storm.superTraverse(); 
+        storm->superTraverse(); 
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         recalculateLightningVertex();
         retypeInfo();
         #if !MOBILE
             lightning_stream_txt
-            << L"Electrons involved: " << storm.getInvolvedElectrons(current_environmental_factor) << endl
+            << L"Electrons involved: " << storm->getInvolvedElectrons(current_environmental_factor) << endl
             << L"Electronic mass: " << scientific << setprecision(8) << e_mass << L"kg" << endl;
         #endif
     };

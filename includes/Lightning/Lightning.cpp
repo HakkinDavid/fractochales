@@ -7,24 +7,7 @@
 using namespace std;
 
 // LIGHTNING CLASS
-Lightning::Lightning() {
-    this->hei = 0.f;
-    this->wid = 0.f;
-    this->dep = 0.f;
-    this->leeway = 0.f;
-    this->branch = 0.f;
-    this->gridHeightInMeters = 0.f;
-    this->forcedHeight = 0.f;
-    this->downWeight = 0.f;
-    this->lightGrid = nullptr;
-    this->randGrid = nullptr;
-}
-
-void Lightning::reinstantiate (int hei, int wid, int dep, float leeway, float branch, float downWeight, float forcedHeight, float gridHeightInMeters) {
-
-    freeMemory();
-
-    //FUCK AROUND WITH THESE NUMBERS AND FIND OUT
+Lightning::Lightning(int hei, int wid, int dep, float leeway, float branch, float downWeight, float forcedHeight, float gridHeightInMeters) {
     this->hei = hei;
     this->wid = wid;
     this->dep = dep;
