@@ -341,7 +341,7 @@ int main() {
     float branch = defaultBranch;
     float forcedHeight = 0.75F;
     float downWeight = 0.13F;
-    float crystallizate = 0;
+    float crystallizate = 0.04;
     float humidity = 0.9F;
     float temperature = 15.0F;
 
@@ -663,7 +663,7 @@ int main() {
                 branch = branch_in_environment[bgIndex];
                 downWeight = weight_in_environment[bgIndex];
                 forcedHeight = height_in_environment[bgIndex];
-                crystallizate = 0;
+                crystallizate = 0.04;
                 humidity = 0.9F;
                 temperature = 15.0F;
 
