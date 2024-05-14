@@ -661,7 +661,7 @@ int main() {
         zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left, [] () { return true; }, [&zap, &generateLightning, &zapCount, &achieve_vars, &sfx_i, &sound1, &sound2, &sound3, &loading_percentage, &splash_screen, &splash_3d, &background, &loading_text, &bg, &bgIndex] () {
             if (zap) {
                 loading_text.setString(L"Generando...");
-                loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
+                loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 250);
                 generateLightning();
                 zapCount++;
                 loading_text.setString(utils::getRandomAdvice());
