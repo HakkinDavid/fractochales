@@ -353,10 +353,10 @@ int main() {
     float branch = defaultBranch;
     float forcedHeight = 0.75F;
     float downWeight = 0.13F;
-    float crystallizate = 0.04;
-    float humidity = 0.9F;
-    float temperature = 15.0F;
-    float attenuation_coefficient = (0.001)/(downWeight+temperature+crystallizate+humidity);
+    float crystallizate;
+    float humidity;
+    float temperature;
+    float attenuation_coefficient;
 
     float lightning_width = 257;
     float lightning_height = 181;
@@ -398,6 +398,20 @@ int main() {
 
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
+
+    auto recalculateLightningVariables = [&current_environmental_factor, &bgIndex, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient] () {
+        current_environmental_factor = environmental_factors[bgIndex];
+        //leeway = leeway_in_environment[bgIndex];
+        //branch = branch_in_environment[bgIndex];
+        //downWeight = weight_in_environment[bgIndex];
+        //forcedHeight = height_in_environment[bgIndex];
+        crystallizate = 0.04;
+        humidity = 0.9F;
+        temperature = 15.0F;
+        attenuation_coefficient = (0.001)/(downWeight+temperature+crystallizate+humidity);
+    };
+
+    recalculateLightningVariables();
 
     auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &isMobileLandscape] () {
         acceleration = Physics::mean_a(0, vf, time);
@@ -675,7 +689,7 @@ int main() {
                 }
             #endif
         });
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex] () {
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex, &recalculateLightningVariables] () {
             if (switchingBG) {
                 bgIndex++;
                 if (bg[bgIndex] == nullptr) bgIndex = 0;
@@ -683,15 +697,7 @@ int main() {
 
                 utils::scaleBG(window, background, bg, bgIndex, bg_scale);
 
-                current_environmental_factor = environmental_factors[bgIndex];
-                //leeway = leeway_in_environment[bgIndex];
-                //branch = branch_in_environment[bgIndex];
-                //downWeight = weight_in_environment[bgIndex];
-                //forcedHeight = height_in_environment[bgIndex];
-                crystallizate = 0.04;
-                humidity = 0.9F;
-                temperature = 15.0F;
-                attenuation_coefficient = (0.001)/(downWeight+temperature+crystallizate+humidity);
+                recalculateLightningVariables();
 
                 recalculateLightningVertex();
             }
