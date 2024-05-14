@@ -306,6 +306,9 @@ int main() {
     sf::Texture prismatic_spec;
     prismatic_spec.loadFromFile("images/prismatic_spec.png");
 
+    sf::Texture city_texture;
+    city_texture.loadFromFile("images/city_texture.png");
+
     sf::Texture differential_equation;
     differential_equation.loadFromFile("images/ed.png");
 
@@ -491,9 +494,16 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &city_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
         drawableVetexArray.clear();
         switch (bgIndex) {
+            // PROOF OF CONCEPT JUST IN CASE BIG BUILDING CASTA IS NOT FINISHED IN TIME ... DELETE AFTERWARDS
+            case 0:
+                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &city_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+            break;
             case 1:
                 Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &water_texture);
                 Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
