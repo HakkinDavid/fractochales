@@ -422,7 +422,7 @@ int main() {
         Ecf = Physics::Ec(e_mass, vf);
         work = Physics::T(force, delta_y);
         Pf = Physics::P(force, vf);
-        distance_to_lightning = Physics::vector_magnitude(camera_position.x, camera_position.y, camera_position.z) * 100.f;
+        distance_to_lightning = Physics::vector_magnitude(camera_position.x, camera_position.y, 0) * 100.f;
         lightning_light_intensity = Physics::lightning_light_0 * exp((-1.f)*attenuation_coefficient*distance_to_lightning);
         light_mask.setFillColor(sf::Color(255.f, 255.f, 255.f, 255.f*(lightning_light_intensity/1e9)));
 
