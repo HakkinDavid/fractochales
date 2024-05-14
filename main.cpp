@@ -177,30 +177,35 @@ int main() {
 
     sf::Text text;
     sf::Text physicsOutput;
+    sf::Text luminosity_text;
     sf::Text currentTitle;
     sf::Text watermarkText;
     sf::Text loading_text;
 
     text.setFont(font);
     physicsOutput.setFont(font);
+    luminosity_text.setFont(font);
     currentTitle.setFont(font);
     watermarkText.setFont(font);
     loading_text.setFont(font);
 
     text.setCharacterSize(16 * (MOBILE ? 2 : 1));
     physicsOutput.setCharacterSize(16 * (MOBILE ? 2 : 1));
+    luminosity_text.setCharacterSize(16 * (MOBILE ? 2 : 1));
     currentTitle.setCharacterSize(32 * (MOBILE ? 2 : 1));
     watermarkText.setCharacterSize(16 * (MOBILE ? 2 : 1));
     loading_text.setCharacterSize(16 * (MOBILE ? 2 : 1));
 
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
+    luminosity_text.setFillColor(sf::Color::White);
     currentTitle.setFillColor(sf::Color(255, 255, 255, 150));
     watermarkText.setFillColor(sf::Color(255, 255, 255, 122));
     loading_text.setFillColor(sf::Color::White);
 
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
+    luminosity_text.setStyle(sf::Text::Bold);
     currentTitle.setStyle(sf::Text::Bold);
     watermarkText.setStyle(sf::Text::Bold);
     loading_text.setStyle(sf::Text::Bold);
@@ -221,8 +226,10 @@ int main() {
 
     sf::RectangleShape dim_text_bg;
     sf::RectangleShape dim_physicsOutput_bg;
+    sf::RectangleShape dim_luminosity_text;
     dim_text_bg.setFillColor(sf::Color(0, 0, 0, 50));
     dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
+    dim_luminosity_text.setFillColor(sf::Color(0, 0, 0, 50));
 
     sf::RectangleShape left_menu_bg;
     sf::RectangleShape right_menu_bg;
@@ -271,6 +278,9 @@ int main() {
     sf::Texture prismatic_spec;
     prismatic_spec.loadFromFile("images/prismatic_spec.png");
 
+    sf::Texture differential_equation;
+    differential_equation.loadFromFile("images/ed.png");
+
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
@@ -294,13 +304,15 @@ int main() {
     const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
     const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
     const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
-    const float environment_origin_color [][3] = { {100.f, 100.f, 100.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {112.f, 56.f, 144.f}, {48.f, 18.f, 104.f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
+    const float environment_origin_color [][3] = { {50.f, 50.f, 50.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {56.f, 28.f, 72.f}, {48.f, 18.f, 104.f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
 
     const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
 
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
+
+    sf::Sprite diff_eq (differential_equation);
 
     float bg_scale;
 
@@ -310,7 +322,7 @@ int main() {
 
     loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
     Lightning * storm = new Lightning();
-    wstringstream thunder_data, thunder_physics_data, title_data;
+    wstringstream thunder_data, thunder_physics_data, luminosity_data, title_data;
     vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
     const float box_A [4] = {255,0,0,127.5},
                 box_B [4] = {51,153,255,127.5},
@@ -335,7 +347,7 @@ int main() {
     long double time;
     long double e_mass;
     float vf = 100000000.0F;
-    float acceleration, force, delta_y, Ecf, work, Pf;
+    float acceleration, force, delta_y, Ecf, work, Pf, distance_to_lightning;
 
     float leeway = defaultLeeway;
     float branch = defaultBranch;
@@ -344,6 +356,7 @@ int main() {
     float crystallizate = 0.04;
     float humidity = 0.9F;
     float temperature = 15.0F;
+    float attenuation_coefficient = (0.001)/(downWeight+temperature+crystallizate+humidity);
 
     float lightning_width = 257;
     float lightning_height = 181;
@@ -386,7 +399,7 @@ int main() {
     // función lambda que permite trabajar con las variables de main () por referencia
     // por lo que se llama sin parámetros
 
-    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &storm, &thunder_data, &thunder_physics_data, &title_data, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &isMobileLandscape] () {
+    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &isMobileLandscape] () {
         acceleration = Physics::mean_a(0, vf, time);
         e_mass = storm->getElectronicMass(current_environmental_factor);
         force = Physics::F(e_mass, acceleration);
@@ -394,11 +407,13 @@ int main() {
         Ecf = Physics::Ec(e_mass, vf);
         work = Physics::T(force, delta_y);
         Pf = Physics::P(force, vf);
+        distance_to_lightning = Physics::vector_magnitude(camera_position.x, camera_position.y, camera_position.z);
 
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
         title_data.str(std::wstring());
         console.str(std::wstring());
+        luminosity_data.str(std::wstring());
         thunder_data << "Ramas: " << storm->getN() << endl
         << "Electrones involucrados:\n\t" << storm->getInvolvedElectrons(current_environmental_factor) << endl
         << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl
@@ -419,20 +434,27 @@ int main() {
 
         title_data << bgTitle[bgIndex];
 
+        luminosity_data << L"k = " << attenuation_coefficient << ": I(" << distance_to_lightning << ") = " << Physics::lightning_light_0 * exp((-1.f)*attenuation_coefficient*distance_to_lightning) << "cd" << endl;
+
         utils::format_wstringstream(thunder_data);
         utils::format_wstringstream(thunder_physics_data);
         utils::format_wstringstream(title_data);
+        utils::format_wstringstream(luminosity_data);
         
         text.setString(thunder_data.str());
         currentTitle.setString(title_data.str());
         physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
+        luminosity_text.setString(luminosity_data.str());
 
-        physicsOutput.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - physicsOutput.getLocalBounds().getSize().x)/2, window->getSize().y*0.45);
-        text.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - text.getLocalBounds().getSize().x)/2, window->getSize().y * 0.15);
-        currentTitle.setPosition((MOBILE ? (left_menu_bg.getSize().x - currentTitle.getLocalBounds().getSize().x)/2 : left_menu_bg.getSize().x + 20), window->getSize().y*0.01);
+        text.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - text.getLocalBounds().getSize().x)/2.f, window->getSize().y * 0.15);
+        physicsOutput.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - physicsOutput.getLocalBounds().getSize().x)/2.f, window->getSize().y*0.3);
+        diff_eq.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - diff_eq.getGlobalBounds().getSize().x)/2.f, window->getSize().y*0.65);
+        currentTitle.setPosition((MOBILE ? (left_menu_bg.getSize().x - currentTitle.getLocalBounds().getSize().x)/2.f : left_menu_bg.getSize().x + 20), window->getSize().y*0.01);
+        luminosity_text.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - luminosity_text.getGlobalBounds().getSize().x)/2.f, window->getSize().y*0.96);
         
         dim_text_bg.setSize(sf::Vector2f(text.getLocalBounds().getSize().x + 10, text.getLocalBounds().getSize().y + 15));
         dim_physicsOutput_bg.setSize(sf::Vector2f(physicsOutput.getLocalBounds().getSize().x + 10, physicsOutput.getLocalBounds().getSize().y + 15));
+        dim_luminosity_text.setSize(sf::Vector2f(luminosity_text.getLocalBounds().getSize().x + 10, luminosity_text.getLocalBounds().getSize().y + 15));
 
         // esto arregla el problema de visualización en los menús al tener el teléfono en horizontal
         if (isMobileLandscape) {
@@ -444,6 +466,7 @@ int main() {
 
         dim_text_bg.setPosition(text.getPosition().x - 5, text.getPosition().y - 5);
         dim_physicsOutput_bg.setPosition(physicsOutput.getPosition().x - 5, physicsOutput.getPosition().y - 5);
+        dim_luminosity_text.setPosition(luminosity_text.getPosition().x - 5, luminosity_text.getPosition().y - 5);
     };
 
     auto recalculateLightningVertex =
@@ -570,6 +593,8 @@ int main() {
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
         left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
+        const float diff_equation_scale = right_menu_bg.getSize().x/diff_eq.getLocalBounds().getSize().x * 0.95;
+        diff_eq.setScale(diff_equation_scale, diff_equation_scale);
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
         lightning_scale = ((float) window->getSize().y)/((float) lightning_height);
@@ -650,7 +675,7 @@ int main() {
                 }
             #endif
         });
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature, &bg_scale, &recalculateLightningVertex] () {
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex] () {
             if (switchingBG) {
                 bgIndex++;
                 if (bg[bgIndex] == nullptr) bgIndex = 0;
@@ -659,13 +684,14 @@ int main() {
                 utils::scaleBG(window, background, bg, bgIndex, bg_scale);
 
                 current_environmental_factor = environmental_factors[bgIndex];
-                leeway = leeway_in_environment[bgIndex];
-                branch = branch_in_environment[bgIndex];
-                downWeight = weight_in_environment[bgIndex];
-                forcedHeight = height_in_environment[bgIndex];
+                //leeway = leeway_in_environment[bgIndex];
+                //branch = branch_in_environment[bgIndex];
+                //downWeight = weight_in_environment[bgIndex];
+                //forcedHeight = height_in_environment[bgIndex];
                 crystallizate = 0.04;
                 humidity = 0.9F;
                 temperature = 15.0F;
+                attenuation_coefficient = (0.001)/(downWeight+temperature+crystallizate+humidity);
 
                 recalculateLightningVertex();
             }
@@ -852,8 +878,11 @@ int main() {
             window->draw(right_menu_bg);
             window->draw(dim_text_bg);
             window->draw(dim_physicsOutput_bg);
+            window->draw(dim_luminosity_text);
             window->draw(text);
             window->draw(physicsOutput);
+            window->draw(diff_eq);
+            window->draw(luminosity_text);
         }
         else if (!MOBILE || hide_left) {
             window->draw(watermark_logo);

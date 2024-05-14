@@ -35,3 +35,7 @@ float Physics :: P (float force, float velocity) {
 float Physics :: deg_to_rad (float deg) {
     return deg * (PI / 180);
 }
+
+float Physics :: vector_magnitude (float x, float y, float z) {
+    return sqrtf(x*x + y*y + z*z);
+}

@@ -15,9 +15,11 @@ namespace Physics {
     float T (float force = 0, float distance = 0);
     float P (float force = 0, float velocity = 0);
     float deg_to_rad (float deg);
+    float vector_magnitude (float x, float y, float z);
 
     const float gravity = 9.81;
     const float PI = 3.14159274101257324219;
+    const float lightning_light_0 = 1e9;
 }
 
 #endif
