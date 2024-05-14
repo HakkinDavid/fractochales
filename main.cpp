@@ -254,6 +254,7 @@ int main() {
     sf::RectangleShape dim_text_bg;
     sf::RectangleShape dim_physicsOutput_bg;
     sf::RectangleShape dim_luminosity_text;
+    sf::RectangleShape light_mask;
     dim_text_bg.setFillColor(sf::Color(0, 0, 0, 50));
     dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
     dim_luminosity_text.setFillColor(sf::Color(0, 0, 0, 50));
@@ -347,7 +348,7 @@ int main() {
     long double time;
     long double e_mass;
     float vf = 100000000.0F;
-    float acceleration, force, delta_y, Ecf, work, Pf, distance_to_lightning;
+    float acceleration, force, delta_y, Ecf, work, Pf, distance_to_lightning, lightning_light_intensity;
 
     float leeway = defaultLeeway;
     float branch = defaultBranch;
@@ -413,7 +414,7 @@ int main() {
 
     recalculateLightningVariables();
 
-    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &isMobileLandscape] () {
+    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &lightning_light_intensity, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &light_mask, &isMobileLandscape] () {
         acceleration = Physics::mean_a(0, vf, time);
         e_mass = storm->getElectronicMass(current_environmental_factor);
         force = Physics::F(e_mass, acceleration);
@@ -421,7 +422,9 @@ int main() {
         Ecf = Physics::Ec(e_mass, vf);
         work = Physics::T(force, delta_y);
         Pf = Physics::P(force, vf);
-        distance_to_lightning = Physics::vector_magnitude(camera_position.x, camera_position.y, camera_position.z);
+        distance_to_lightning = Physics::vector_magnitude(camera_position.x, camera_position.y, camera_position.z) * 100.f;
+        lightning_light_intensity = Physics::lightning_light_0 * exp((-1.f)*attenuation_coefficient*distance_to_lightning);
+        light_mask.setFillColor(sf::Color(255.f, 255.f, 255.f, 255.f*(lightning_light_intensity/1e9)));
 
         thunder_data.str(std::wstring());
         thunder_physics_data.str(std::wstring());
@@ -448,7 +451,7 @@ int main() {
 
         title_data << bgTitle[bgIndex];
 
-        luminosity_data << L"k = " << attenuation_coefficient << ": I(" << distance_to_lightning << ") = " << Physics::lightning_light_0 * exp((-1.f)*attenuation_coefficient*distance_to_lightning) << "cd" << endl;
+        luminosity_data << L"k = " << attenuation_coefficient << ": I(" << distance_to_lightning << ") = " << lightning_light_intensity << "cd" << endl;
 
         utils::format_wstringstream(thunder_data);
         utils::format_wstringstream(thunder_physics_data);
@@ -490,7 +493,6 @@ int main() {
         #endif
         &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
         drawableVetexArray.clear();
-        const float test_color[3] = {255.f, 255.f, 255.f};
         switch (bgIndex) {
             case 1:
                 Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &water_texture);
@@ -611,6 +613,9 @@ int main() {
         diff_eq.setScale(diff_equation_scale, diff_equation_scale);
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
+        light_mask.setFillColor(sf::Color(255.f, 255.f, 255.f, 0));
+        light_mask.setSize(sf::Vector2f(window->getSize().x, window->getSize().y));
+        light_mask.setPosition(0,0);
         lightning_scale = ((float) window->getSize().y)/((float) lightning_height);
         lightning_thickness = 2.f;
         x_offset = (((float) lightning_width)/2.f) * ((float) lightning_scale);
@@ -643,10 +648,13 @@ int main() {
         forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
         envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; }, [&retypeInfo] () { retypeInfo(); });
         // botones
-        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left, [] () { return true; }, [&zap, &generateLightning, &zapCount, &achieve_vars, &sfx_i, &sound1, &sound2, &sound3] () {
+        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left, [] () { return true; }, [&zap, &generateLightning, &zapCount, &achieve_vars, &sfx_i, &sound1, &sound2, &sound3, &loading_percentage, &splash_screen, &splash_3d, &background, &loading_text, &bg, &bgIndex] () {
             if (zap) {
+                loading_text.setString(L"Generando...");
+                loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
                 generateLightning();
                 zapCount++;
+                loading_text.setString(utils::getRandomAdvice());
                 if (zapCount == 1) achieve_vars[0] = true;
                 if (zapCount == 2) achieve_vars[1] = true; // the actual numbers should be more like 1, 15, 50, 100, or something. this is just a test
                 switch (1 + sfx_i % 3) {
@@ -879,6 +887,8 @@ int main() {
         window->draw(background);
 
         Engine :: renderTriangles (render_triangles, window);
+
+        window->draw(light_mask);
 
         if (!hide_right) {
             window->draw(right_menu_bg);
