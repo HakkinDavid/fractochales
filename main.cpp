@@ -94,6 +94,33 @@ Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch
 // colocar los logros que recibirán eventos en grupo
 Achieve ** all_chievos [] = {&chievo1, &chievo2};
 
+// valores de entorno para el rayo
+// el primero se toma como el valor PREDETERMINADO o EJE
+const float environmental_factors [] = {
+    3107424876.30374896651003593080636010231246734962391002, // ciudad / aire [cbrt(26521541178535914242048000)*(0.79*2*5 + 0.21*2*6)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (79%) y oxígeno (21%) para obtener los electrones en un metro lineal
+    25746383589.4834602095982075849351178030077195309528665478627, // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
+    81206048428.74334182814399729120705789177218382976918208, // madera [cbrt(2042797000000000000000000000)*(64)] : 2042797000000000000000000000 moléculas en un metro cúbico de madera ( 550 [kg/m^3] / 12.011*6+1.00784*10+15.999*5 [g/mol] * Número de Avogadro ), obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" de la celulosa C6H10O5 (4*6+10+6*5) como molécula para obtener los electrones en un metro lineal
+    2683956227.13375630504705598630107878318735183748706240, // pantano [cbrt(26521541178535914242048000)*(0.5*8 + 0.5*10)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (50%) y metano (50%) para obtener los electrones en un metro lineal
+    100, // vacío interestelar [cbrt(10^6)*1] : 10^6 átomos de hidrógeno por metro cúbico de espacio interestelar, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del hidrógeno singular para obtener los electrones en un metro lineal
+    1.0f, // negro ... valor por defecto
+    0.0f // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
+};
+
+// mismo orden: aire, agua, madera, pantano, espacio, vacio, cero al final
+const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.025, 0.24, 0 }; // valores de pantano y espacio subject to change
+const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
+const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
+const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
+const float environment_origin_color [][3] = { {50.f, 50.f, 50.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {56.f, 28.f, 72.f}, {48.f, 18.f, 104.f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
+const float box_A [4] = {255,0,0,127.5},
+            box_B [4] = {51,153,255,127.5},
+            box_C [4] = {51,51,255,127.5},
+            box_D [4] = {153,51,255,127.5},
+            box_E [4] = {51,255,153,127.5},
+            box_F [4] = {51,255,255,127.5};
+
+const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
+
 void UI_events (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0);
 void loadingScreen (sf::Sprite &background, sf::RectangleShape &loading_percentage, sf::Sprite &splash_screen, sf::Sprite &splash_3d, sf::Text &loading_text, float percentage);
 void leftMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg);
@@ -287,27 +314,6 @@ int main() {
     // nombres a mostrar
     const wstring bgTitle [] = {L"Aire", L"Agua", L"Madera", L"Pantano", L"Espacio", L"Libre", L""};
 
-    // valores de entorno para el rayo
-    // el primero se toma como el valor PREDETERMINADO o EJE
-    const float environmental_factors [] = {
-        3107424876.30374896651003593080636010231246734962391002, // ciudad / aire [cbrt(26521541178535914242048000)*(0.79*2*5 + 0.21*2*6)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (79%) y oxígeno (21%) para obtener los electrones en un metro lineal
-        25746383589.4834602095982075849351178030077195309528665478627, // agua [cbrt((10/3)*(10^28))*(8)] : 3.333x10^28 moléculas en un metro cúbico de agua, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del agua como molécula para obtener los electrones en un metro lineal
-        81206048428.74334182814399729120705789177218382976918208, // madera [cbrt(2042797000000000000000000000)*(64)] : 2042797000000000000000000000 moléculas en un metro cúbico de madera ( 550 [kg/m^3] / 12.011*6+1.00784*10+15.999*5 [g/mol] * Número de Avogadro ), obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" de la celulosa C6H10O5 (4*6+10+6*5) como molécula para obtener los electrones en un metro lineal
-        2683956227.13375630504705598630107878318735183748706240, // pantano [cbrt(26521541178535914242048000)*(0.5*8 + 0.5*10)] : 26521541178535914242048000 moléculas en un metro cúbico de aire, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del nitrógeno molecular (50%) y metano (50%) para obtener los electrones en un metro lineal
-        100, // vacío interestelar [cbrt(10^6)*1] : 10^6 átomos de hidrógeno por metro cúbico de espacio interestelar, obtenemos su raíz cúbica y lo multiplicamos por el número de electrones "externos" del hidrógeno singular para obtener los electrones en un metro lineal
-        1.0f, // negro ... valor por defecto
-        0.0f // fin del arreglo ... aunque este no lo requiere, se escribe para mantener la consistencia con el arreglo de fondos
-    };
-
-    // mismo orden: aire, agua, madera, pantano, espacio, vacio, cero al final
-    const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.025, 0.24, 0 }; // valores de pantano y espacio subject to change
-    const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
-    const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
-    const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
-    const float environment_origin_color [][3] = { {50.f, 50.f, 50.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {56.f, 28.f, 72.f}, {48.f, 18.f, 104.f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
-
-    const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
-
     float current_environmental_factor = environmental_factors[0];
 
     sf::Sprite background (*bg[bgIndex]);
@@ -324,12 +330,6 @@ int main() {
     Lightning * storm = new Lightning();
     wstringstream thunder_data, thunder_physics_data, luminosity_data, title_data;
     vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
-    const float box_A [4] = {255,0,0,127.5},
-                box_B [4] = {51,153,255,127.5},
-                box_C [4] = {51,51,255,127.5},
-                box_D [4] = {153,51,255,127.5},
-                box_E [4] = {51,255,153,127.5},
-                box_F [4] = {51,255,255,127.5};
     vector<array<int, 3>> * canonVertices = storm->getCanonVertices();
 
     // cosas así bien tridimensionales
@@ -474,7 +474,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &bg, &bgIndex, &voidIndex, &environment_origin_color, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline, &box_A, &box_B, &box_C, &box_D, &box_E, &box_F] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
         drawableVetexArray.clear();
         const float test_color[3] = {255.f, 255.f, 255.f};
         switch (bgIndex) {
@@ -675,7 +675,7 @@ int main() {
                 }
             #endif
         });
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &environmental_factors, &leeway, &leeway_in_environment, &branch, &branch_in_environment, &downWeight, &weight_in_environment, &forcedHeight, &height_in_environment, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex] () {
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex] () {
             if (switchingBG) {
                 bgIndex++;
                 if (bg[bgIndex] == nullptr) bgIndex = 0;
