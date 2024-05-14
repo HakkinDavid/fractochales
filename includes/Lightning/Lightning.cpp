@@ -266,6 +266,7 @@ void Lightning::superTraverse(){
             for(int a=-1; a<=1; a++){
                 for(int b=-1; b<=1; b++){
                     for(int c=-1; c<=1; c++){
+                        if(a == 0 && b == 0 && c == 0) continue;
                         if((xBasis.x*a + xBasis.y*b + xBasis.z*c) == 0){
                             yCand.push_back({a, b, c});
                         }
