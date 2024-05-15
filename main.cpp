@@ -309,6 +309,9 @@ int main() {
     sf::Texture city_texture;
     city_texture.loadFromFile("images/city_texture.png");
 
+    sf::Texture skyscraper_texture;
+    skyscraper_texture.loadFromFile("images/skyscraper.png");
+
     sf::Texture differential_equation;
     differential_equation.loadFromFile("images/ed.png");
 
@@ -494,7 +497,7 @@ int main() {
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
-        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &city_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
+        &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &city_texture, &skyscraper_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
         drawableVetexArray.clear();
         switch (bgIndex) {
            /*
@@ -510,15 +513,15 @@ int main() {
                 Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
 
                 //Drawings
-                Engine :: drawPrism (drawableVetexArray, vec3(650.f, -699.f, 600.f), vec3(650.f,299.f,600.f), 101.f, environment_origin_color[1], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(250.f, -699.f, 600.f), vec3(250.f,299.f,600.f), 101.f, environment_origin_color[1], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-150.f, -699.f, 600.f), vec3(-150.f,99.f,600.f), 101.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-550.f, -699.f, 600.f), vec3(-550.f,99.f,600.f), 101.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(650.f,299.f,600.f), vec3(650.f, -699.f, 600.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(250.f,299.f,600.f), vec3(250.f, -699.f, 600.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(-150.f,99.f,600.f), vec3(-150.f, -699.f, 600.f), 101.f, environment_origin_color[5], &skyscraper_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(-550.f,99.f,600.f), vec3(-550.f, -699.f, 600.f), 101.f, environment_origin_color[5], &skyscraper_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(650.f, -699.f, 200.f), vec3(650.f,-101.f,200.f), 101.f, environment_origin_color[1], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(250.f, -699.f, 200.f), vec3(250.f,-101.f,200.f), 101.f, environment_origin_color[1], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-150.f, -699.f, 200.f), vec3(-150.f,-301.f,200.f), 101.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-550.f, -699.f, 200.f), vec3(-550.f,-301.f,200.f), 101.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(650.f,-101.f,200.f), vec3(650.f, -699.f, 200.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(250.f,-101.f,200.f), vec3(250.f, -699.f, 200.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(-150.f,-301.f,200.f), vec3(-150.f, -699.f, 200.f), 101.f, environment_origin_color[5], &skyscraper_texture);
+                Engine :: drawPrism (drawableVetexArray, vec3(-550.f,-301.f,200.f), vec3(-550.f, -699.f, 200.f), 101.f, environment_origin_color[5], &skyscraper_texture);
 
                 //Airplane
                 Engine :: drawPrism (drawableVetexArray, vec3(-55.f, 50.f, 800.f), vec3(55.f,50.f,800.f), 15.f, environment_origin_color[5], &cloud_texture);
