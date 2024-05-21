@@ -336,7 +336,7 @@ int main() {
     loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 0);
     Lightning * storm = new Lightning();
     wstringstream thunder_data, thunder_physics_data, luminosity_data, title_data;
-    vector<tri3> drawableVetexArray; // crear el vector de vértices a renderizar
+    vector<tri3> drawableVertexArray; // crear el vector de vértices a renderizar
     vector<array<int, 3>> * canonVertices = storm->getCanonVertices();
 
     // cosas así bien tridimensionales
@@ -493,12 +493,12 @@ int main() {
     };
 
     auto recalculateLightningVertex =
-        [&drawableVetexArray,
+        [&drawableVertexArray,
         #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
         &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &city_texture, &skyscraper_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
-        drawableVetexArray.clear();
+        drawableVertexArray.clear();
         switch (bgIndex) {
            /*
            COLORES:
@@ -507,109 +507,109 @@ int main() {
                                6: Black
            */
             case 0: // Letter number letter number letter number (CLOUDS)
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &city_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &city_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
 
                 //Drawings
-                Engine :: drawPrism (drawableVetexArray, vec3(650.f,299.f,600.f), vec3(650.f, -699.f, 600.f), 101.f, environment_origin_color[1], &skyscraper_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(250.f,299.f,600.f), vec3(250.f, -699.f, 600.f), 101.f, environment_origin_color[1], &skyscraper_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-150.f,99.f,600.f), vec3(-150.f, -699.f, 600.f), 101.f, environment_origin_color[5], &skyscraper_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-550.f,99.f,600.f), vec3(-550.f, -699.f, 600.f), 101.f, environment_origin_color[5], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(650.f,299.f,600.f), vec3(650.f, -699.f, 600.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(250.f,299.f,600.f), vec3(250.f, -699.f, 600.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-150.f,99.f,600.f), vec3(-150.f, -699.f, 600.f), 101.f, environment_origin_color[5], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-550.f,99.f,600.f), vec3(-550.f, -699.f, 600.f), 101.f, environment_origin_color[5], &skyscraper_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(650.f,-101.f,200.f), vec3(650.f, -699.f, 200.f), 101.f, environment_origin_color[1], &skyscraper_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(250.f,-101.f,200.f), vec3(250.f, -699.f, 200.f), 101.f, environment_origin_color[1], &skyscraper_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-150.f,-301.f,200.f), vec3(-150.f, -699.f, 200.f), 101.f, environment_origin_color[5], &skyscraper_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-550.f,-301.f,200.f), vec3(-550.f, -699.f, 200.f), 101.f, environment_origin_color[5], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(650.f,-101.f,200.f), vec3(650.f, -699.f, 200.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(250.f,-101.f,200.f), vec3(250.f, -699.f, 200.f), 101.f, environment_origin_color[1], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-150.f,-301.f,200.f), vec3(-150.f, -699.f, 200.f), 101.f, environment_origin_color[5], &skyscraper_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-550.f,-301.f,200.f), vec3(-550.f, -699.f, 200.f), 101.f, environment_origin_color[5], &skyscraper_texture);
 
                 //Airplane
-                Engine :: drawPrism (drawableVetexArray, vec3(-55.f, 50.f, 800.f), vec3(55.f,50.f,800.f), 15.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-55.f, 50.f, 800.f), vec3(55.f,50.f,800.f), 15.f, environment_origin_color[5], &cloud_texture);
 
                 // Cartoonish Birds
-                Engine :: drawPrism (drawableVetexArray, vec3(420.f, 411.f, 650.f), vec3(450.f,420.f,650.f), 12.f, environment_origin_color[6], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(420.f, 411.f, 650.f), vec3(390.f,420.f,650.f), 12.f, environment_origin_color[6], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(420.f, 411.f, 650.f), vec3(450.f,420.f,650.f), 12.f, environment_origin_color[6], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(420.f, 411.f, 650.f), vec3(390.f,420.f,650.f), 12.f, environment_origin_color[6], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(330.f, 409.f, 560.f), vec3(360.f,400.f,500.f), 12.f, environment_origin_color[6], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(330.f, 409.f, 560.f), vec3(300.f,400.f,500.f), 12.f, environment_origin_color[6], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(330.f, 409.f, 560.f), vec3(360.f,400.f,500.f), 12.f, environment_origin_color[6], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(330.f, 409.f, 560.f), vec3(300.f,400.f,500.f), 12.f, environment_origin_color[6], &cloud_texture);
 
             break;
             case 1: // Watuh
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &water_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &water_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &water_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &water_texture);
 
                 // Feesh! A bunch of em actually
-                Engine :: drawPrism (drawableVetexArray, vec3(585.f, 1.f, 650.f), vec3(635.f, 1.f, 650.f), 5.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(670.f, 5.f, 735.f), vec3(720.f, 5.f, 735.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(455.f, 4.f, 650.f), vec3(490.f, 4.f, 650.f), 2.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(570.f, 6.f, 735.f), vec3(600.f, 6.f, 735.f), 4.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(590.f, 7.f, 640.f), vec3(640.f, 7.f, 640.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(670.f, -2.f, 705.f), vec3(700.f, -2.f, 705.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(585.f, 1.f, 650.f), vec3(635.f, 1.f, 650.f), 5.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(670.f, 5.f, 735.f), vec3(720.f, 5.f, 735.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(455.f, 4.f, 650.f), vec3(490.f, 4.f, 650.f), 2.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(570.f, 6.f, 735.f), vec3(600.f, 6.f, 735.f), 4.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(590.f, 7.f, 640.f), vec3(640.f, 7.f, 640.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(670.f, -2.f, 705.f), vec3(700.f, -2.f, 705.f), 3.f, environment_origin_color[2], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(-385.f, 151.f, 450.f), vec3(-350.f, 151.f, 450.f), 5.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-330.f, 155.f, 535.f), vec3(-300.f, 155.f, 535.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-455.f, 154.f, 450.f), vec3(-400.f, 154.f, 450.f), 2.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-370.f, 156.f, 535.f), vec3(-320.f, 156.f, 535.f), 4.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-390.f, 157.f, 440.f), vec3(-350.f, 157.f, 440.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-330.f, 148.f, 505.f), vec3(-300.f, 148.f, 505.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-385.f, 151.f, 450.f), vec3(-350.f, 151.f, 450.f), 5.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-330.f, 155.f, 535.f), vec3(-300.f, 155.f, 535.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-455.f, 154.f, 450.f), vec3(-400.f, 154.f, 450.f), 2.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-370.f, 156.f, 535.f), vec3(-320.f, 156.f, 535.f), 4.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-390.f, 157.f, 440.f), vec3(-350.f, 157.f, 440.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-330.f, 148.f, 505.f), vec3(-300.f, 148.f, 505.f), 3.f, environment_origin_color[2], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(-600.f, 600.f, 0.f), vec3(-570.f, 600.f, 0.f), 5.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-540.f, 750.f, 30.f), vec3(-510.f, 750.f, 30.f), 4.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-700.f, 670.f, 12.f), vec3(-670.f, 670.f, 12.f), 2.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-650.f, 610.f, -10.f), vec3(-620.f, 610.f, -10.f), 2.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-590.f, 600.f, 0.f), vec3(-560.f, 600.f, 0.f), 2.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-720.f, 660.f, -8.f), vec3(-690.f, 660.f, -8.f), 5.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-600.f, 600.f, 0.f), vec3(-570.f, 600.f, 0.f), 5.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-540.f, 750.f, 30.f), vec3(-510.f, 750.f, 30.f), 4.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-700.f, 670.f, 12.f), vec3(-670.f, 670.f, 12.f), 2.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-650.f, 610.f, -10.f), vec3(-620.f, 610.f, -10.f), 2.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-590.f, 600.f, 0.f), vec3(-560.f, 600.f, 0.f), 2.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-720.f, 660.f, -8.f), vec3(-690.f, 660.f, -8.f), 5.f, environment_origin_color[2], &cloud_texture);
                 
 
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, -400.f), vec3(-30.f, 1.f, -400.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 60.f, -400.f), vec3(30.f, 60.f, -400.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, -120.f, -400.f), vec3(45.f, -120.f, -400.f), 2.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(25.f, 50.f, -435.f), vec3(-15.f, 50.f, -435.f), 4.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(12.f, -22.f, -440.f), vec3(42.f, -22.f, -440.f), 3.f, environment_origin_color[2], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, 25.f, -405.f), vec3(80.f, 25.f, -405.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 1.f, -400.f), vec3(-30.f, 1.f, -400.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 60.f, -400.f), vec3(30.f, 60.f, -400.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, -120.f, -400.f), vec3(45.f, -120.f, -400.f), 2.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(25.f, 50.f, -435.f), vec3(-15.f, 50.f, -435.f), 4.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(12.f, -22.f, -440.f), vec3(42.f, -22.f, -440.f), 3.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, 25.f, -405.f), vec3(80.f, 25.f, -405.f), 3.f, environment_origin_color[2], &cloud_texture);
             break;
             case 2:
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &wood_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &wood_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 20.f), vec3(-50.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &wood_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, -20.f), vec3(-50.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &wood_texture);
             break;
             case 4: // COSMOS
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &space_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &space_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &space_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &space_texture);
 
                 // Drawings
-                Engine :: drawPrism (drawableVetexArray, vec3(450.f, 275, 400.f), vec3(450.f, 275, 400.f), 100.f, environment_origin_color[1], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(350.f, 420, 350.f), vec3(350.f, 420, 350.f), 20.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(-750.f, 750, 900.f), vec3(-750.f, 750, 900.f), 90.f, environment_origin_color[2], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(450.f, 275, 400.f), vec3(450.f, 275, 400.f), 100.f, environment_origin_color[1], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(350.f, 420, 350.f), vec3(350.f, 420, 350.f), 20.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(-750.f, 750, 900.f), vec3(-750.f, 750, 900.f), 90.f, environment_origin_color[2], &cloud_texture);
 
                 // Asteroid belt-ish
-                Engine :: drawPrism (drawableVetexArray, vec3(800.f, -200, 900.f), vec3(700.f, -200, 850.f), 10.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(700.f, -200, 800.f), vec3(600.f, -200, 750.f), 10.f, environment_origin_color[0], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(800.f, -200, 900.f), vec3(700.f, -200, 850.f), 10.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(700.f, -200, 800.f), vec3(600.f, -200, 750.f), 10.f, environment_origin_color[0], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(600.f, -200, 700.f), vec3(500.f, -200, 650.f), 10.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(500.f, -200, 600.f), vec3(450.f, -200, 550.f), 10.f, environment_origin_color[0], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(600.f, -200, 700.f), vec3(500.f, -200, 650.f), 10.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(500.f, -200, 600.f), vec3(450.f, -200, 550.f), 10.f, environment_origin_color[0], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(400.f, -200, 500.f), vec3(370.f, -200, 450.f), 10.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(300.f, -200, 400.f), vec3(300.f, -200, 350.f), 10.f, environment_origin_color[0], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(400.f, -200, 500.f), vec3(370.f, -200, 450.f), 10.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(300.f, -200, 400.f), vec3(300.f, -200, 350.f), 10.f, environment_origin_color[0], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(300.f, -200, 300.f), vec3(370.f, -200, 250.f), 10.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(400.f, -200, 200.f), vec3(450.f, -200, 150.f), 10.f, environment_origin_color[0], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(300.f, -200, 300.f), vec3(370.f, -200, 250.f), 10.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(400.f, -200, 200.f), vec3(450.f, -200, 150.f), 10.f, environment_origin_color[0], &cloud_texture);
 
-                Engine :: drawPrism (drawableVetexArray, vec3(500.f, -200, 100.f), vec3(600.f, -200, 50.f), 10.f, environment_origin_color[5], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(700.f, -200, 0.f), vec3(800.f, -200, -50.f), 10.f, environment_origin_color[0], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(500.f, -200, 100.f), vec3(600.f, -200, 50.f), 10.f, environment_origin_color[5], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(700.f, -200, 0.f), vec3(800.f, -200, -50.f), 10.f, environment_origin_color[0], &cloud_texture);
             break;
             case voidIndex:
             break;
             default:
-                Engine :: drawPrism (drawableVetexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
-                Engine :: drawPrism (drawableVetexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(0.f, 1.f, 0.f), vec3(0.f, -1.f, 0.f), 999.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, 20.f), vec3(-20.f, y_offset, 20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(50.f, y_offset, 0), vec3(-50.f, y_offset, 0), 10.f, environment_origin_color[bgIndex], &cloud_texture);
+                Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
             break;
         }
         #if !MOBILE
@@ -635,7 +635,7 @@ int main() {
             const float end_x = (canonVertices->at(v+1)[1] * lightning_scale) - x_offset;
             const float end_y = y_offset - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
-            Engine :: drawPrism (drawableVetexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color,
+            Engine :: drawPrism (drawableVertexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color,
                 #if !MOBILE
                     lightning_stream_obj, nV,
                 #endif
@@ -971,7 +971,7 @@ int main() {
         if (shouldReexecutePipeline) {
             render_triangles.clear();
             // dibujar objetos
-            Engine :: drawMesh(drawableVetexArray, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
+            Engine :: drawMesh(drawableVertexArray, raster_pipeline, window_settings, world_bounds, camera_position, camera_view_matrix, screen_projection_matrix, projection_offset);
 
             std::sort(raster_pipeline.begin(), raster_pipeline.end(), Engine::compareDrawOrder);
 
@@ -1014,7 +1014,7 @@ int main() {
     UI_events(-999); // delete all UI elements
     canonVertices->clear();
     raster_pipeline.clear();
-    drawableVetexArray.clear();
+    drawableVertexArray.clear();
     delete window;
     return 0;
 }

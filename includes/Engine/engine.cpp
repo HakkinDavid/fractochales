@@ -464,6 +464,11 @@ void Engine :: drawMesh (std::vector<tri3> & mesh, std::vector<tri3> & raster_pi
                 projected_triangles.p[1].y *= -1.0f;
                 projected_triangles.p[2].y *= -1.0f;
 
+                // antes de escalar los triangulos
+                // aqui se hace una comparacion entre el triangulo antes de cortar y despues de cortar
+                // despues se hace una transformacion que mapearia los texcoords a sus posiciones nuevas
+                // maybe
+
                 // escalar triángulos al tamaño de la pantalla
                 projected_triangles.p[0] = LinearAlgebra::AddVec(projected_triangles.p[0], projection_offset);
                 projected_triangles.p[1] = LinearAlgebra::AddVec(projected_triangles.p[1], projection_offset);
@@ -511,6 +516,8 @@ void Engine :: rasterVector (std::vector<tri3> & raster_pipeline, RenderSettings
                 listTriangles.pop_front();
                 nNewTriangles--;
 
+                // idk what this is or how it affects the trout population
+                // i mean how it affects the texture clipping
                 switch (p) {
                     case 0:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
                     case 1:	nTrisToAdd = LinearAlgebra::ClipTriangleAgainstPlane({ 0.0f, float(window_settings.y_res) - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]); break;
