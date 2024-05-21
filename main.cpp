@@ -654,10 +654,15 @@ int main() {
         #if !MOBILE
             lightning_stream_txt.str(std::wstring());
         #endif
-        const float final_leeway = leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f),
+
+        /*const float final_leeway = leeway-(crystallizate*0.15625f)+((humidity-0.9)*0.0416f),
                     final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
-                    final_downWeight = downWeight+(crystallizate*humidity),
-                    final_forcedHeight = forcedHeight+((temperature-15)*0.02f);
+                    final_downWeight = downWeight+(crystallizate*humidity),                         <--- INITIAL VALUES
+                    final_forcedHeight = forcedHeight+((temperature-15)*0.02f);*/
+        const float final_leeway = leeway-(crystallizate*0.18795f)+((humidity-0.95)*0.035f),
+                    final_branch = branch-(crystallizate*0.3125f)+(temperature*0.00066f),
+                    final_downWeight = downWeight+(crystallizate*humidity*0.95),
+                    final_forcedHeight = forcedHeight+((temperature-25)*(0.03f));
         if (storm != nullptr) delete storm;
         storm = new Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
         #if !MOBILE
