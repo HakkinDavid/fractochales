@@ -107,10 +107,17 @@ const float environmental_factors [] = {
 };
 
 // mismo orden: aire, agua, madera, pantano, espacio, vacio, cero al final
-const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.025, 0.24, 0 }; // valores de pantano y espacio subject to change
+/*const float leeway_in_environment [] = { 0.24, 0.4, 0.19, 0.24, 0.025, 0.24, 0 }; // valores de pantano y espacio subject to change
 const float branch_in_environment [] = { 0.12, 0.05, 0.07, 0.1, 0.5, 0.12, 0 }; // valores de pantano y putricio subject to change
-const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };
-const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };
+const float weight_in_environment [] = { 0, -0.1, 0.27, -0.05, 0, 0, 0 };               < -- VALORES ORIGINALES
+const float height_in_environment [] = { 0.75, 0.3, 0.95, 0.75, 0.5, 0.55, 0 };*/
+
+
+const float leeway_in_environment [] = { 0.2, 0.09, 0.2, 0.11, 0.01, 0.1, 0 }; // valores de pantano y espacio subject to change
+const float branch_in_environment [] = { 0.008, 0.004, 0.004, 0.008, 0.15, 0.02, 0 }; // valores de pantano y putricio subject to change
+const float weight_in_environment [] = { 0.15, 0.0125, 0.4, 0.0001, 0, 0, 0 };
+const float height_in_environment [] = { 0.75, 0.25, 0.95, 0.6, 0.4, 0.4, 0 };
+
 const float environment_origin_color [][3] = { {50.f, 50.f, 50.f}, {6.f,66.f,115.f}, {120.f, 63.f, 4.f}, {56.f, 28.f, 72.f}, {48.f, 18.f, 104.f}, {100.f, 100.f, 100.f}, {0, 0, 0} };
 const float box_A [4] = {255,0,0,127.5},
             box_B [4] = {51,153,255,127.5},
@@ -408,10 +415,10 @@ int main() {
 
     auto recalculateLightningVariables = [&current_environmental_factor, &bgIndex, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient] () {
         current_environmental_factor = environmental_factors[bgIndex];
-        //leeway = leeway_in_environment[bgIndex];
-        //branch = branch_in_environment[bgIndex];
-        //downWeight = weight_in_environment[bgIndex];
-        //forcedHeight = height_in_environment[bgIndex];
+        leeway = leeway_in_environment[bgIndex];
+        branch = branch_in_environment[bgIndex];
+        downWeight = weight_in_environment[bgIndex];
+        forcedHeight = height_in_environment[bgIndex];
         crystallizate = 0.04;
         humidity = 0.9F;
         temperature = 15.0F;
