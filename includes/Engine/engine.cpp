@@ -153,6 +153,11 @@ vec3 LinearAlgebra :: MatxVec (mat4 &m, vec3 &i) {
 	return v;
 }
 
+bool LinearAlgebra :: IsEqual (vec3 &v1, vec3 &v2) {
+    if(v1.x == v2.x && v1.y == v2.y && v1.z == v2.z) return true;
+    else return false;
+}
+
 vec3 LinearAlgebra :: AddVec (vec3 &v1, vec3 &v2) {
 	return { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
 }
@@ -246,15 +251,36 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
         out_tri1.color_A[3] = in_tri.color_A[3];
         out_tri1.color_B[3] = in_tri.color_B[3];
         out_tri1.color_C[3] = in_tri.color_C[3];
-        out_tri1.texCoords[0] = in_tri.texCoords[0];
-        out_tri1.texCoords[1] = in_tri.texCoords[1];
-        out_tri1.texCoords[2] = in_tri.texCoords[2];
         out_tri1.texture = in_tri.texture;
 
 		out_tri1.p[0] = *inside_points[0];
 
 		out_tri1.p[1] = VectorIntersectPlane(plane_p, plane_n, *inside_points[0], *outside_points[0]);
 		out_tri1.p[2] = VectorIntersectPlane(plane_p, plane_n, *inside_points[0], *outside_points[1]);
+
+        int index[3];
+        // check unchanged point against in_tri. thats the anchor point, link to out_tri1[0]
+        // check outside points against in_tri. link to out_tri1[1] and [2]
+        for(int i=0; i < 3; i++){
+            if(LinearAlgebra::IsEqual(in_tri.p[i], *inside_points[0])) index[0] == i;
+            else if(LinearAlgebra::IsEqual(in_tri.p[i], *outside_points[0])) index[1] == i;
+            else index[2] == i;
+        }
+        // scale in_tri.texCoords accordingly
+        vec3 aux_vec = LinearAlgebra::SubVec(out_tri1.p[1], out_tri1.p[0]);
+        float scalar1 = LinearAlgebra::Magnitude(aux_vec);
+        aux_vec = LinearAlgebra::SubVec(in_tri.p[index[1]], in_tri.p[index[0]]);
+        scalar1 /= LinearAlgebra::Magnitude(aux_vec);
+        aux_vec = LinearAlgebra::SubVec(out_tri1.p[2], out_tri1.p[0]);
+        float scalar2 = LinearAlgebra::Magnitude(aux_vec);
+        aux_vec = LinearAlgebra::SubVec(in_tri.p[index[2]], in_tri.p[index[0]]);
+        scalar2 /= LinearAlgebra::Magnitude(aux_vec);
+        
+        out_tri1.texCoords[0] = in_tri.texCoords[index[0]];
+        out_tri1.texCoords[1].x = in_tri.texCoords[index[0]].x + (in_tri.texCoords[index[1]].x - in_tri.texCoords[index[0]].x)*scalar1;
+        out_tri1.texCoords[1].y = in_tri.texCoords[index[0]].y + (in_tri.texCoords[index[1]].y - in_tri.texCoords[index[0]].y)*scalar1;
+        out_tri1.texCoords[2].x = in_tri.texCoords[index[0]].x + (in_tri.texCoords[index[2]].x - in_tri.texCoords[index[0]].x)*scalar2;
+        out_tri1.texCoords[2].y = in_tri.texCoords[index[0]].y + (in_tri.texCoords[index[2]].y - in_tri.texCoords[index[0]].y)*scalar2;
 
 		return 1;
 	}
@@ -300,9 +326,40 @@ int LinearAlgebra :: ClipTriangleAgainstPlane (vec3 plane_p, vec3 plane_n, tri3 
 		out_tri1.p[1] = *inside_points[1];
 		out_tri1.p[2] = VectorIntersectPlane(plane_p, plane_n, *inside_points[0], *outside_points[0]);
 
+        int index[3];
+        for(int i=0; i < 3; i++){
+            if(LinearAlgebra::IsEqual(in_tri.p[i], *inside_points[0])) index[0] == i;
+            else if(LinearAlgebra::IsEqual(in_tri.p[i], *inside_points[1])) index[1] == i;
+            else index[2] == i;
+        }
+        vec3 aux_vec = LinearAlgebra::SubVec(out_tri1.p[2], out_tri1.p[0]);
+        float scalar1 = LinearAlgebra::Magnitude(aux_vec);
+        aux_vec = LinearAlgebra::SubVec(in_tri.p[index[2]], in_tri.p[index[0]]);
+        scalar1 /= LinearAlgebra::Magnitude(aux_vec);
+        
+        out_tri1.texCoords[0] = in_tri.texCoords[index[0]];
+        out_tri1.texCoords[1] = in_tri.texCoords[index[1]];
+        out_tri1.texCoords[2].x = in_tri.texCoords[index[0]].x + (in_tri.texCoords[index[2]].x - in_tri.texCoords[index[0]].x)*scalar1;
+        out_tri1.texCoords[2].y = in_tri.texCoords[index[0]].y + (in_tri.texCoords[index[2]].y - in_tri.texCoords[index[0]].y)*scalar1;
+
 		out_tri2.p[0] = *inside_points[1];
 		out_tri2.p[1] = out_tri1.p[2];
 		out_tri2.p[2] = VectorIntersectPlane(plane_p, plane_n, *inside_points[1], *outside_points[0]);
+
+        for(int i=0; i < 3; i++){
+            if(LinearAlgebra::IsEqual(in_tri.p[i], *inside_points[1])) index[0] == i;
+            else if(LinearAlgebra::IsEqual(in_tri.p[i], *outside_points[0])) index[1] == i;
+            else index[2] == i;
+        }
+        aux_vec = LinearAlgebra::SubVec(out_tri2.p[2], out_tri2.p[0]);
+        float scalar2 = LinearAlgebra::Magnitude(aux_vec);
+        aux_vec = LinearAlgebra::SubVec(in_tri.p[index[1]], in_tri.p[index[0]]);
+        scalar2 /= LinearAlgebra::Magnitude(aux_vec);
+        
+        out_tri2.texCoords[0] = in_tri.texCoords[index[1]];
+        out_tri2.texCoords[1] = out_tri1.texCoords[2];
+        out_tri2.texCoords[2].x = in_tri.texCoords[index[0]].x + (in_tri.texCoords[index[1]].x - in_tri.texCoords[index[0]].x)*scalar2;
+        out_tri2.texCoords[2].y = in_tri.texCoords[index[0]].y + (in_tri.texCoords[index[1]].y - in_tri.texCoords[index[0]].y)*scalar2;
 
 		return 2;
 	}

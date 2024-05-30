@@ -68,6 +68,7 @@ class mat4 {
 
 namespace LinearAlgebra {
     vec3 MatxVec(mat4 &m, vec3 &i);
+    bool IsEqual(vec3 &v1, vec3 &v2);
     vec3 AddVec(vec3 &v1, vec3 &v2);
     vec3 SubVec(vec3 &v1, vec3 &v2);
     vec3 VecxScalar(vec3 &v1, float k);
