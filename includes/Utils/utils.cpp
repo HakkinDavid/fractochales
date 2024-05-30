@@ -1,13 +1,23 @@
 #include "utils.h"
 
 int utils :: new_obj_index = 0;
+int utils :: settings_fields [1] = {0};
+// language (0: spanish, 1: english)
 
 const std::wstring & utils :: getRandomAdvice() {
-    return advice_text[rand() % advice_max_num];
+    return (utils::settings_fields[0] ? advice_text_en[rand() % advice_max_num] : advice_text_es[rand() % advice_max_num]);
 }
 
 const std::string utils :: newLightningFileName (const int type) {
     return "obj/output/lightning_" + std::to_string(new_obj_index) + "." + export_types[type];
+}
+
+const std::wstring & utils :: getBGTitle (int index) {
+    return (utils::settings_fields[0] ? bgTitle_en[index] : bgTitle_es[index]);
+}
+
+const std::wstring & utils :: ui_text (int index) {
+    return (utils::settings_fields[0] ? ui_en[index] : ui_es[index]);
 }
 
 std::wstring utils :: getFileHeader (const int type) {
@@ -60,3 +70,21 @@ void utils :: scaleBG (sf::RenderTarget * window, sf::Sprite & background, sf::T
     }
     background.setPosition((window->getSize().x - ((*bg[bgIndex]).getSize().x * bg_scale))/2, (window->getSize().y - ((*bg[bgIndex]).getSize().y * bg_scale))/2);
 };
+
+void utils :: load_settings (std::wstringstream & settings_stream) {
+    std::wstring line;
+    
+    for (int i = 0; i < settings_max_num && settings_stream.good(); i++) {
+        getline(settings_stream, line);
+        utils::settings_fields[i] = stoi(line);
+    }
+
+    settings_stream.seekg(0);
+}
+
+void utils :: write_settings (std::wstringstream & settings_stream) {
+    settings_stream.str(std::wstring());
+    for (int i = 0; i < settings_max_num; i++) {
+        settings_stream << utils::settings_fields[i] << std::endl;
+    }
+}

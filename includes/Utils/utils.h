@@ -37,7 +37,7 @@
 #endif
 
 namespace utils {
-    const std::wstring advice_text[] = {
+    const std::wstring advice_text_es[] = {
         L"Cargando las nubes",
         L"Sintonizando a Fimbres",
         L"Esperando el convivio",
@@ -58,9 +58,91 @@ namespace utils {
         L"En cada relámpago simulamos cerca de 3 billones de electrones, a escala macroscópica y en 3D"
     };
 
-    const int advice_max_num = sizeof(utils::advice_text) / sizeof(std::wstring);
+    const std::wstring advice_text_en[] = {
+        L"Loading clouds",
+        L"Asking The Weather Channel",
+        L"Everybody gangsta",
+        L"Removing Casta's third name",
+        L"Checking our lightning rods",
+        L"My mom is a fractal figure",
+        L"A lightning may reach 100,000 km/s",
+        L"There's the lightning, before the thunder",
+        L"We perform stoichiometric calculations to obtain the masses of a given simulated lightning",
+        L"A fractal figure lies between two whole dimensions",
+        L"Did you know? Our project has received " + std::to_wstring(VERSION) + L" code commits so far",
+        L"In practice, no lightning is identical",
+        L"Fractochales works across Windows, Mac, Linux, Android & iOS",
+        L"We generate 3D projections over a 2D plane",
+        L"This is (technically) raytracing",
+        L"My mom is an orthogonal vector",
+        L"Fractochales is the contraction of \"silly fractals\" in Spanish",
+        L"In each lightning bolt we simulate about 3 trillion electrons, on a macroscopic scale and in 3D"
+    };
+
+    const wstring bgTitle_es [] = {L"Aire", L"Agua", L"Madera", L"Pantano", L"Espacio", L"Libre", L""};
+    const wstring bgTitle_en [] = {L"Air", L"Water", L"Wood", L"Swamp", L"Space", L"Free mode", L""};
+    
+    const std::wstring ui_es [] = {
+        L"Matiz",
+        L"Rotación",
+        L"Cristalización (σ)",
+        L"Humedad",
+        L"Temperatura (°C)",
+        L"Libertad de acción",
+        L"Bifurcación",
+        L"Conductividad vertical",
+        L"Altura mínima",
+        L"Electrones por metro de alcance",
+        L"Generar",
+        L"Exportar OBJ",
+        L"Cambiar entorno",
+        L"Cambiar idioma",
+        L"Giro automático",
+        L"Giro manual",
+        L"Generando...",
+        L"Ramas",
+        L"Electrones involucrados",
+        L"Masa electrónica total",
+        L"Cámara",
+        L"FPS",
+        L"Control conectado"
+    };
+
+    const std::wstring ui_en [] = {
+        L"Hue",
+        L"Rotation",
+        L"Crystallization (σ)",
+        L"Humidity",
+        L"Temperature (°C)",
+        L"Freedom of action",
+        L"Bifurcation",
+        L"Vertical conductivity",
+        L"Minimum height",
+        L"Electrons per meter range",
+        L"Generate",
+        L"Export OBJ",
+        L"Change environment",
+        L"Change language",
+        L"Auto rotation",
+        L"Manual rotation",
+        L"Generating...",
+        L"Branches",
+        L"Electrons involved",
+        L"Total electron mass",
+        L"Camera",
+        L"FPS",
+        L"Connected controller"
+    };
+
+    const int advice_max_num = sizeof(utils::advice_text_es) / sizeof(std::wstring);
+
+    const int max_languages = 2;
 
     const std::wstring & getRandomAdvice();
+
+    const std::wstring & getBGTitle (int index);
+
+    const std::wstring & ui_text (int index);
 
     extern int new_obj_index;
 
@@ -85,6 +167,14 @@ namespace utils {
     void format_wstringstream (std::wstringstream & s);
 
     void scaleBG (sf::RenderTarget * window, sf::Sprite & background, sf::Texture ** bg, int & bgIndex, float & bg_scale);
+
+    extern int settings_fields [1];
+
+    const int settings_max_num = sizeof(utils::settings_fields) / sizeof(int);
+
+    void load_settings (std::wstringstream & settings_stream);
+
+    void write_settings (std::wstringstream & settings_stream);
 };
 
 #endif

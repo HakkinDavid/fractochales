@@ -11,14 +11,12 @@
 #include <sstream>
 #include <functional>
 
-#if !MOBILE
-    #include <fstream>
-    #include <filesystem>
-    #if __APPLE__
-        namespace fs = std::__fs::filesystem;
-    #else
-        namespace fs = std::filesystem;
-    #endif
+#include <fstream>
+#include <filesystem>
+#if __APPLE__
+    namespace fs = std::__fs::filesystem;
+#else
+    namespace fs = std::filesystem;
 #endif
 
 #include "includes/Lightning/Lightning.h"
@@ -69,7 +67,8 @@ Button
     * shiftButton = nullptr,
     * jumpButton = nullptr,
     * runButton = nullptr,
-    * write_obj_button = nullptr;
+    * write_obj_button = nullptr,
+    * language_button = nullptr;
 Switch
     * hide_left_switch = nullptr,
     * hide_right_switch = nullptr,
@@ -83,7 +82,7 @@ Slider ** all_sliders [] = {&branchSlider, &leewaySlider, &redSlider, &greenSlid
 // colocar los botones que recibirán eventos en grupo
 Button ** all_buttons [] = 
 {
-    &zapping, &backgroundButton, &write_obj_button,
+    &zapping, &backgroundButton, &write_obj_button, &language_button,
     #if MOBILE
         &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton, &shiftButton, &runButton, &jumpButton,
     #endif
@@ -130,6 +129,9 @@ const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
 
 bool isMobileLandscape = false;
 
+std::wstringstream settings;
+std::wofstream fractochales_settings;
+
 void UI_events (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0);
 void loadingScreen (sf::Sprite &background, sf::RectangleShape &loading_percentage, sf::Sprite &splash_screen, sf::Sprite &splash_3d, sf::Text &loading_text, float percentage);
 void leftMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg);
@@ -151,6 +153,13 @@ int main() {
         }
         std::wstringstream lightning_stream_obj, lightning_stream_mtl, lightning_stream_txt;
     #endif
+    if (fs::exists("settings.txt")) {
+        std::wifstream original_fractochales_settings("settings.txt");
+        settings << original_fractochales_settings.rdbuf();
+        original_fractochales_settings.close();
+        utils::load_settings(settings);
+    }
+    fractochales_settings.open("settings.txt", std::wofstream::trunc);
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point current_timestamp;
     bool yetToBoot = true;
@@ -327,8 +336,6 @@ int main() {
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
     sf::Texture * bg [] = {&city, &water, &wood, &shrek, &space, &black, nullptr};
-    // nombres a mostrar
-    const wstring bgTitle [] = {L"Aire", L"Agua", L"Madera", L"Pantano", L"Espacio", L"Libre", L""};
 
     float current_environmental_factor = environmental_factors[0];
 
@@ -405,6 +412,7 @@ int main() {
     bool write_obj = false;
     bool isFocused = true;
     bool shouldReexecutePipeline = true;
+    bool switching_language = false;
     
     int drawPile = 0;
     int zapCount = 0;
@@ -428,7 +436,7 @@ int main() {
 
     recalculateLightningVariables();
 
-    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &lightning_light_intensity, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &light_mask] () {
+    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &lightning_light_intensity, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &light_mask] () {
         acceleration = Physics::mean_a(0, vf, time);
         e_mass = storm->getElectronicMass(current_environmental_factor);
         force = Physics::F(e_mass, acceleration);
@@ -445,12 +453,12 @@ int main() {
         title_data.str(std::wstring());
         console.str(std::wstring());
         luminosity_data.str(std::wstring());
-        thunder_data << "Ramas: " << storm->getN() << endl
-        << "Electrones involucrados:\n\t" << storm->getInvolvedElectrons(current_environmental_factor) << endl
-        << L"Masa electrónica total:\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl
-        << L"Cámara: (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
-        << L"FPS: " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
-        if (Controller::isConnected(0)) thunder_data << L"Control conectado: " << Controller::getName(0) << endl;
+        thunder_data << utils::ui_text(17) << L": " << storm->getN() << endl
+        << utils::ui_text(18) << L":\n\t" << storm->getInvolvedElectrons(current_environmental_factor) << endl
+        << utils::ui_text(19) << L":\n\t" << scientific << setprecision(std::numeric_limits<long double>::digits10 + 1) << e_mass << "kg" << endl
+        << utils::ui_text(20) << L": (" << fixed << setprecision(2) << camera_position.y << L"∠" << camera_x_rotation << L"°, " << camera_position.z << L"∠" << camera_y_rotation << L"°, " << camera_position.x << L")" << endl
+        << utils::ui_text(21) << L": " << (int) (1.f/cycle_time_diff.asSeconds()) << endl;
+        if (Controller::isConnected(0)) thunder_data << utils::ui_text(22) << L": " << Controller::getName(0) << endl;
 
         thunder_physics_data << scientific << setprecision(4)
         << L"W = " << e_mass << L"kg·9.81 m/s²\n\t= " << Physics::W(e_mass) << L"N" << endl
@@ -463,7 +471,7 @@ int main() {
         << L"Ec₁ = " << L"(" << e_mass << L"kg·(" << vf << L"m/s)²)/2\n\t= " << Ecf << L"J" << endl
         << L"P = " << force << L"N·" << vf << L"m/s\n\t= " << Pf << L"kgm/s" << endl;
 
-        title_data << bgTitle[bgIndex];
+        title_data << utils::getBGTitle(bgIndex);
 
         luminosity_data << L"k = " << attenuation_coefficient << ": I(" << distance_to_lightning << ") = " << lightning_light_intensity << "cd" << endl;
 
@@ -474,7 +482,7 @@ int main() {
         
         text.setString(thunder_data.str());
         currentTitle.setString(title_data.str());
-        physicsOutput.setString(thunder_physics_data.str() + (console.str().empty() ? L"" : L"\n\nCONSOLA\n" + console.str()));
+        physicsOutput.setString(thunder_physics_data.str() + console.str());
         luminosity_text.setString(luminosity_data.str());
 
         text.setPosition(right_menu_bg.getPosition().x + (right_menu_bg.getSize().x - text.getLocalBounds().getSize().x)/2.f, window->getSize().y * 0.15);
@@ -735,27 +743,27 @@ int main() {
         const float left_button_y_size = left_menu_bg.getSize().y*(0.75f/21.6f);
         // para los deslizadores, estamos usando de posición (left_slider_x_pos, window->getSize().y * [-0.06 respecto al que está por debajo]f)
         // deslizadores constantes
-        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, L"Matiz", true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
+        redSlider = new Slider (lightning_color[0], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.07f, 2, font, utils::ui_text(0), true, sf::Color::Red, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         greenSlider = new Slider (lightning_color[1], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.09f, 3, font, std::wstring(), true, sf::Color::Green, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
         blueSlider = new Slider (lightning_color[2], 0.0f, 255.0f, left_slider_x_pos, window->getSize().y * 0.11f, 3, font, std::wstring(), true, sf::Color::Blue, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [] () { return true; }, [&recalculateLightningVertex] () { recalculateLightningVertex(); });
-        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.78f, 2, font, L"Rotación", true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
+        xRotationSlider = new Slider (x_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.78f, 2, font, utils::ui_text(1), true, sf::Color(240, 100, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
         yRotationSlider = new Slider (y_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.80f, 3, font, std::wstring(), true, sf::Color(100, 240, 100), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
         zRotationSlider = new Slider (z_rotation, 0.f, 2*Physics::PI, left_slider_x_pos, window->getSize().y * 0.82f, 3, font, std::wstring(), true, sf::Color(100, 100, 240), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&do_spin] () { return !do_spin; }, [&shouldReexecutePipeline] () { shouldReexecutePipeline = true; });
         // deslizadores de aire
-        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, L"Cristalización (σ)", false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
-        humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, L"Humedad", false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
+        crystallizateSlider = new Slider (crystallizate, 0.0f, 0.16f, left_slider_x_pos, window->getSize().y*0.22f, 0, font, utils::ui_text(2), false, sf::Color(128, 210, 255), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
+        humiditySlider = new Slider (humidity, 0.6f, 1.2f, left_slider_x_pos, window->getSize().y*0.29f, 0, font, utils::ui_text(3), false, sf::Color(9, 232, 128), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 0; });
         // deslizadores de agua
-        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, left_slider_x_pos, window->getSize().y*0.36f, 0, font, L"Temperatura (°C)", true, sf::Color(255, 142, 56), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 1; });
+        temperatureSlider = new Slider (temperature, 0.0f, 30.0f, left_slider_x_pos, window->getSize().y*0.36f, 0, font, utils::ui_text(4), true, sf::Color(255, 142, 56), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == 1; });
         // deslizadores de vacío
-        leewaySlider = new Slider (leeway, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.43f, 0, font, L"Libertad de acción", false, sf::Color::Cyan, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
-        branchSlider = new Slider (branch, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.50f, 0, font, L"Bifurcación", false, sf::Color::Magenta, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
-        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, left_slider_x_pos, window->getSize().y*0.57f, 0, font, L"Conductividad vertical", false, sf::Color(104, 139, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
-        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, L"Altura mínima", false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
-        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, L"Electrones por metro de alcance", true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; }, [&retypeInfo] () { retypeInfo(); });
+        leewaySlider = new Slider (leeway, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.43f, 0, font, utils::ui_text(5), false, sf::Color::Cyan, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        branchSlider = new Slider (branch, 0.0f, 0.5f, left_slider_x_pos, window->getSize().y*0.50f, 0, font, utils::ui_text(6), false, sf::Color::Magenta, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        downWeightSlider = new Slider (downWeight, -0.4f, 0.4f, left_slider_x_pos, window->getSize().y*0.57f, 0, font, utils::ui_text(7), false, sf::Color(104, 139, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        forcedHeightSlider = new Slider (forcedHeight, 0.15f, 0.95f, left_slider_x_pos, window->getSize().y*0.64f, 0, font, utils::ui_text(8), false, sf::Color(104, 200, 204), sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; });
+        envfactorSlider = new Slider (current_environmental_factor, 1, 10000000000, left_slider_x_pos, window->getSize().y*0.71f, 0, font, utils::ui_text(9), true, sf::Color::Yellow, sf::Color::White, left_slider_x_size, left_slider_y_size, handle_x_size, handle_y_size, &hide_left, [&bgIndex] () { return bgIndex == voidIndex; }, [&retypeInfo] () { retypeInfo(); });
         // botones
-        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, L"Generar", left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left, [] () { return true; }, [&zap, &generateLightning, &zapCount, &achieve_vars, &sfx_i, &sound1, &sound2, &sound3, &loading_percentage, &splash_screen, &splash_3d, &background, &loading_text, &bg, &bgIndex] () {
+        zapping = new Button (zap, left_menu_bg.getSize().x*(7.f/12.f), window->getSize().y*0.93f, font, utils::ui_text(10), left_menu_bg.getSize().x*(3.f/12.f), left_button_y_size, sf::Color(47,45,194), sf::Color(67,65,224), sf::Color::White, &hide_left, [] () { return true; }, [&zap, &generateLightning, &zapCount, &achieve_vars, &sfx_i, &sound1, &sound2, &sound3, &loading_percentage, &splash_screen, &splash_3d, &background, &loading_text, &bg, &bgIndex] () {
             if (zap) {
-                loading_text.setString(L"Generando...");
+                loading_text.setString(utils::ui_text(16));
                 loadingScreen(background, loading_percentage, splash_screen, splash_3d, loading_text, 250);
                 generateLightning();
                 zapCount++;
@@ -780,7 +788,7 @@ int main() {
                 }
             }
         });
-        write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(1.f/2.f), window->getSize().y*0.89f, font, L"Exportar OBJ", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100,100,100, (MOBILE ? 63.75f : 255.f)), sf::Color(200,200,200), sf::Color(255.f,255.f,255.f, (MOBILE ? 63.75f : 255.f)), &hide_left, [] () { return !MOBILE; },
+        write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(1.f/2.f), window->getSize().y*0.89f, font, utils::ui_text(11), left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100,100,100, (MOBILE ? 63.75f : 255.f)), sf::Color(200,200,200), sf::Color(255.f,255.f,255.f, (MOBILE ? 63.75f : 255.f)), &hide_left, [] () { return !MOBILE; },
             [
                 #if !MOBILE
                     &lightning_stream_obj, &lightning_stream_mtl, &lightning_stream_txt,
@@ -802,7 +810,7 @@ int main() {
                 }
             #endif
         });
-        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, L"Cambiar entorno", left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex, &recalculateLightningVariables] () {
+        backgroundButton = new Button (switchingBG, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.93f, font, utils::ui_text(12), left_menu_bg.getSize().x*(5.f/12.f), left_button_y_size, sf::Color(179, 125, 46), sf::Color(252, 210, 146), sf::Color::White, &hide_left, [] () { return true; }, [&switchingBG, &bgIndex, &bg, &background, &current_environmental_factor, &leeway, &branch, &downWeight, &forcedHeight, &crystallizate, &humidity, &temperature, &attenuation_coefficient, &bg_scale, &recalculateLightningVertex, &recalculateLightningVariables] () {
             if (switchingBG) {
                 bgIndex++;
                 if (bg[bgIndex] == nullptr) bgIndex = 0;
@@ -820,6 +828,12 @@ int main() {
                 start_time = std::chrono::system_clock::now();
             }
         });
+        language_button = new Button (switching_language, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.85f, font, utils::ui_text(13), left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(0, 176, 246), sf::Color(0, 255, 255), sf::Color::White, &hide_left, [] () { return true; }, [&switching_language] () {
+            if (switching_language) {
+                utils::settings_fields[0]++;
+                if (utils::settings_fields[0] >= utils::max_languages) utils::settings_fields[0] = 0;
+            }
+        });
         // controles
         #if MOBILE
             forwardButton = new Button (goForward, 300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-600, font, L"↑ ", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
@@ -835,7 +849,7 @@ int main() {
             lookrightButton = new Button (lookRight, window->getSize().x-300 * (isMobileLandscape ? 1.f : 0.75f), window->getSize().y-450, font, L"↦\n", 150, 150, sf::Color(120, 120, 120, 120), sf::Color(240, 240, 240, 120), sf::Color::White, &either_menu_opened);
         #endif
         // interruptores
-        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.89f, font, L"Giro automático", L"Giro manual", left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left, [] () { return true; }, [&x_rotation, &y_rotation, &z_rotation] () {
+        spin_switch = new Switch (do_spin, left_menu_bg.getSize().x*(1.f/6.f), window->getSize().y*0.89f, font, utils::ui_text(14), utils::ui_text(15), left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100, 240, 100), sf::Color(240, 100, 240), sf::Color::White, &hide_left, [] () { return true; }, [&x_rotation, &y_rotation, &z_rotation] () {
             x_rotation = 0.f;
             y_rotation = 0.f;
             z_rotation = 0.f;
@@ -899,6 +913,12 @@ int main() {
                 isFocused = true;
                 screenSaver(background, splash_screen, true);
             }
+        }
+
+        if (switching_language) {
+            loading_text.setString(utils::getRandomAdvice());
+            init_ui();
+            retypeInfo();
         }
 
         if (yetToBoot) {
@@ -1024,6 +1044,9 @@ int main() {
     canonVertices->clear();
     raster_pipeline.clear();
     drawableVertexArray.clear();
+    utils::write_settings(settings);
+    fractochales_settings << settings.str();
+    fractochales_settings.close();
     delete window;
     return 0;
 }
