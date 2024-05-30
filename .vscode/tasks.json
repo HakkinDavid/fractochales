@@ -5,6 +5,8 @@
             "label": "(Windows) SFML Build",
             "command": "g++",
             "args": [
+                "-static-libgcc",
+                "-static-libstdc++",
                 "-DVERSION=${input:version}",
                 "includes/Lightning/Lightning.cpp",
                 "includes/Slider/slider.cpp",
