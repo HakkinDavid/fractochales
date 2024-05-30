@@ -5,6 +5,7 @@
             "label": "(Windows) SFML Build",
             "command": "g++",
             "args": [
+                "-static",
                 "-static-libgcc",
                 "-static-libstdc++",
                 "-DVERSION=${input:version}",
