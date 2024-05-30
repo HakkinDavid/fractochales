@@ -128,6 +128,8 @@ const float box_A [4] = {255,0,0,127.5},
 
 const int voidIndex = sizeof(environmental_factors)/sizeof(const float) - 2;
 
+bool isMobileLandscape = false;
+
 void UI_events (int type, sf::Vector2i mouse_arr[2] = nullptr, int mouse_arr_index = 0);
 void loadingScreen (sf::Sprite &background, sf::RectangleShape &loading_percentage, sf::Sprite &splash_screen, sf::Sprite &splash_3d, sf::Text &loading_text, float percentage);
 void leftMenuState (bool &hide_left, bool &hide_right, sf::RectangleShape left_menu_bg, sf::RectangleShape right_menu_bg);
@@ -399,7 +401,6 @@ int main() {
     bool hide_left = true;
     bool hide_right = true;
     bool either_menu_opened = false;
-    bool isMobileLandscape = false;
     bool do_spin = false;
     bool write_obj = false;
     bool isFocused = true;
@@ -427,7 +428,7 @@ int main() {
 
     recalculateLightningVariables();
 
-    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &lightning_light_intensity, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &light_mask, &isMobileLandscape] () {
+    auto retypeInfo = [&acceleration, &vf, &time, &e_mass, &current_environmental_factor, &force, &delta_y, &Ecf, &work, &Pf, &distance_to_lightning, &attenuation_coefficient, &storm, &thunder_data, &thunder_physics_data, &title_data, &luminosity_data, &lightning_light_intensity, &camera_position, &camera_x_rotation, &camera_y_rotation, &cycle_time_diff, &bgTitle, &bgIndex, &text, &currentTitle, &physicsOutput, &diff_eq, &luminosity_text, &right_menu_bg, &left_menu_bg, &dim_text_bg, &dim_physicsOutput_bg, &dim_luminosity_text, &light_mask] () {
         acceleration = Physics::mean_a(0, vf, time);
         e_mass = storm->getElectronicMass(current_environmental_factor);
         force = Physics::F(e_mass, acceleration);
@@ -491,6 +492,7 @@ int main() {
             const float offset_x = right_menu_bg.getPosition().x + ((right_menu_bg.getSize().x - (dim_text_bg.getSize().x + dim_physicsOutput_bg.getSize().x + 10))/2.f);
             const float offset_y = right_menu_bg.getPosition().y + right_menu_bg.getSize().y*(1.f/6.f) + right_menu_bg.getSize().y*(1.f/135.f) + 50;
             text.setPosition(offset_x + 5, offset_y + 5);
+            diff_eq.setPosition(offset_x + 5, offset_y + dim_text_bg.getGlobalBounds().height + 10);
             physicsOutput.setPosition(offset_x + dim_text_bg.getSize().x + 10 + 5, offset_y + 5);
         }
 
@@ -712,7 +714,7 @@ int main() {
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
         left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
-        const float diff_equation_scale = right_menu_bg.getSize().x/diff_eq.getLocalBounds().getSize().x * 0.95;
+        const float diff_equation_scale = right_menu_bg.getSize().x/diff_eq.getLocalBounds().getSize().x * (MOBILE ? (isMobileLandscape ? 0.2375 : 0.625) : 0.95);
         diff_eq.setScale(diff_equation_scale, diff_equation_scale);
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
