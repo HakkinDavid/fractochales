@@ -125,6 +125,8 @@
                 "vorbisenc",
                 "-framework",
                 "vorbisfile",
+                "-framework",
+                "CoreFoundation",
                 "-mwindows"
             ],
             "options": {
