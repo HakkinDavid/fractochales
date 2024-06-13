@@ -45,6 +45,7 @@
 		6831E4682C1A5C7E0030AC4C /* vorbisfile.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6831E40D2C1A592C0030AC4C /* vorbisfile.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6831E46E2C1A73DE0030AC4C /* ResourcePath.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6831E46D2C1A73DE0030AC4C /* ResourcePath.mm */; };
 		68809C302C14CB2600AA66C5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68809C2F2C14CB2600AA66C5 /* main.cpp */; };
+		6888D8F02C1ABD2400CCBCC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6888D8EF2C1ABD2400CCBCC7 /* Assets.xcassets */; };
 		68AD09EB2C14D8A9004D9B78 /* obj in Resources */ = {isa = PBXBuildFile; fileRef = 68AD09E62C14D8A9004D9B78 /* obj */; };
 		68AD09EC2C14D8A9004D9B78 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 68AD09E72C14D8A9004D9B78 /* fonts */; };
 		68AD09ED2C14D8A9004D9B78 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 68AD09E82C14D8A9004D9B78 /* images */; };
@@ -108,6 +109,7 @@
 		68809C272C14CB2600AA66C5 /* Fractochales.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fractochales.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68809C2B2C14CB2600AA66C5 /* Fractochales-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Fractochales-Info.plist"; sourceTree = "<group>"; };
 		68809C2F2C14CB2600AA66C5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		6888D8EF2C1ABD2400CCBCC7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68AD09E62C14D8A9004D9B78 /* obj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = obj; sourceTree = SOURCE_ROOT; };
 		68AD09E72C14D8A9004D9B78 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fonts; sourceTree = SOURCE_ROOT; };
 		68AD09E82C14D8A9004D9B78 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = SOURCE_ROOT; };
@@ -162,6 +164,7 @@
 		68809C1D2C14CB2500AA66C5 = {
 			isa = PBXGroup;
 			children = (
+				6888D8EF2C1ABD2400CCBCC7 /* Assets.xcassets */,
 				6831E46D2C1A73DE0030AC4C /* ResourcePath.mm */,
 				6831E46B2C1A72A50030AC4C /* ResourcePath.hpp */,
 				6831E4692C1A72590030AC4C /* ResourcePath.mm */,
@@ -283,6 +286,7 @@
 				68AD09EB2C14D8A9004D9B78 /* obj in Resources */,
 				68AD09EF2C14D8A9004D9B78 /* sfx in Resources */,
 				68AD09EC2C14D8A9004D9B78 /* fonts in Resources */,
+				6888D8F02C1ABD2400CCBCC7 /* Assets.xcassets in Resources */,
 				68AD09EE2C14D8A9004D9B78 /* settings.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -424,7 +428,8 @@
 		68809C3D2C14CB2600AA66C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = fractochales;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -471,6 +476,7 @@
 					vorbisenc,
 					"-framework",
 					vorbisfile,
+					"-DVERSION=304",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.fractochales;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -482,7 +488,8 @@
 		68809C3E2C14CB2600AA66C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = fractochales;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -530,6 +537,7 @@
 					vorbisenc,
 					"-framework",
 					vorbisfile,
+					"-DVERSION=304",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.fractochales;
 				PRODUCT_NAME = "$(TARGET_NAME)";
