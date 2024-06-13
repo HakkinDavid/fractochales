@@ -88,3 +88,11 @@ void utils :: write_settings (std::wstringstream & settings_stream) {
         settings_stream << utils::settings_fields[i] << std::endl;
     }
 }
+
+std::string utils :: get_res (std::string path) {
+    #if __APPLE__
+        return resourcePath () + path;
+    #else
+        return path;
+    #endif
+}

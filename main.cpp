@@ -140,7 +140,7 @@ void handleMovement (bool &shouldReexecutePipeline, bool &goUp, bool &goDown, bo
 void screenSaver (sf::Sprite &background, sf::Sprite &splash_screen, bool undo = false);
 
 int main() {
-    #if !MOBILE
+    #if !MOBILE && !__APPLE__
         if (!fs::exists("obj")) {
             fs::create_directories("obj");
             fs::create_directories("obj/output");
@@ -152,7 +152,6 @@ int main() {
             utils::new_obj_index++;
         }
         std::wstringstream lightning_stream_obj, lightning_stream_mtl, lightning_stream_txt;
-    #endif
     if (fs::exists("settings.txt")) {
         std::wifstream original_fractochales_settings("settings.txt");
         settings << original_fractochales_settings.rdbuf();
@@ -160,6 +159,7 @@ int main() {
         utils::load_settings(settings);
     }
     fractochales_settings.open("settings.txt", std::wofstream::trunc);
+    #endif
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point current_timestamp;
     bool yetToBoot = true;
@@ -174,18 +174,18 @@ int main() {
 
     sf::Image icon;
 
-    if (icon.loadFromFile("images/fractochales.png")) {
+    if (icon.loadFromFile(utils::get_res("images/fractochales.png"))) {
         window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     }
 
     sf::Texture splash;
-    splash.loadFromFile("images/fractochales.png");
+    splash.loadFromFile(utils::get_res("images/fractochales.png"));
 
     sf::Texture nowin3d;
-    nowin3d.loadFromFile("images/3d.png");
+    nowin3d.loadFromFile(utils::get_res("images/3d.png"));
 
     sf::Texture watermark_texture;
-    watermark_texture.loadFromFile("images/waterchales.png");
+    watermark_texture.loadFromFile(utils::get_res("images/waterchales.png"));
 
     sf::Sprite splash_screen(splash);
     sf::Sprite splash_3d(nowin3d);
@@ -196,29 +196,29 @@ int main() {
     watermark_logo.setColor(sf::Color(255, 255, 255, 80));
 
     sf::SoundBuffer buffer0;
-    buffer0.loadFromFile("sfx/startup.wav");
+    buffer0.loadFromFile(utils::get_res("sfx/startup.wav"));
     sf::Sound startup;
     startup.setBuffer(buffer0);
 
     sf::SoundBuffer buffer1;
-    buffer1.loadFromFile("sfx/thunder1.wav");
+    buffer1.loadFromFile(utils::get_res("sfx/thunder1.wav"));
     sf::Sound sound1;
     sound1.setBuffer(buffer1);
 
     sf::SoundBuffer buffer2;
-    buffer2.loadFromFile("sfx/thunder2.wav");
+    buffer2.loadFromFile(utils::get_res("sfx/thunder2.wav"));
     sf::Sound sound2;
     sound2.setBuffer(buffer2);
 
     sf::SoundBuffer buffer3;
-    buffer3.loadFromFile("sfx/thunder3.wav");
+    buffer3.loadFromFile(utils::get_res("sfx/thunder3.wav"));
     sf::Sound sound3;
     sound3.setBuffer(buffer3);
 
     int sfx_i = 1;
 
     sf::Font font;  // Sets our font to this
-    font.loadFromFile("fonts/arial.ttf"); // THERE A VERY LIMITED SET OF FONTS SUPPORTING SUPERSCRIPT
+    font.loadFromFile(utils::get_res("fonts/arial.ttf")); // THERE A VERY LIMITED SET OF FONTS SUPPORTING SUPERSCRIPT
 
     sf::Text text;
     sf::Text physicsOutput;
@@ -289,49 +289,49 @@ int main() {
 
     // inicializar fondos
     sf::Texture city;
-    city.loadFromFile("images/city.jpg");
+    city.loadFromFile(utils::get_res("images/city.jpg"));
 
     sf::Texture water;
-    water.loadFromFile("images/water.jpg");
+    water.loadFromFile(utils::get_res("images/water.jpg"));
 
     sf::Texture wood;
-    wood.loadFromFile("images/wood.jpg");
+    wood.loadFromFile(utils::get_res("images/wood.jpg"));
 
     sf::Texture shrek;
-    shrek.loadFromFile("images/shrek.png");
+    shrek.loadFromFile(utils::get_res("images/shrek.png"));
 
     sf::Texture space;
-    space.loadFromFile("images/space.jpg");
+    space.loadFromFile(utils::get_res("images/space.jpg"));
 
     sf::Texture black;
-    black.loadFromFile("images/black.png");
+    black.loadFromFile(utils::get_res("images/black.png"));
 
     sf::Texture lightning_texture;
-    lightning_texture.loadFromFile("images/lightning.png");
+    lightning_texture.loadFromFile(utils::get_res("images/lightning.png"));
 
     sf::Texture cloud_texture;
-    cloud_texture.loadFromFile("images/cloud.png");
+    cloud_texture.loadFromFile(utils::get_res("images/cloud.png"));
 
     sf::Texture water_texture;
-    water_texture.loadFromFile("images/watertexture.png");
+    water_texture.loadFromFile(utils::get_res("images/watertexture.png"));
 
     sf::Texture wood_texture;
-    wood_texture.loadFromFile("images/wooden.jpg");
+    wood_texture.loadFromFile(utils::get_res("images/wooden.jpg"));
 
     sf::Texture space_texture;
-    space_texture.loadFromFile("images/space_box.jpg");
+    space_texture.loadFromFile(utils::get_res("images/space_box.jpg"));
 
     sf::Texture prismatic_spec;
-    prismatic_spec.loadFromFile("images/prismatic_spec.png");
+    prismatic_spec.loadFromFile(utils::get_res("images/prismatic_spec.png"));
 
     sf::Texture city_texture;
-    city_texture.loadFromFile("images/city_texture.png");
+    city_texture.loadFromFile(utils::get_res("images/city_texture.png"));
 
     sf::Texture skyscraper_texture;
-    skyscraper_texture.loadFromFile("images/skyscraper.png");
+    skyscraper_texture.loadFromFile(utils::get_res("images/skyscraper.png"));
 
     sf::Texture differential_equation;
-    differential_equation.loadFromFile("images/ed.png");
+    differential_equation.loadFromFile(utils::get_res("images/ed.png"));
 
     // fondos a iterar con el botón "alternar fondo"
     // esto podría sincronizarse con otro arreglo de valores de variable para entornos
@@ -511,7 +511,7 @@ int main() {
 
     auto recalculateLightningVertex =
         [&drawableVertexArray,
-        #if !MOBILE
+        #if !MOBILE && !__APPLE__
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
         &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &city_texture, &skyscraper_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
@@ -629,7 +629,7 @@ int main() {
                 Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
             break;
         }
-        #if !MOBILE
+        #if !MOBILE && !__APPLE__
             lightning_stream_obj.str(std::wstring());
             lightning_stream_mtl.str(std::wstring());
             lightning_stream_obj
@@ -653,7 +653,7 @@ int main() {
             const float end_y = y_offset - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
             Engine :: drawPrism (drawableVertexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color,
-                #if !MOBILE
+                #if !MOBILE && !__APPLE__
                     lightning_stream_obj, nV,
                 #endif
                 &lightning_texture
@@ -663,12 +663,12 @@ int main() {
     };
 
     auto generateLightning = [
-    #if !MOBILE
+    #if !MOBILE && !__APPLE__
         &lightning_stream_txt,
     #endif
     &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
         canonVertices->clear();
-        #if !MOBILE
+        #if !MOBILE && !__APPLE__
             lightning_stream_txt.str(std::wstring());
         #endif
 
@@ -682,7 +682,7 @@ int main() {
                     final_forcedHeight = forcedHeight+((temperature-25)*(0.03f));
         if (storm != nullptr) delete storm;
         storm = new Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
-        #if !MOBILE
+        #if !MOBILE && !__APPLE__
             lightning_stream_txt << utils::getFileHeader(2)
             << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
             << L"Leeway: " << fixed << setprecision(8) << final_leeway << endl
@@ -698,7 +698,7 @@ int main() {
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         recalculateLightningVertex();
         retypeInfo();
-        #if !MOBILE
+        #if !MOBILE && !__APPLE__
             lightning_stream_txt
             << L"Electrons involved: " << storm->getInvolvedElectrons(current_environmental_factor) << endl
             << L"Electronic mass: " << scientific << setprecision(8) << e_mass << L"kg" << endl;
@@ -790,12 +790,12 @@ int main() {
         });
         write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(1.f/2.f), window->getSize().y*0.89f, font, utils::ui_text(11), left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100,100,100, (MOBILE ? 63.75f : 255.f)), sf::Color(200,200,200), sf::Color(255.f,255.f,255.f, (MOBILE ? 63.75f : 255.f)), &hide_left, [] () { return !MOBILE; },
             [
-                #if !MOBILE
+                #if !MOBILE && !__APPLE__
                     &lightning_stream_obj, &lightning_stream_mtl, &lightning_stream_txt,
                 #endif
                 &write_obj
             ] () {
-            #if !MOBILE
+            #if !MOBILE && !__APPLE__
                 if (write_obj) {
                     std::wofstream lightning_obj (utils::newLightningFileName(), std::wofstream::trunc);
                     std::wofstream lightning_mtl (utils::newLightningFileName(1), std::wofstream::trunc);

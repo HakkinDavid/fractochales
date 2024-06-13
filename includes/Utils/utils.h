@@ -17,6 +17,7 @@
     #define VERSION_KIND L"Windows"
 #elif __APPLE__
     #include <TargetConditionals.h>
+    #include "../ResPath/ResourcePath.hpp"
     #if TARGET_OS_IPHONE
         #define VERSION_KIND L"iOS"
         #define MOBILE true
@@ -37,6 +38,8 @@
 #endif
 
 namespace utils {
+    std::string get_res (std::string path);
+
     const std::wstring advice_text_es[] = {
         L"Cargando las nubes",
         L"Sintonizando a Fimbres",

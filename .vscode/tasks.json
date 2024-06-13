@@ -70,9 +70,8 @@
             "detail": "(Mac) SFML Build",
             "command": "g++",
             "args": [
-                "-static",
-                "-static-libgcc",
-                "-static-libstdc++",
+                "-rpath",
+                "/Library/Frameworks",
                 "-DVERSION=${input:version}",
                 "-DSFML_STATIC",
                 "-std=c++11",
