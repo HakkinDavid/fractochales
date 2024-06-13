@@ -476,7 +476,7 @@
 					vorbisenc,
 					"-framework",
 					vorbisfile,
-					"-DVERSION=304",
+					"-DVERSION=306",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.fractochales;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -537,7 +537,7 @@
 					vorbisenc,
 					"-framework",
 					vorbisfile,
-					"-DVERSION=304",
+					"-DVERSION=306",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.fractochales;
 				PRODUCT_NAME = "$(TARGET_NAME)";
