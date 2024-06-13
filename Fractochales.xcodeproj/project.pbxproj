@@ -436,11 +436,12 @@
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				GCC_VERSION = "";
 				INFOPLIST_FILE = "Fractochales-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Fractochales;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = (
 					"-mwindows",
 					"-DSFML_STATIC",
@@ -493,11 +494,12 @@
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				GCC_VERSION = "";
 				INFOPLIST_FILE = "Fractochales-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Fractochales;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				"ORDER_FILE[arch=*]" = "";
 				OTHER_CFLAGS = (
 					"-mwindows",

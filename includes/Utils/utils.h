@@ -78,7 +78,7 @@ namespace utils {
         L"We generate 3D projections over a 2D plane",
         L"This is (technically) raytracing",
         L"My mom is an orthogonal vector",
-        L"Fractochales is the contraction of \"silly fractals\" in Spanish",
+        L"Fractochales is the contraction of \"chunky fractals\" in Spanish",
         L"In each lightning bolt we simulate about 3 trillion electrons, on a macroscopic scale and in 3D"
     };
 
@@ -108,7 +108,10 @@ namespace utils {
         L"Masa electrónica total",
         L"Cámara",
         L"FPS",
-        L"Control conectado"
+        L"Control conectado",
+        L"Aceptar",
+        L"Bienvenido a Fractochales.\nEl equipo de desarrollo te agradece por instalar nuestro software.\nSi realizaste una donación, ten por seguro que estás apoyando a gente apasionada por su trabajo.\nDisfruta de tus fractales tochos.",
+        L"NOTA:\nComo usuario de macOS, será necesario que le otorgues permisos de teclado a Fractochales para utilizar\nlos controles de movimiento.\nVe a Configuración del Sistema > Privacidad y Seguridad > Monitorización de entrada y activa Fractochales."
     };
 
     const std::wstring ui_en [] = {
@@ -134,7 +137,10 @@ namespace utils {
         L"Total electron mass",
         L"Camera",
         L"FPS",
-        L"Connected controller"
+        L"Connected controller",
+        L"Accept",
+        L"Welcome to Fractochales.\nThe development team thanks you for installing our software.\nIf you made a donation, rest assured that you are supporting people passionate about their work.\nEnjoy your chunky fractals.",
+        L"NOTE:\nAs a macOS user, you will need to grant keyboard permissions to Fractochales to use the movement controls.\nGo to System Preferences > Privacy and Security > Input Monitoring and enable Fractochales."
     };
 
     const int advice_max_num = sizeof(utils::advice_text_es) / sizeof(std::wstring);
@@ -171,7 +177,7 @@ namespace utils {
 
     void scaleBG (sf::RenderTarget * window, sf::Sprite & background, sf::Texture ** bg, int & bgIndex, float & bg_scale);
 
-    extern int settings_fields [1];
+    extern int settings_fields [2];
 
     const int settings_max_num = sizeof(utils::settings_fields) / sizeof(int);
 

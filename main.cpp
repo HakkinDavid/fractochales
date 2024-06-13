@@ -68,7 +68,8 @@ Button
     * jumpButton = nullptr,
     * runButton = nullptr,
     * write_obj_button = nullptr,
-    * language_button = nullptr;
+    * language_button = nullptr,
+    * dismiss_pop_up_button = nullptr;
 Switch
     * hide_left_switch = nullptr,
     * hide_right_switch = nullptr,
@@ -82,7 +83,7 @@ Slider ** all_sliders [] = {&branchSlider, &leewaySlider, &redSlider, &greenSlid
 // colocar los botones que recibirán eventos en grupo
 Button ** all_buttons [] = 
 {
-    &zapping, &backgroundButton, &write_obj_button, &language_button,
+    &zapping, &backgroundButton, &write_obj_button, &language_button, &dismiss_pop_up_button,
     #if MOBILE
         &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton, &shiftButton, &runButton, &jumpButton,
     #endif
@@ -140,26 +141,26 @@ void handleMovement (bool &shouldReexecutePipeline, bool &goUp, bool &goDown, bo
 void screenSaver (sf::Sprite &background, sf::Sprite &splash_screen, bool undo = false);
 
 int main() {
-    #if !MOBILE && !__APPLE__
-        if (!fs::exists("obj")) {
-            fs::create_directories("obj");
-            fs::create_directories("obj/output");
+    #if !MOBILE
+        if (!fs::exists(utils::get_res("obj"))) {
+            fs::create_directories(utils::get_res("obj"));
+            fs::create_directories(utils::get_res("obj/output"));
         }
-        else if (!fs::exists("obj/output")) {
-            fs::create_directories("obj/output");
+        else if (!fs::exists(utils::get_res("obj/output"))) {
+            fs::create_directories(utils::get_res("obj/output"));
         }
         while (fs::exists(utils::newLightningFileName())) {
             utils::new_obj_index++;
         }
         std::wstringstream lightning_stream_obj, lightning_stream_mtl, lightning_stream_txt;
-    if (fs::exists("settings.txt")) {
-        std::wifstream original_fractochales_settings("settings.txt");
+    #endif
+    if (fs::exists(utils::get_res("settings.txt"))) {
+        std::wifstream original_fractochales_settings(utils::get_res("settings.txt"));
         settings << original_fractochales_settings.rdbuf();
         original_fractochales_settings.close();
         utils::load_settings(settings);
     }
-    fractochales_settings.open("settings.txt", std::wofstream::trunc);
-    #endif
+    fractochales_settings.open(utils::get_res("settings.txt"), std::wofstream::trunc);
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point current_timestamp;
     bool yetToBoot = true;
@@ -226,6 +227,7 @@ int main() {
     sf::Text currentTitle;
     sf::Text watermarkText;
     sf::Text loading_text;
+    sf::Text pop_up_text;
 
     text.setFont(font);
     physicsOutput.setFont(font);
@@ -233,6 +235,7 @@ int main() {
     currentTitle.setFont(font);
     watermarkText.setFont(font);
     loading_text.setFont(font);
+    pop_up_text.setFont(font);
 
     text.setCharacterSize(16 * (MOBILE ? 2 : 1));
     physicsOutput.setCharacterSize(16 * (MOBILE ? 2 : 1));
@@ -240,6 +243,7 @@ int main() {
     currentTitle.setCharacterSize(32 * (MOBILE ? 2 : 1));
     watermarkText.setCharacterSize(16 * (MOBILE ? 2 : 1));
     loading_text.setCharacterSize(16 * (MOBILE ? 2 : 1));
+    pop_up_text.setCharacterSize(16 * (MOBILE ? 2 : 1));
 
     text.setFillColor(sf::Color::White);
     physicsOutput.setFillColor(sf::Color::White);
@@ -247,6 +251,7 @@ int main() {
     currentTitle.setFillColor(sf::Color(255, 255, 255, 150));
     watermarkText.setFillColor(sf::Color(255, 255, 255, 122));
     loading_text.setFillColor(sf::Color::White);
+    pop_up_text.setFillColor(sf::Color::White);
 
     text.setStyle(sf::Text::Bold);
     physicsOutput.setStyle(sf::Text::Bold);
@@ -254,6 +259,7 @@ int main() {
     currentTitle.setStyle(sf::Text::Bold);
     watermarkText.setStyle(sf::Text::Bold);
     loading_text.setStyle(sf::Text::Bold);
+    pop_up_text.setStyle(sf::Text::Bold);
 
     loading_text.setString(utils::getRandomAdvice());
     
@@ -277,8 +283,10 @@ int main() {
     dim_physicsOutput_bg.setFillColor(sf::Color(0, 0, 0, 50));
     dim_luminosity_text.setFillColor(sf::Color(0, 0, 0, 50));
 
+    sf::RectangleShape initial_pop_up_bg;
     sf::RectangleShape left_menu_bg;
     sf::RectangleShape right_menu_bg;
+    initial_pop_up_bg.setFillColor(sf::Color(120, 120, 120, 120));
     left_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
     right_menu_bg.setFillColor(sf::Color(120, 120, 120, 120));
 
@@ -413,6 +421,8 @@ int main() {
     bool isFocused = true;
     bool shouldReexecutePipeline = true;
     bool switching_language = false;
+    bool pop_up_gone = utils::settings_fields[1] == 1;
+    bool dismissing_pop_up = false;
     
     int drawPile = 0;
     int zapCount = 0;
@@ -511,7 +521,7 @@ int main() {
 
     auto recalculateLightningVertex =
         [&drawableVertexArray,
-        #if !MOBILE && !__APPLE__
+        #if !MOBILE
             &lightning_stream_obj, &lightning_stream_mtl,
         #endif
         &lightning_color, &lightning_texture, &cloud_texture, &space_texture, &wood_texture, &water_texture, &city_texture, &skyscraper_texture, &bg, &bgIndex, &lightning_thickness, &x_offset, &y_offset, &z_offset, &lightning_scale, &canonVertices, &lightning_depth, &shouldReexecutePipeline] () {
@@ -629,7 +639,7 @@ int main() {
                 Engine :: drawPrism (drawableVertexArray, vec3(20.f, y_offset, -20.f), vec3(-20.f, y_offset, -20.f), 10.f, environment_origin_color[bgIndex], &cloud_texture);
             break;
         }
-        #if !MOBILE && !__APPLE__
+        #if !MOBILE
             lightning_stream_obj.str(std::wstring());
             lightning_stream_mtl.str(std::wstring());
             lightning_stream_obj
@@ -653,7 +663,7 @@ int main() {
             const float end_y = y_offset - (canonVertices->at(v+1)[0] * lightning_scale - 2);
             const float end_z = (canonVertices->at(v+1)[2] * lightning_scale) - z_offset;
             Engine :: drawPrism (drawableVertexArray, vec3(start_x, start_y, start_z), vec3(end_x, end_y, end_z), lightning_thickness, lightning_color,
-                #if !MOBILE && !__APPLE__
+                #if !MOBILE
                     lightning_stream_obj, nV,
                 #endif
                 &lightning_texture
@@ -663,12 +673,12 @@ int main() {
     };
 
     auto generateLightning = [
-    #if !MOBILE && !__APPLE__
+    #if !MOBILE
         &lightning_stream_txt,
     #endif
     &time, &t0, &recalculateLightningVertex, &retypeInfo, &canonVertices, &storm, &lightning_height, &lightning_width, &lightning_depth, &leeway, &crystallizate, &humidity, &branch, &temperature, &downWeight, &forcedHeight, &current_environmental_factor, &e_mass, &thunder_physics_data] () {
         canonVertices->clear();
-        #if !MOBILE && !__APPLE__
+        #if !MOBILE
             lightning_stream_txt.str(std::wstring());
         #endif
 
@@ -682,7 +692,7 @@ int main() {
                     final_forcedHeight = forcedHeight+((temperature-25)*(0.03f));
         if (storm != nullptr) delete storm;
         storm = new Lightning(lightning_height, lightning_width, lightning_depth, final_leeway, final_branch, final_downWeight, final_forcedHeight);
-        #if !MOBILE && !__APPLE__
+        #if !MOBILE
             lightning_stream_txt << utils::getFileHeader(2)
             << L"3D Matrix dimensions: " << fixed << setprecision(0) << lightning_height << L"×" << lightning_width << L"×" << lightning_depth << endl
             << L"Leeway: " << fixed << setprecision(8) << final_leeway << endl
@@ -698,7 +708,7 @@ int main() {
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - t0).count() * 0.000000001 * 0.05; // * 0.000000001 (ns -> s) * 0.05 ajuste manual (rayo >>> pc)
         recalculateLightningVertex();
         retypeInfo();
-        #if !MOBILE && !__APPLE__
+        #if !MOBILE
             lightning_stream_txt
             << L"Electrons involved: " << storm->getInvolvedElectrons(current_environmental_factor) << endl
             << L"Electronic mass: " << scientific << setprecision(8) << e_mass << L"kg" << endl;
@@ -720,10 +730,19 @@ int main() {
         splash_3d.setPosition(sf::Vector2f(splash_screen.getPosition().x + splash_screen.getLocalBounds().width * (27.f/32.f) - (splash_3d.getLocalBounds().width * splash_3d.getScale().x)/2, splash_screen.getPosition().y + splash_screen.getLocalBounds().height * (7.f/8.f) - (splash_3d.getLocalBounds().height * splash_3d.getScale().y)/2));
         watermark_logo.setPosition(window->getSize().x - (watermark_logo.getLocalBounds().getSize().x * watermark_logo.getScale().x + (MOBILE ? 40 : 10)), window->getSize().y - (watermark_logo.getLocalBounds().getSize().y * watermark_logo.getScale().y + (MOBILE ? 40 : 10)));
         watermarkText.setPosition((MOBILE ? 40 : 10), window->getSize().y - (watermarkText.getLocalBounds().getSize().y + (MOBILE ? 40 : 10)));
+        initial_pop_up_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.5f), window->getSize().y * (MOBILE ? 1.f : 0.5f)));
         left_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         right_menu_bg.setSize(sf::Vector2f(window->getSize().x * (MOBILE ? 1.f : 0.225f), window->getSize().y));
         const float diff_equation_scale = right_menu_bg.getSize().x/diff_eq.getLocalBounds().getSize().x * (MOBILE ? (isMobileLandscape ? 0.2375 : 0.625) : 0.95);
         diff_eq.setScale(diff_equation_scale, diff_equation_scale);
+        initial_pop_up_bg.setPosition(sf::Vector2f(window->getSize().x * (MOBILE ? 0.f : 0.25f), window->getSize().y * (MOBILE ? 0.f : 0.25f)));
+        pop_up_text.setString(
+            utils::ui_text(24)
+            #if __APPLE__ && !MOBILE
+                + L"\n\n" + utils::ui_text(25)
+            #endif
+        );
+        pop_up_text.setPosition(initial_pop_up_bg.getPosition().x + (initial_pop_up_bg.getSize().x-pop_up_text.getGlobalBounds().width)*0.5f, initial_pop_up_bg.getPosition().y + (initial_pop_up_bg.getSize().y-pop_up_text.getGlobalBounds().height)*0.125f);
         right_menu_bg.setPosition(sf::Vector2f(window->getSize().x-right_menu_bg.getSize().x, 0));
         left_menu_bg.setPosition(sf::Vector2f(0, 0));
         light_mask.setFillColor(sf::Color(255.f, 255.f, 255.f, 0));
@@ -790,16 +809,16 @@ int main() {
         });
         write_obj_button = new Button (write_obj, left_menu_bg.getSize().x*(1.f/2.f), window->getSize().y*0.89f, font, utils::ui_text(11), left_menu_bg.getSize().x*(1.f/3.f), left_button_y_size, sf::Color(100,100,100, (MOBILE ? 63.75f : 255.f)), sf::Color(200,200,200), sf::Color(255.f,255.f,255.f, (MOBILE ? 63.75f : 255.f)), &hide_left, [] () { return !MOBILE; },
             [
-                #if !MOBILE && !__APPLE__
+                #if !MOBILE
                     &lightning_stream_obj, &lightning_stream_mtl, &lightning_stream_txt,
                 #endif
                 &write_obj
             ] () {
-            #if !MOBILE && !__APPLE__
+            #if !MOBILE
                 if (write_obj) {
-                    std::wofstream lightning_obj (utils::newLightningFileName(), std::wofstream::trunc);
-                    std::wofstream lightning_mtl (utils::newLightningFileName(1), std::wofstream::trunc);
-                    std::wofstream lightning_txt (utils::newLightningFileName(2), std::wofstream::trunc);
+                    std::wofstream lightning_obj (utils::get_res(utils::newLightningFileName()), std::wofstream::trunc);
+                    std::wofstream lightning_mtl (utils::get_res(utils::newLightningFileName(1)), std::wofstream::trunc);
+                    std::wofstream lightning_txt (utils::get_res(utils::newLightningFileName(2)), std::wofstream::trunc);
                     lightning_obj << lightning_stream_obj.str();
                     lightning_obj.close();
                     lightning_mtl << lightning_stream_mtl.str();
@@ -832,6 +851,12 @@ int main() {
             if (switching_language) {
                 utils::settings_fields[0]++;
                 if (utils::settings_fields[0] >= utils::max_languages) utils::settings_fields[0] = 0;
+            }
+        });
+        dismiss_pop_up_button = new Button (dismissing_pop_up, initial_pop_up_bg.getPosition().x + initial_pop_up_bg.getSize().x*(5.f/6.f) - (initial_pop_up_bg.getSize().y*(1.f/12.f) - left_button_y_size), initial_pop_up_bg.getPosition().y + initial_pop_up_bg.getSize().y*(11.f/12.f), font, utils::ui_text(23), initial_pop_up_bg.getSize().x*(1.f/6.f), left_button_y_size, sf::Color(0, 176, 246), sf::Color(0, 255, 255), sf::Color::White, &pop_up_gone, [] () { return true; }, [&dismissing_pop_up, &pop_up_gone] () {
+            if (dismissing_pop_up) {
+                pop_up_gone = true;
+                utils::settings_fields[1] = 1;
             }
         });
         // controles
@@ -1035,6 +1060,10 @@ int main() {
         }
         else if (!MOBILE || hide_right) {
             window->draw(watermarkText);
+        }
+        if (utils::settings_fields[1] == 0) {
+            window->draw(initial_pop_up_bg);
+            window->draw(pop_up_text);
         }
         UI_events(3);
         window->display();

@@ -1,8 +1,9 @@
 #include "utils.h"
 
 int utils :: new_obj_index = 0;
-int utils :: settings_fields [1] = {0};
+int utils :: settings_fields [2] = {0, 0};
 // language (0: spanish, 1: english)
+// dismiss initial message pop up (0: unread, 1: read)
 
 const std::wstring & utils :: getRandomAdvice() {
     return (utils::settings_fields[0] ? advice_text_en[rand() % advice_max_num] : advice_text_es[rand() % advice_max_num]);
@@ -76,6 +77,7 @@ void utils :: load_settings (std::wstringstream & settings_stream) {
     
     for (int i = 0; i < settings_max_num && settings_stream.good(); i++) {
         getline(settings_stream, line);
+        if (line.empty()) line = L"0";
         utils::settings_fields[i] = stoi(line);
     }
 
