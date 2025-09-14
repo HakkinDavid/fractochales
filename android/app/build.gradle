@@ -6,7 +6,7 @@ apply plugin: 'com.android.application'
 //     standardOutput = stdout
 // }
 
-def VERSION_NUM = 311
+def VERSION_NUM = 312
 def VERSION_NUM_SCALED = Integer.valueOf(VERSION_NUM ?: 100)
 def VERSION_NUM_SCALED_STR = (VERSION_NUM_SCALED/100).toString()
 
@@ -17,7 +17,7 @@ android {
         minSdk 21
         targetSdk 35
         versionCode VERSION_NUM_SCALED
-        versionName "$VERSION_NUM_SCALED_STR"
+        versionName "v$VERSION_NUM_SCALED_STR"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             ndkBuild {
