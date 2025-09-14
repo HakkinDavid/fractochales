@@ -6,7 +6,7 @@ apply plugin: 'com.android.application'
 //     standardOutput = stdout
 // }
 
-def VERSION_NUM = 312
+def VERSION_NUM = 313
 def VERSION_NUM_SCALED = Integer.valueOf(VERSION_NUM ?: 100)
 def VERSION_NUM_SCALED_STR = (VERSION_NUM_SCALED/100).toString()
 
@@ -32,7 +32,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     externalNativeBuild {
