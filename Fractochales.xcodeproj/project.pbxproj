@@ -478,7 +478,7 @@
 					vorbisfile,
 					"-DVERSION=306",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.fractochales;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.bonsanbec.fractochales;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
@@ -539,7 +539,7 @@
 					vorbisfile,
 					"-DVERSION=306",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.fractochales;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.bonsanbec.fractochales;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;

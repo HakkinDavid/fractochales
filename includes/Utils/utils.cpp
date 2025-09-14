@@ -1,7 +1,7 @@
 #include "utils.h"
 
 int utils :: new_obj_index = 0;
-int utils :: settings_fields [2] = {0, 0};
+int utils :: settings_fields [2] = {1, 1};
 // language (0: spanish, 1: english)
 // dismiss initial message pop up (0: unread, 1: read)
 

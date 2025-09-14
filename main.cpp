@@ -86,8 +86,9 @@ Button ** all_buttons [] =
     &zapping, &backgroundButton, &write_obj_button, &language_button, &dismiss_pop_up_button,
     #if MOBILE
         &forwardButton, &leftButton, &backwardButton, &rightButton, &lookupButton, &lookdownButton, &lookleftButton, &lookrightButton, &shiftButton, &runButton, &jumpButton,
+    #else
+        &closeButton
     #endif
-    &closeButton
 };
 // colocar los interruptores que recibirán eventos en grupo
 Switch ** all_switches [] = {&hide_left_switch, &hide_right_switch, &spin_switch};
