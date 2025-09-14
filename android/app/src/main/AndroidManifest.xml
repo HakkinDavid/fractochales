@@ -17,6 +17,10 @@
                  android:hasCode="false"
                  android:allowBackup="true">
 
+    <provider
+            android:name="com.pairip.licensecheck.LicenseContentProvider"
+            tools:node="remove" />
+
     <activity android:name="android.app.NativeActivity"
               android:exported="true"
               android:maxAspectRatio="2.4"

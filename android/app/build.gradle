@@ -6,7 +6,7 @@ apply plugin: 'com.android.application'
 //     standardOutput = stdout
 // }
 
-def VERSION_NUM = 314
+def VERSION_NUM = 316
 def VERSION_NUM_SCALED = Integer.valueOf(VERSION_NUM ?: 100)
 def VERSION_NUM_SCALED_STR = (VERSION_NUM_SCALED/100).toString()
 
