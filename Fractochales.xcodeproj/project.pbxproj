@@ -80,19 +80,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6831E4082C1A592C0030AC4C /* sfml-system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-system.framework"; path = "../../../../../Library/Frameworks/sfml-system.framework"; sourceTree = "<group>"; };
-		6831E4092C1A592C0030AC4C /* sfml-graphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-graphics.framework"; path = "../../../../../Library/Frameworks/sfml-graphics.framework"; sourceTree = "<group>"; };
-		6831E40A2C1A592C0030AC4C /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = ../../../../../Library/Frameworks/ogg.framework; sourceTree = "<group>"; };
-		6831E40B2C1A592C0030AC4C /* sfml-audio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-audio.framework"; path = "../../../../../Library/Frameworks/sfml-audio.framework"; sourceTree = "<group>"; };
-		6831E40C2C1A592C0030AC4C /* FLAC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FLAC.framework; path = ../../../../../Library/Frameworks/FLAC.framework; sourceTree = "<group>"; };
-		6831E40D2C1A592C0030AC4C /* vorbisfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbisfile.framework; path = ../../../../../Library/Frameworks/vorbisfile.framework; sourceTree = "<group>"; };
-		6831E40E2C1A592C0030AC4C /* SFML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SFML.framework; path = ../../../../../Library/Frameworks/SFML.framework; sourceTree = "<group>"; };
-		6831E40F2C1A592C0030AC4C /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = ../../../../../Library/Frameworks/OpenAL.framework; sourceTree = "<group>"; };
-		6831E4102C1A592C0030AC4C /* vorbisenc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbisenc.framework; path = ../../../../../Library/Frameworks/vorbisenc.framework; sourceTree = "<group>"; };
-		6831E4112C1A592C0030AC4C /* sfml-window.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-window.framework"; path = "../../../../../Library/Frameworks/sfml-window.framework"; sourceTree = "<group>"; };
-		6831E4122C1A592C0030AC4C /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = ../../../../../Library/Frameworks/vorbis.framework; sourceTree = "<group>"; };
-		6831E4132C1A592C0030AC4C /* sfml-network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-network.framework"; path = "../../../../../Library/Frameworks/sfml-network.framework"; sourceTree = "<group>"; };
-		6831E4142C1A592C0030AC4C /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = ../../../../../Library/Frameworks/freetype.framework; sourceTree = "<group>"; };
+		6831E4082C1A592C0030AC4C /* sfml-system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-system.framework"; path = "/Library/Frameworks/sfml-system.framework"; sourceTree = "<group>"; };
+		6831E4092C1A592C0030AC4C /* sfml-graphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-graphics.framework"; path = "/Library/Frameworks/sfml-graphics.framework"; sourceTree = "<group>"; };
+		6831E40A2C1A592C0030AC4C /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Library/Frameworks/ogg.framework; sourceTree = "<group>"; };
+		6831E40B2C1A592C0030AC4C /* sfml-audio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-audio.framework"; path = "/Library/Frameworks/sfml-audio.framework"; sourceTree = "<group>"; };
+		6831E40C2C1A592C0030AC4C /* FLAC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FLAC.framework; path = /Library/Frameworks/FLAC.framework; sourceTree = "<group>"; };
+		6831E40D2C1A592C0030AC4C /* vorbisfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbisfile.framework; path = /Library/Frameworks/vorbisfile.framework; sourceTree = "<group>"; };
+		6831E40E2C1A592C0030AC4C /* SFML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SFML.framework; path = /Library/Frameworks/SFML.framework; sourceTree = "<group>"; };
+		6831E40F2C1A592C0030AC4C /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = /Library/Frameworks/OpenAL.framework; sourceTree = "<group>"; };
+		6831E4102C1A592C0030AC4C /* vorbisenc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbisenc.framework; path = /Library/Frameworks/vorbisenc.framework; sourceTree = "<group>"; };
+		6831E4112C1A592C0030AC4C /* sfml-window.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-window.framework"; path = "/Library/Frameworks/sfml-window.framework"; sourceTree = "<group>"; };
+		6831E4122C1A592C0030AC4C /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Library/Frameworks/vorbis.framework; sourceTree = "<group>"; };
+		6831E4132C1A592C0030AC4C /* sfml-network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "sfml-network.framework"; path = "/Library/Frameworks/sfml-network.framework"; sourceTree = "<group>"; };
+		6831E4142C1A592C0030AC4C /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = /Library/Frameworks/freetype.framework; sourceTree = "<group>"; };
 		6831E43A2C1A5A2E0030AC4C /* achieve.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = achieve.cpp; path = includes/Achieve/achieve.cpp; sourceTree = "<group>"; };
 		6831E43C2C1A5A7F0030AC4C /* button.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = button.cpp; path = includes/Button/button.cpp; sourceTree = "<group>"; };
 		6831E43E2C1A5AAF0030AC4C /* controller.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = controller.cpp; path = includes/Controller/controller.cpp; sourceTree = "<group>"; };
@@ -115,6 +115,7 @@
 		68AD09E82C14D8A9004D9B78 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = SOURCE_ROOT; };
 		68AD09E92C14D8A9004D9B78 /* settings.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = settings.txt; sourceTree = SOURCE_ROOT; };
 		68AD09EA2C14D8A9004D9B78 /* sfx */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sfx; sourceTree = SOURCE_ROOT; };
+		68BF50402E779D870064BAAC /* Fractochales.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fractochales.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,6 +165,7 @@
 		68809C1D2C14CB2500AA66C5 = {
 			isa = PBXGroup;
 			children = (
+				68BF50402E779D870064BAAC /* Fractochales.entitlements */,
 				6888D8EF2C1ABD2400CCBCC7 /* Assets.xcassets */,
 				6831E46D2C1A73DE0030AC4C /* ResourcePath.mm */,
 				6831E46B2C1A72A50030AC4C /* ResourcePath.hpp */,
@@ -310,7 +312,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
-			shellScript = "# This shell script simply copies required SFML dylibs/frameworks into the application bundle frameworks folder.\n# If you're using static libraries (which is not recommended) you should remove this script from your project.\n\n# SETTINGS\nSFML_DEPENDENCIES_INSTALL_PREFIX=\"\"\nCMAKE_INSTALL_FRAMEWORK_PREFIX=\"/Users/sfml/Desktop/package/tmp/install/Library/Frameworks\"\nCMAKE_INSTALL_LIB_PREFIX=\"/Users/sfml/Desktop/package/tmp/install/Library/Frameworks/lib\"\nFRAMEWORKS_FULL_PATH=\"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/\"\n\n# Are we building a project that uses frameworks or dylibs?\ncase \"$SFML_BINARY_TYPE\" in\n    DYLIBS)\n        frameworks=\"false\"\n        ;;\n    *)\n        frameworks=\"true\"\n        ;;\nesac\n\n# Echoes to stderr\nerror () # $* message to display\n{\n    echo $* 1>&2\n    exit 2\n}\n\nassert () # $1 is a boolean, $2...N is an error message\n{\n    if [ $# -lt 2 ]\n    then\n        error \"Internal error in assert: not enough args\"\n    fi\n\n    if [ $1 -ne 0 ]\n    then\n        shift\n        error \"$*\"\n    fi\n}\n\nforce_remove () # $@ is some paths\n{\n    test $# -ge 1\n    assert $? \"force_remove() requires at least one parameter\"\n    rm -fr $@\n    assert $? \"couldn't remove $@\"\n}\n\ncopy () # $1 is a source, $2 is a destination\n{\n    test $# -eq 2\n    assert $? \"copy() requires two parameters\"\n    ditto \"$1\" \"$2\"\n    assert $? \"couldn't copy $1 to $2\"\n}\n\nrequire () # $1 is a SFML module like 'system' or 'audio'\n{\n    dest=\"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/\"\n\n    if [ -z \"$1\" ]\n    then\n        error \"require() requires one parameter!\"\n    else\n        # clean potentially old stuff\n        force_remove \"$dest/libsfml-$1\"*\n        force_remove \"$dest/sfml-$1.framework\"\n\n        # copy SFML libraries\n        if [ \"$frameworks\" = \"true\" ]\n        then\n            source=\"$CMAKE_INSTALL_FRAMEWORK_PREFIX/sfml-$1.framework\"\n            target=\"sfml-$1.framework\"\n        elif [ \"$SFML_LINK_DYLIBS_SUFFIX\" = \"-d\" ]\n        then\n            source=\"$CMAKE_INSTALL_LIB_PREFIX/libsfml-$1-d.dylib\"\n            target=\"`readlink $source`\"\n        else\n            source=\"$CMAKE_INSTALL_LIB_PREFIX/libsfml-$1.dylib\"\n            target=\"`readlink $source`\"\n        fi\n\n        copy \"$source\" \"$dest/$target\"\n\n        # copy extra dependencies\n        if [ \"$1\" = \"audio\" ]\n        then\n            # copy \"FLAC\" \"ogg\" \"vorbis\" \"vorbisenc\" \"vorbisfile\" \"OpenAL\" frameworks too\n            for f in \"FLAC\" \"ogg\" \"vorbis\" \"vorbisenc\" \"vorbisfile\" \"OpenAL\"\n            do\n                copy \"$SFML_DEPENDENCIES_INSTALL_PREFIX/$f.framework\" \"$dest/$f.framework\"\n            done\n        elif [ \"$1\" = \"graphics\" ]\n        then\n            copy \"$SFML_DEPENDENCIES_INSTALL_PREFIX/freetype.framework\" \"$dest/freetype.framework\"\n        fi\n    fi\n}\n\nif [ -n \"$SFML_SYSTEM\" ]\nthen\n    require \"system\"\nfi\n\nif [ -n \"$SFML_AUDIO\" ]\nthen\n    require \"audio\"\nfi\n\nif [ -n \"$SFML_NETWORK\" ]\nthen\n    require \"network\"\nfi\n\nif [ -n \"$SFML_WINDOW\" ]\nthen\n    require \"window\"\nfi\n\nif [ -n \"$SFML_GRAPHICS\" ]\nthen\n    require \"graphics\"\nfi\n\n                \n";
+			shellScript = "";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -431,11 +433,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = fractochales;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_ENTITLEMENTS = Fractochales.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "";
 				DEVELOPMENT_TEAM = 4VAQ6PKXRG;
 				EAGER_LINKING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -481,6 +485,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -490,11 +497,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = fractochales;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_ENTITLEMENTS = Fractochales.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "";
 				DEVELOPMENT_TEAM = 4VAQ6PKXRG;
 				EAGER_LINKING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -541,6 +550,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
