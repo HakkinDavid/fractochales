@@ -448,9 +448,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = (
-					"-mwindows",
 					"-DSFML_STATIC",
-					"-std=c++11",
+					"-std=c++23",
 					"-stdlib=libc++",
 					"-framework",
 					SFML,
@@ -509,9 +508,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				"ORDER_FILE[arch=*]" = "";
 				OTHER_CFLAGS = (
-					"-mwindows",
 					"-DSFML_STATIC",
-					"-std=c++11",
+					"-std=c++23",
 					"-stdlib=libc++",
 					"-framework",
 					SFML,

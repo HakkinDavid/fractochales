@@ -50,7 +50,7 @@
                 "-lvorbisfile",
                 "-lvorbis",
                 "-logg",
-                "-mwindows"
+                "-mwindows",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -74,7 +74,7 @@
                 "/Library/Frameworks",
                 "-DVERSION=${input:version}",
                 "-DSFML_STATIC",
-                "-std=c++11",
+                "-std=c++23",
                 "-stdlib=libc++",
                 "-o",
                 "${workspaceFolder}/main",
@@ -135,7 +135,7 @@
             ],
             "group": {
                 "kind": "build",
-                "isDefault": false
+                "isDefault": true
             }
         }
     ],

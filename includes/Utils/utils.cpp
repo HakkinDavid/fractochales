@@ -1,4 +1,7 @@
 #include "utils.h"
+#if __APPLE__
+    #include "../ResPath/ResourcePath.hpp"
+#endif
 
 int utils :: new_obj_index = 0;
 int utils :: settings_fields [2] = {1, 1};
