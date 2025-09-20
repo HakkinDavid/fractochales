@@ -111,7 +111,9 @@ namespace utils {
         L"Control conectado",
         L"Aceptar",
         L"Bienvenido a Fractochales.\nEl equipo de desarrollo te agradece por instalar nuestro software.\nSi realizaste una donación, ten por seguro que estás apoyando a gente apasionada por su trabajo.\nDisfruta de tus fractales tochos.",
-        L"NOTA:\nComo usuario de macOS, será necesario que le otorgues permisos de teclado a Fractochales para utilizar\nlos controles de movimiento.\nVe a Configuración del Sistema > Privacidad y Seguridad > Monitorización de entrada y activa Fractochales.\nAdicionalmente, guardar datos requiere colocar Fractochales dentro de tu carpeta de Aplicaciones."
+        L"NOTA:\nComo usuario de macOS, será necesario que le otorgues permisos de teclado a Fractochales para utilizar\nlos controles de movimiento.\nVe a Configuración del Sistema > Privacidad y Seguridad > Monitorización de entrada y activa Fractochales.\nAdicionalmente, guardar datos requiere colocar Fractochales dentro de tu carpeta de Aplicaciones.",
+        L"Genera tu primer rayo",
+        L"Genera tu segundo rayo"
     };
 
     const std::wstring ui_en [] = {
@@ -140,7 +142,9 @@ namespace utils {
         L"Connected controller",
         L"Accept",
         L"Welcome to Fractochales.\nThe development team thanks you for installing our software.\nIf you made a donation, rest assured that you are supporting people passionate about their work.\nEnjoy your chunky fractals.",
-        L"NOTE:\nAs a macOS user, you will need to grant keyboard permissions for Fractochales movement controls to function.\nHead to System Preferences > Security & Privacy > Input Monitoring then allow Fractochales.\nAdditionally, saving data requires you to put Fractochales inside Apps folder."
+        L"NOTE:\nAs a macOS user, you will need to grant keyboard permissions for Fractochales movement controls to function.\nHead to System Preferences > Security & Privacy > Input Monitoring then allow Fractochales.\nAdditionally, saving data requires you to put Fractochales inside Apps folder.",
+        L"Generate your first lightning",
+        L"Generate your second lightning"
     };
 
     const int advice_max_num = sizeof(utils::advice_text_es) / sizeof(std::wstring);

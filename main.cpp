@@ -894,8 +894,8 @@ int main() {
         });
 
         // logros
-        chievo1 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu primer rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[0]; });
-        chievo2 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, L"Genera tu segundo rayo", window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[1]; });
+        chievo1 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, utils::ui_text(26), window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[0]; });
+        chievo2 = new Achieve (drawPile, window->getSize().x*(MOBILE && !isMobileLandscape ? 0.1f : 0.4f), window->getSize().y*(MOBILE ? 0.1f : 0.9f), watermark_texture, font, utils::ui_text(27), window->getSize().x*(MOBILE && !isMobileLandscape ? 0.8f : 0.2f), window->getSize().y*0.08f, 5000, [&achieve_vars] () { return achieve_vars[1]; });
 
         leftMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
         rightMenuState (hide_left, hide_right, left_menu_bg, right_menu_bg);
